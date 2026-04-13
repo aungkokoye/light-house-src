@@ -15,7 +15,7 @@
             </div>
 
             <!-- Card -->
-            <div class="bg-white rounded-2xl shadow-xl shadow-gray-100 border border-gray-100 p-8">
+            <div class="bg-white rounded-2xl shadow-xl shadow-gray-100 border border-gray-400 p-8">
                 <!-- Google error notice -->
                 <div v-if="googleFailed" class="flex items-center gap-2 text-sm text-red-700 bg-red-50 rounded-xl px-4 py-2.5 mb-6">
                     <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -62,7 +62,7 @@
                             type="email"
                             placeholder="you@example.com"
                             required
-                            class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                            class="w-full px-4 py-2.5 rounded-xl border border-gray-400 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                         />
                     </div>
 
@@ -78,7 +78,7 @@
                                 :type="showPassword ? 'text' : 'password'"
                                 placeholder="••••••••"
                                 required
-                                class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition pr-10"
+                                class="w-full px-4 py-2.5 rounded-xl border border-gray-400 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition pr-10"
                             />
                             <button
                                 type="button"
@@ -94,6 +94,38 @@
                                 </svg>
                             </button>
                         </div>
+                    </div>
+
+                    <!-- Captcha -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Security code</label>
+                        <div class="flex items-center gap-2 mb-2">
+                            <img
+                                :src="captchaUrl"
+                                alt="captcha"
+                                class="rounded-lg border border-gray-400 h-12"
+                            />
+                            <button
+                                type="button"
+                                @click="refreshCaptcha"
+                                class="p-2 rounded-lg border border-gray-400 text-gray-500 hover:text-indigo-600 hover:border-indigo-300 transition-colors"
+                                title="Refresh captcha"
+                            >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                            </button>
+                        </div>
+                        <input
+                            v-model="form.captcha"
+                            type="text"
+                            placeholder="Type the code above"
+                            autocomplete="off"
+                            required
+                            class="w-full px-4 py-2.5 rounded-xl border border-gray-400 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                            :class="{ 'border-red-400 focus:ring-red-400': captchaError }"
+                        />
+                        <p v-if="captchaError" class="text-xs text-red-500 mt-1">{{ captchaError }}</p>
                     </div>
 
                     <!-- Error -->
@@ -125,7 +157,7 @@
                     <!-- Google -->
                     <a
                         href="/auth/google/redirect"
-                        class="w-full flex items-center justify-center gap-2.5 border border-gray-200 text-gray-700 font-medium py-2.5 rounded-xl hover:bg-gray-50 transition-colors text-sm"
+                        class="w-full flex items-center justify-center gap-2.5 border border-gray-400 text-gray-700 font-medium py-2.5 rounded-xl hover:bg-gray-50 transition-colors text-sm"
                     >
                         <svg class="w-4 h-4" viewBox="0 0 24 24">
                             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -164,20 +196,39 @@ if (route.query.token) {
     window.location.href = '/'
 }
 
-const form = reactive({ email: '', password: '' })
+const form = reactive({ email: '', password: '', captcha: '' })
 const showPassword = ref(false)
 const loading = ref(false)
 const error = ref('')
+const captchaError = ref('')
+
+function buildCaptchaUrl() {
+    return `/captcha?t=${Date.now()}`
+}
+const captchaUrl = ref(buildCaptchaUrl())
+
+function refreshCaptcha() {
+    form.captcha = ''
+    captchaError.value = ''
+    captchaUrl.value = buildCaptchaUrl()
+}
 
 async function handleSubmit() {
     loading.value = true
     error.value = ''
+    captchaError.value = ''
     try {
         const { data } = await axios.post('/api/login', form)
         localStorage.setItem('token', data.token)
         window.location.href = '/'
     } catch (e) {
-        error.value = e.response?.data?.message ?? 'Invalid email or password.'
+        const errors = e.response?.data?.errors
+        if (errors?.captcha) {
+            captchaError.value = errors.captcha[0]
+            refreshCaptcha()
+        } else {
+            error.value = e.response?.data?.message ?? 'Invalid email or password.'
+        }
     } finally {
         loading.value = false
     }

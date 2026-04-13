@@ -12,7 +12,7 @@
                 <span class="font-semibold text-gray-900 text-xl">Light House</span>
             </div>
 
-            <div class="bg-white rounded-2xl shadow-xl shadow-gray-100 border border-gray-100 p-8">
+            <div class="bg-white rounded-2xl shadow-xl shadow-gray-100 border border-gray-400 p-8">
 
                 <!-- Invalid link -->
                 <template v-if="!token || !email">
@@ -34,7 +34,7 @@
                                 type="password"
                                 placeholder="Min. 8 characters"
                                 required
-                                class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                class="w-full px-4 py-2.5 rounded-xl border border-gray-400 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                             />
                             <p v-if="errors.password" class="text-xs text-red-500 mt-1">{{ errors.password[0] }}</p>
                         </div>
@@ -46,7 +46,7 @@
                                 type="password"
                                 placeholder="Repeat new password"
                                 required
-                                class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                class="w-full px-4 py-2.5 rounded-xl border border-gray-400 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                             />
                         </div>
 

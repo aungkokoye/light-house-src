@@ -150,9 +150,12 @@ function formatDate(date) {
 }
 
 async function logout() {
-    await axios.post('/api/logout')
-    localStorage.removeItem('token')
-    router.push('/login')
+    try {
+        await axios.post('/api/logout')
+    } finally {
+        localStorage.removeItem('token')
+        router.push('/login')
+    }
 }
 
 onMounted(async () => {

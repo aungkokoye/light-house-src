@@ -17,8 +17,8 @@
             </nav>
             <div class="flex items-center gap-3">
                 <template v-if="isLoggedIn">
-                    <RouterLink v-if="isAdmin" to="/admin" class="text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors">
-                        Admin Dashboard
+                    <RouterLink to="/dashboard" class="text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors">
+                        Dashboard
                     </RouterLink>
                     <RouterLink to="/profile" class="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors">
                         <div class="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-xs font-bold">
@@ -197,10 +197,13 @@ onMounted(async () => {
 })
 
 async function logout() {
-    await axios.post('/api/logout')
-    localStorage.removeItem('token')
-    isLoggedIn.value = false
-    router.push('/login')
+    try {
+        await axios.post('/api/logout')
+    } finally {
+        localStorage.removeItem('token')
+        isLoggedIn.value = false
+        router.push('/login')
+    }
 }
 
 const statCards = [

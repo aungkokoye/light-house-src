@@ -17,6 +17,15 @@
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running
 
+- In your Host Machine 
+
+    ```
+    mkdir LightHouse
+    cd LightHouse
+    git clone https://github.com/aungkokoye/light-house-docker.git
+    git clone https://github.com/aungkokoye/light-house-src.git
+    ```
+
 ---
 
 ## 1. Start Docker Containers
@@ -24,8 +33,8 @@
 Navigate to the docker directory from the project root:
 
 ```bash
-cd docker
-docker compose up -d
+cd light-house-docker
+docker compose up --build -d
 ```
 
 To stop containers:
@@ -87,7 +96,7 @@ Then run:
 ```bash
 composer install
 php artisan key:generate
-php artisan migrate
+php artisan migrate --seed
 ```
 
 ---
@@ -175,14 +184,15 @@ composer test
 ## 8. Seeding the Database
 
 ```bash
-php artisan db:seed
+php artisan db:seed 
+php artisan migrate:fresh --seed    (refresh the database and rerun seeder)
 ```
 
-This creates a test user:
+This creates a test admin user:
 
 ```
-Name:  Test User
-Email: test@example.com
+Name:  Admin User
+Email: admin@lighthouse.com
 ```
 
 ---

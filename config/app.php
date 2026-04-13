@@ -15,6 +15,9 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    'default_creator_name'  => env('DEFAULT_CREATOR_NAME', 'app_user'),
+    'default_creator_email' => env('DEFAULT_CREATOR_EMAIL', 'app_user@lighthouse.com'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment

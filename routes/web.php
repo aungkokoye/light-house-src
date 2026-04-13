@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\CaptchaController;
 use App\Http\Controllers\Auth\SocialAuthController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
@@ -29,6 +30,9 @@ Route::get('/email/verify/{token}', function (string $token) {
 
     return redirect('/login?verified=1');
 })->name('verification.verify');
+
+// Captcha image (web middleware for session)
+Route::get('/captcha', [CaptchaController::class, 'image'])->name('captcha.image');
 
 // Google OAuth
 Route::get('/auth/google/redirect', [SocialAuthController::class, 'redirectToGoogle']);

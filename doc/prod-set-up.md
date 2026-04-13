@@ -72,7 +72,7 @@ EXIT;
 sudo mkdir -p /var/www/light-house
 sudo chown $USER:$USER /var/www/light-house
 git clone <repository-url> /var/www/light-house
-cd /var/www/light-house/src
+cd /var/www/light-house/light-house-src
 ```
 
 Install dependencies and build frontend assets:
@@ -130,10 +130,10 @@ php artisan view:cache
 ## 6. Set File Permissions
 
 ```bash
-sudo chown -R www-data:www-data /var/www/light-house/src
-sudo chmod -R 755 /var/www/light-house/src
-sudo chmod -R 775 /var/www/light-house/src/storage
-sudo chmod -R 775 /var/www/light-house/src/bootstrap/cache
+sudo chown -R www-data:www-data /var/www/light-house/light-house-src
+sudo chmod -R 755 /var/www/light-house/light-house-src
+sudo chmod -R 775 /var/www/light-house/light-house-src/storage
+sudo chmod -R 775 /var/www/light-house/light-house-src/bootstrap/cache
 ```
 
 ---
@@ -217,7 +217,7 @@ sudo supervisorctl start light-house-worker:*
 Each time you deploy new code:
 
 ```bash
-cd /var/www/light-house/src
+cd /var/www/light-house/light-house-src
 
 git pull
 

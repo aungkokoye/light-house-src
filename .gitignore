@@ -8,6 +8,7 @@
 /.fleet
 /.idea
 /.nova
+/.claude
 /.phpunit.cache
 /.vscode
 /.zed
@@ -25,7 +26,8 @@
 /storage/pail
 /vendor
 /bootstrap/cache/*.php
-/README.md
+/SPEC.md
+/CLAUDE.md
 Homestead.json
 Homestead.yaml
 Thumbs.db

@@ -9,6 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -19,7 +20,19 @@ class AuthController extends Controller
             'name'     => ['required', 'string', 'max:255', 'unique:users'],
             'email'    => ['required', 'email', 'unique:users'],
             'password' => ['required', 'min:8', 'confirmed'],
+            'captcha'  => ['required', 'string'],
         ]);
+
+        $expected = Session::get('captcha');
+
+        if (! $expected || strtolower($request->captcha) !== $expected) {
+            Session::forget('captcha');
+            throw ValidationException::withMessages([
+                'captcha' => ['The captcha code is incorrect. Please try again.'],
+            ]);
+        }
+
+        Session::forget('captcha');
 
         try {
             $user = User::create([
@@ -46,7 +59,19 @@ class AuthController extends Controller
         $request->validate([
             'email'    => ['required', 'email'],
             'password' => ['required'],
+            'captcha'  => ['required', 'string'],
         ]);
+
+        $expected = Session::get('captcha');
+
+        if (! $expected || strtolower($request->captcha) !== $expected) {
+            Session::forget('captcha');
+            throw ValidationException::withMessages([
+                'captcha' => ['The captcha code is incorrect. Please try again.'],
+            ]);
+        }
+
+        Session::forget('captcha');
 
         if (! Auth::attempt($request->only('email', 'password'))) {
             throw ValidationException::withMessages([
@@ -58,6 +83,13 @@ class AuthController extends Controller
             Auth::logout();
             throw ValidationException::withMessages([
                 'email' => ['Please verify your email address before logging in.'],
+            ]);
+        }
+
+        if (! $request->user()->activated) {
+            Auth::logout();
+            throw ValidationException::withMessages([
+                'email' => ['Your account has been deactivated. Please contact support.'],
             ]);
         }
 

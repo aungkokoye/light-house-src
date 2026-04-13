@@ -1,6 +1,6 @@
 <template>
     <!-- Nav -->
-    <header class="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur border-b border-gray-100">
+    <header class="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur border-b border-gray-400">
         <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
             <!-- Logo -->
             <RouterLink to="/" class="flex items-center gap-2">
@@ -44,7 +44,7 @@
                 </div>
 
                 <!-- Details Card -->
-                <div class="bg-white rounded-2xl shadow-xl shadow-gray-100 border border-gray-100 divide-y divide-gray-50">
+                <div class="bg-white rounded-2xl shadow-xl shadow-gray-100 border border-gray-400 divide-y divide-gray-50">
 
                     <div class="px-6 py-4 flex items-center justify-between">
                         <span class="text-sm text-gray-500">Name</span>
@@ -96,7 +96,7 @@
                 </div>
 
                 <!-- Change Password -->
-                <div class="mt-6 bg-white rounded-2xl shadow-xl shadow-gray-100 border border-gray-100 p-6">
+                <div class="mt-6 bg-white rounded-2xl shadow-xl shadow-gray-100 border border-gray-400 p-6">
                     <h2 class="text-base font-semibold text-gray-900 mb-1">Change password</h2>
 
                     <!-- Google account notice -->
@@ -115,7 +115,7 @@
                                     type="password"
                                     placeholder="••••••••"
                                     required
-                                    class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                    class="w-full px-4 py-2.5 rounded-xl border border-gray-400 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                                 />
                                 <p v-if="pwErrors.current_password" class="text-xs text-red-500 mt-1">{{ pwErrors.current_password[0] }}</p>
                             </div>
@@ -127,7 +127,7 @@
                                     type="password"
                                     placeholder="Min. 8 characters"
                                     required
-                                    class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                    class="w-full px-4 py-2.5 rounded-xl border border-gray-400 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                                 />
                                 <p v-if="pwErrors.password" class="text-xs text-red-500 mt-1">{{ pwErrors.password[0] }}</p>
                             </div>
@@ -139,7 +139,7 @@
                                     type="password"
                                     placeholder="Repeat new password"
                                     required
-                                    class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                    class="w-full px-4 py-2.5 rounded-xl border border-gray-400 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                                 />
                             </div>
 
@@ -185,9 +185,12 @@ const loading = ref(true)
 const user = ref(null)
 
 async function logout() {
-    await axios.post('/api/logout')
-    localStorage.removeItem('token')
-    router.push('/login')
+    try {
+        await axios.post('/api/logout')
+    } finally {
+        localStorage.removeItem('token')
+        router.push('/login')
+    }
 }
 
 const pwForm = reactive({ current_password: '', password: '', password_confirmation: '' })

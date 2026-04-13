@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
@@ -17,11 +18,12 @@ class UserSeeder extends Seeder
             'name'              => 'Admin User',
             'email'             => 'admin@lighthouse.com',
             'email_verified_at' => $now,
+            'password'          => Hash::make('Password!'),
         ]);
         $admin->assignRole('admin');
 
         // Normal users
-        User::factory(5)->create([
+        User::factory(50)->create([
             'email_verified_at' => $now,
         ])->each->assignRole('user');
     }
