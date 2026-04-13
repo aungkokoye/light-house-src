@@ -89,6 +89,11 @@ For PHP dependencies and migrations, enter the app container:
 ```bash
 docker exec -it light_house_app bash
 cd /var/www/html
+mkdir -p storage/framework/cache
+mkdir -p storage/framework/sessions
+mkdir -p storage/framework/views
+mkdir -p storage/logs
+chmod -R 775 storage bootstrap/cache
 ```
 
 Then run:
