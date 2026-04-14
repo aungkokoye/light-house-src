@@ -5,13 +5,16 @@ use App\Http\Controllers\Admin\AdminRoleController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\PasswordResetController;
+use App\Http\Controllers\ContactController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/contact', [ContactController::class, 'send'])->middleware(['web']);
+
+Route::post('/register', [AuthController::class, 'register'])->middleware(['web']);
+Route::post('/login', [AuthController::class, 'login'])->middleware(['web']);
 Route::post('/email/resend', [AuthController::class, 'resendVerification']);
 Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink']);
 Route::post('/reset-password', [PasswordResetController::class, 'reset']);

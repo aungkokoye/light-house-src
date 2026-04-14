@@ -3,15 +3,9 @@
         <div class="w-full max-w-md">
 
             <!-- Logo -->
-            <div class="flex items-center justify-center gap-2 mb-8">
-                <RouterLink to="/" class="flex items-center gap-2">
-                    <div class="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                  d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 7a5 5 0 1 1 0 10A5 5 0 0 1 12 7z" />
-                        </svg>
-                    </div>
-                    <span class="font-semibold text-gray-900 text-xl">Light House</span>
+            <div class="flex items-center justify-center mb-8">
+                <RouterLink to="/">
+                    <img :src="'/images/logo.png'" alt="Lighthouse Printing Solutions" class="h-16 w-auto" />
                 </RouterLink>
             </div>
 
@@ -170,10 +164,11 @@ async function handleSubmit() {
         await axios.post('/api/register', form)
         router.push({ path: '/verify-email', query: { email: form.email } })
     } catch (e) {
-        errors.value = e.response?.data?.errors ?? {}
-        if (errors.value.captcha) {
+        const serverErrors = e.response?.data?.errors ?? {}
+        if (serverErrors.captcha) {
             refreshCaptcha()
         }
+        errors.value = serverErrors
         if (!Object.keys(errors.value).length) {
             errors.value = { message: 'We could not process your request. Please try again.' }
         }

@@ -1,33 +1,10 @@
 <template>
-    <!-- Nav -->
-    <header class="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur border-b border-gray-100">
-        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-            <RouterLink to="/" class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
-                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 7a5 5 0 1 1 0 10A5 5 0 0 1 12 7z" />
-                    </svg>
-                </div>
-                <span class="font-semibold text-gray-900 text-lg">Light House</span>
-            </RouterLink>
-            <nav class="flex items-center gap-6 text-sm">
-                <RouterLink to="/" class="text-gray-500 hover:text-gray-900 transition-colors">Home</RouterLink>
-                <RouterLink to="/dashboard" class="text-gray-500 hover:text-gray-900 transition-colors">Dashboard</RouterLink>
-                <RouterLink to="/profile" class="text-gray-500 hover:text-gray-900 transition-colors">Profile</RouterLink>
-                <button @click="logout" class="text-gray-500 hover:text-gray-900 transition-colors">Log out</button>
-            </nav>
-        </div>
-    </header>
+    <AppHeader />
 
     <div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 pt-24 pb-12 px-4">
         <div class="max-w-6xl mx-auto">
 
-            <div v-if="loading" class="flex items-center justify-center py-24">
-                <svg class="w-6 h-6 animate-spin text-indigo-600" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v8H4z" />
-                </svg>
-            </div>
+            <LoadingSpinner v-if="loading" />
 
             <template v-else>
                 <!-- Header -->
@@ -67,8 +44,7 @@
                         <select v-model="filters.role" @change="fetchUsers(1)"
                             class="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-gray-600">
                             <option value="">All roles</option>
-                            <option value="admin">Admin</option>
-                            <option value="user">User</option>
+                            <option v-for="role in allRoles" :key="role" :value="role">{{ role }}</option>
                         </select>
 
                         <!-- Activated -->
@@ -251,54 +227,24 @@
         </div>
     </div>
 
-    <!-- Delete confirmation modal -->
-    <Teleport to="body">
-        <div v-if="deleteTarget" class="fixed inset-0 z-50 flex items-center justify-center px-4">
-            <!-- Backdrop -->
-            <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" @click="deleteTarget = null"></div>
-
-            <!-- Dialog -->
-            <div class="relative bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0">
-                        <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 class="font-semibold text-gray-900">Delete User</h3>
-                        <p class="text-xs text-gray-400 mt-0.5">This action cannot be undone.</p>
-                    </div>
-                </div>
-
-                <p class="text-sm text-gray-600 mb-6">
-                    You are about to delete <span class="font-semibold text-gray-900">{{ deleteTarget.name }}</span>
-                    (<span class="text-gray-500">{{ deleteTarget.email }}</span>).
-                    Are you sure you want to continue?
-                </p>
-
-                <div class="flex items-center justify-end gap-3">
-                    <button @click="deleteTarget = null"
-                        class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors">
-                        Cancel
-                    </button>
-                    <button @click="deleteUser" :disabled="deleting"
-                        class="px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        {{ deleting ? 'Deleting…' : 'Yes, delete' }}
-                    </button>
-                </div>
-            </div>
-        </div>
-    </Teleport>
+    <DeleteModal :show="!!deleteTarget" @confirm="deleteUser" @cancel="deleteTarget = null"
+        title="Delete User" message="Are you sure you want to delete this user?" />
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
+import AppHeader from '../../../components/AppHeader.vue'
+import LoadingSpinner from '../../../components/LoadingSpinner.vue'
+import DeleteModal from '../../../components/DeleteModal.vue'
+import { useAdminGuard } from '../../../composables/useAdminGuard'
+import { useFormatDate } from '../../../composables/useFormatDate'
 
 const router = useRouter()
 const route = useRoute()
+const { requireAdmin } = useAdminGuard()
+const { formatDate } = useFormatDate()
 const loading = ref(true)
 const usersLoading = ref(false)
 const users = ref([])
@@ -310,6 +256,7 @@ const deleting = ref(false)
 const sortBy = ref('id')
 const sortDir = ref('asc')
 const myPermissions = ref([])
+const allRoles = ref([])
 
 function can(permission) {
     return myPermissions.value.includes('super') || myPermissions.value.includes(permission)
@@ -353,18 +300,6 @@ const visiblePages = computed(() => {
     pages.push(total)
     return pages
 })
-
-function formatDate(date) {
-    if (!date) return '—'
-    return new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-}
-
-async function logout() {
-    try { await axios.post('/api/logout') } finally {
-        localStorage.removeItem('token')
-        router.push('/login')
-    }
-}
 
 function resetFilters() {
     filters.value = { search: '', role: '', activated: '', email_verified: '', updated_from: '', updated_to: '' }
@@ -425,13 +360,14 @@ async function fetchUsers(page = 1) {
 }
 
 onMounted(async () => {
-    if (!localStorage.getItem('token')) { router.push('/login'); return }
+    const me = await requireAdmin()
+    if (!me) return
     try {
-        const { data: me } = await axios.get('/api/me')
-        if (!me.roles?.some(r => r.name === 'admin')) { router.replace('/403'); return }
+        const { data: roles } = await axios.get('/api/admin/roles')
         myPermissions.value = me.permissions?.map(p => p.name) ?? []
+        allRoles.value = roles.map(r => r.name)
     } catch {
-        router.push('/login'); return
+        // leave empty
     } finally {
         loading.value = false
     }

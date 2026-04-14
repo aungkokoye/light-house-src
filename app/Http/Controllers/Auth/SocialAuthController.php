@@ -18,7 +18,7 @@ class SocialAuthController extends Controller
         try {
             $googleUser = Socialite::driver('google')->stateless()->user();
         } catch (\Throwable $e) {
-            return redirect('/login?error=google_failed');
+                return redirect('/login?error=google_failed');
         }
 
         $user = User::where('google_id', $googleUser->getId())
@@ -53,6 +53,6 @@ class SocialAuthController extends Controller
 
         $token = $user->createToken('api-token')->plainTextToken;
 
-        return redirect('/login?token=' . urlencode($token));
+        return redirect('/auth/callback?token=' . urlencode($token));
     }
 }

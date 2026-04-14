@@ -5,6 +5,7 @@ import DashboardPage from '../pages/DashboardPage.vue';
 
 // Auth
 import LoginPage from '../pages/auth/LoginPage.vue';
+import GoogleCallbackPage from '../pages/auth/GoogleCallbackPage.vue';
 import RegisterPage from '../pages/auth/RegisterPage.vue';
 import EmailVerificationPage from '../pages/auth/EmailVerificationPage.vue';
 import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage.vue';
@@ -37,6 +38,7 @@ import NotFoundPage from '../pages/errors/NotFoundPage.vue';
 const routes = [
     { path: '/', component: IndexPage },
     { path: '/login', component: LoginPage },
+    { path: '/auth/callback', component: GoogleCallbackPage },
     { path: '/register', component: RegisterPage },
     { path: '/verify-email', component: EmailVerificationPage },
     { path: '/profile', component: ProfilePage },

@@ -3,11 +3,19 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Notifications\ContactInquiryNotification;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 
 class EmailManager
 {
     public const TOKEN_EXPIRES_HOURS = 24;
+
+    public function sendContactInquiry(string $name, string $contact, string $service, string $message): void
+    {
+        Notification::route('mail', 'info@lighthouse-print.com')
+            ->notify(new ContactInquiryNotification($name, $contact, $service, $message));
+    }
 
     public function sendVerificationEmail(User $user): void
     {

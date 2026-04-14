@@ -1,33 +1,10 @@
-m<template>
-    <!-- Nav -->
-    <header class="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur border-b border-gray-100">
-        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-            <RouterLink to="/" class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
-                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 7a5 5 0 1 1 0 10A5 5 0 0 1 12 7z" />
-                    </svg>
-                </div>
-                <span class="font-semibold text-gray-900 text-lg">Light House</span>
-            </RouterLink>
-            <nav class="flex items-center gap-6 text-sm">
-                <RouterLink to="/" class="text-gray-500 hover:text-gray-900 transition-colors">Home</RouterLink>
-                <RouterLink to="/dashboard" class="text-gray-500 hover:text-gray-900 transition-colors">Dashboard</RouterLink>
-                <RouterLink to="/profile" class="text-gray-500 hover:text-gray-900 transition-colors">Profile</RouterLink>
-                <button @click="logout" class="text-gray-500 hover:text-gray-900 transition-colors">Log out</button>
-            </nav>
-        </div>
-    </header>
+<template>
+    <AppHeader />
 
     <div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 pt-24 pb-12 px-4">
         <div class="max-w-xl mx-auto">
 
-            <div v-if="loading" class="flex items-center justify-center py-24">
-                <svg class="w-6 h-6 animate-spin text-indigo-600" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v8H4z" />
-                </svg>
-            </div>
+            <LoadingSpinner v-if="loading" />
 
             <template v-else-if="user">
                 <!-- Header -->
@@ -102,15 +79,15 @@ m<template>
                     </div>
                     <div class="px-6 py-4 flex items-center justify-between">
                         <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Created At</span>
-                        <span class="text-sm text-gray-600">{{ formatDate(user.created_at) }}</span>
+                        <span class="text-sm text-gray-600">{{ formatDate(user.created_at, true) }}</span>
                     </div>
                     <div class="px-6 py-4 flex items-center justify-between">
                         <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Updated At</span>
-                        <span class="text-sm text-gray-600">{{ formatDate(user.updated_at) }}</span>
+                        <span class="text-sm text-gray-600">{{ formatDate(user.updated_at, true) }}</span>
                     </div>
                     <div v-if="user.email_verified_at" class="px-6 py-4 flex items-center justify-between">
                         <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Verified At</span>
-                        <span class="text-sm text-gray-600">{{ formatDate(user.email_verified_at) }}</span>
+                        <span class="text-sm text-gray-600">{{ formatDate(user.email_verified_at, true) }}</span>
                     </div>
                     <div class="px-6 py-4 flex items-center justify-between">
                         <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Created By</span>
@@ -129,17 +106,18 @@ m<template>
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
+import AppHeader from '../../../components/AppHeader.vue'
+import LoadingSpinner from '../../../components/LoadingSpinner.vue'
+import { useAdminGuard } from '../../../composables/useAdminGuard'
+import { useFormatDate } from '../../../composables/useFormatDate'
 
 const router = useRouter()
 const route = useRoute()
+const { requireAdmin } = useAdminGuard()
+const { formatDate } = useFormatDate()
 const loading = ref(true)
 const user = ref(null)
 const resending = ref(false)
-
-function formatDate(date) {
-    if (!date) return '—'
-    return new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-}
 
 async function resendVerification() {
     resending.value = true
@@ -150,22 +128,9 @@ async function resendVerification() {
     }
 }
 
-async function logout() {
-    try { await axios.post('/api/logout') } finally {
-        localStorage.removeItem('token')
-        router.push('/login')
-    }
-}
-
 onMounted(async () => {
-    if (!localStorage.getItem('token')) { router.push('/login'); return }
-
-    try {
-        const { data: me } = await axios.get('/api/me')
-        if (!me.roles?.some(r => r.name === 'admin')) { router.replace('/403'); return }
-    } catch {
-        router.push('/login'); return
-    }
+    const me = await requireAdmin()
+    if (!me) return
 
     try {
         const { data } = await axios.get(`/api/admin/users/${route.params.id}`)

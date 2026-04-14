@@ -1,4 +1,4 @@
-import './bootstrap';
+import { clearAuth } from './bootstrap';
 import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
@@ -9,7 +9,7 @@ axios.interceptors.response.use(
     error => {
         const status = error?.response?.status;
         if (status === 401) {
-            localStorage.removeItem('token');
+            clearAuth();
             router.push('/401');
         } else if (status === 403) {
             router.push('/403');
