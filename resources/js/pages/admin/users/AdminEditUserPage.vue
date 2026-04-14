@@ -32,11 +32,11 @@
             <template v-else>
                 <!-- Header -->
                 <div class="mb-8 flex items-center gap-3">
-                    <RouterLink to="/admin/users" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <button @click="router.back()" class="text-gray-400 hover:text-gray-600 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                         </svg>
-                    </RouterLink>
+                    </button>
                     <div>
                         <h1 class="text-3xl font-bold text-gray-900">Edit User</h1>
                         <p class="text-sm text-gray-500 mt-0.5">Update account details for <span class="font-medium text-gray-700">{{ form.name }}</span>.</p>
@@ -65,8 +65,8 @@
                             <p v-if="errors.email" class="mt-1 text-xs text-red-500">{{ errors.email[0] }}</p>
                         </div>
 
-                        <!-- Password -->
-                        <div>
+                        <!-- Password (super only) -->
+                        <div v-if="hasSuper">
                             <label class="block text-xs font-medium text-gray-600 mb-1.5">
                                 New Password
                                 <span class="text-gray-300 font-normal">(leave blank to keep current)</span>
@@ -77,8 +77,8 @@
                             <p v-if="errors.password" class="mt-1 text-xs text-red-500">{{ errors.password[0] }}</p>
                         </div>
 
-                        <!-- Confirm Password -->
-                        <div>
+                        <!-- Confirm Password (super only) -->
+                        <div v-if="hasSuper">
                             <label class="block text-xs font-medium text-gray-600 mb-1.5">Confirm New Password</label>
                             <input v-model="form.password_confirmation" type="password"
                                 class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50" />
@@ -87,13 +87,30 @@
                         <!-- Role -->
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1.5">Role</label>
-                            <select v-model="form.role"
-                                class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
-                                :class="errors.role ? 'border-red-300' : 'border-gray-300'">
+                            <select v-model="form.role" :disabled="!hasSuper"
+                                class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                                :class="[errors.role ? 'border-red-300' : 'border-gray-300', !hasSuper ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-50']">
                                 <option value="user">User</option>
                                 <option value="admin">Admin</option>
                             </select>
                             <p v-if="errors.role" class="mt-1 text-xs text-red-500">{{ errors.role[0] }}</p>
+                        </div>
+
+                        <!-- Permissions -->
+                        <div v-if="allPermissions.length">
+                            <label class="block text-xs font-medium text-gray-600 mb-2">
+                                Permissions
+                                <span v-if="!hasSuper" class="text-gray-300 font-normal">(read-only)</span>
+                            </label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label v-for="p in allPermissions" :key="p"
+                                    class="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 transition-colors"
+                                    :class="hasSuper ? 'bg-gray-50 cursor-pointer hover:bg-indigo-50 hover:border-indigo-200' : 'bg-gray-100 cursor-not-allowed'">
+                                    <input type="checkbox" :value="p" v-model="form.permissions" :disabled="!hasSuper"
+                                        class="w-3.5 h-3.5 rounded accent-indigo-600" />
+                                    <span class="text-xs capitalize" :class="hasSuper ? 'text-gray-700' : 'text-gray-400'">{{ p }}</span>
+                                </label>
+                            </div>
                         </div>
 
                         <!-- Toggles -->
@@ -142,7 +159,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, watch, onMounted, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
 
@@ -152,6 +169,9 @@ const loading = ref(true)
 const submitting = ref(false)
 const errors = ref({})
 const generalError = ref('')
+const allPermissions = ref([])
+const hasSuper = ref(false)
+let initialLoad = true
 
 const form = ref({
     name: '',
@@ -161,6 +181,12 @@ const form = ref({
     role: 'user',
     activated: true,
     email_verified: false,
+    permissions: [],
+})
+
+watch(() => form.value.role, (role) => {
+    if (initialLoad) return
+    form.value.permissions = role === 'admin' ? [...allPermissions.value] : []
 })
 
 async function logout() {
@@ -191,20 +217,32 @@ async function submit() {
 onMounted(async () => {
     if (!localStorage.getItem('token')) { router.push('/login'); return }
 
+    let myPermissions = []
     try {
         const { data: me } = await axios.get('/api/me')
-        if (!me.roles?.some(r => r.name === 'admin')) { router.replace('/unauthorized'); return }
+        if (!me.roles?.some(r => r.name === 'admin')) { router.replace('/403'); return }
+        myPermissions = me.permissions?.map(p => p.name) ?? []
+        hasSuper.value = myPermissions.includes('super')
     } catch {
         router.push('/login'); return
     }
 
     try {
-        const { data } = await axios.get(`/api/admin/users/${route.params.id}`)
+        const [{ data: perms }, { data }] = await Promise.all([
+            axios.get('/api/admin/permissions'),
+            axios.get(`/api/admin/users/${route.params.id}`),
+        ])
+
+        const hasSuperVal = hasSuper.value
+        allPermissions.value      = perms.map(p => p.name).filter(p => p !== 'super' || hasSuperVal)
         form.value.name           = data.name
         form.value.email          = data.email
         form.value.role           = data.roles?.[0]?.name ?? 'user'
         form.value.activated      = data.activated
         form.value.email_verified = !!data.email_verified_at
+        form.value.permissions    = data.permissions?.map(p => p.name) ?? []
+        await nextTick()
+        initialLoad = false
     } catch {
         router.push('/admin/users')
     } finally {

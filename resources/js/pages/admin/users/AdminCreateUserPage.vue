@@ -93,6 +93,19 @@
                             <p v-if="errors.role" class="mt-1 text-xs text-red-500">{{ errors.role[0] }}</p>
                         </div>
 
+                        <!-- Permissions -->
+                        <div v-if="allPermissions.length">
+                            <label class="block text-xs font-medium text-gray-600 mb-2">Permissions</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label v-for="p in allPermissions" :key="p"
+                                    class="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 bg-gray-50 cursor-pointer hover:bg-indigo-50 hover:border-indigo-200 transition-colors">
+                                    <input type="checkbox" :value="p" v-model="form.permissions"
+                                        class="w-3.5 h-3.5 rounded accent-indigo-600" />
+                                    <span class="text-xs text-gray-700 capitalize">{{ p }}</span>
+                                </label>
+                            </div>
+                        </div>
+
                         <!-- Toggles -->
                         <div class="grid grid-cols-2 gap-4 pt-1">
                             <label class="flex items-center justify-between p-3 rounded-xl border border-gray-200 bg-gray-100 cursor-pointer">
@@ -139,7 +152,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 
@@ -148,6 +161,7 @@ const loading = ref(true)
 const submitting = ref(false)
 const errors = ref({})
 const generalError = ref('')
+const allPermissions = ref([])
 
 const form = ref({
     name: '',
@@ -157,6 +171,11 @@ const form = ref({
     role: 'user',
     activated: true,
     email_verified: false,
+    permissions: [],
+})
+
+watch(() => form.value.role, (role) => {
+    form.value.permissions = role === 'admin' ? [...allPermissions.value] : []
 })
 
 async function logout() {
@@ -186,11 +205,20 @@ async function submit() {
 
 onMounted(async () => {
     if (!localStorage.getItem('token')) { router.push('/login'); return }
+
+    let myPermissions = []
     try {
         const { data: me } = await axios.get('/api/me')
-        if (!me.roles?.some(r => r.name === 'admin')) { router.replace('/unauthorized'); return }
+        if (!me.roles?.some(r => r.name === 'admin')) { router.replace('/403'); return }
+        myPermissions = me.permissions?.map(p => p.name) ?? []
     } catch {
         router.push('/login'); return
+    }
+
+    try {
+        const { data } = await axios.get('/api/admin/permissions')
+        const hasSuper = myPermissions.includes('super')
+        allPermissions.value = data.map(p => p.name).filter(p => p !== 'super' || hasSuper)
     } finally {
         loading.value = false
     }

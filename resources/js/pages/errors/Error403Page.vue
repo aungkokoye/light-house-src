@@ -1,9 +1,9 @@
 <template>
     <div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 flex items-center justify-center px-4">
         <div class="text-center">
-            <p class="text-8xl font-bold text-indigo-100 select-none">401</p>
-            <h1 class="text-2xl font-bold text-gray-900 mt-2">Not Authorized</h1>
-            <p class="text-sm text-gray-400 mt-2">You don't have permission to access this page.</p>
+            <p class="text-8xl font-bold text-indigo-100 select-none">403</p>
+            <h1 class="text-2xl font-bold text-gray-900 mt-2">Forbidden</h1>
+            <p class="text-sm text-gray-400 mt-2">You don't have permission to access this resource.</p>
             <RouterLink to="/" class="inline-block mt-6 text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors">
                 Go home
             </RouterLink>

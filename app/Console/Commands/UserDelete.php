@@ -13,7 +13,7 @@ class UserDelete extends Command
 {
     protected $signature = 'app:user-delete {email : The email of the user to delete}';
 
-    protected $description = 'Delete a user and remove all their roles';
+    protected $description = 'Delete a user and revoke all their roles and permissions';
 
     public function handle(UserManager $manager): int
     {

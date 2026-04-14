@@ -6,6 +6,7 @@ use App\Services\EmailManager;
 use App\Services\UserManager;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Validator;
+use Spatie\Permission\Models\Permission;
 
 class UserCreate extends Command
 {
@@ -41,8 +42,10 @@ class UserCreate extends Command
 
         $role = $this->choice('Role', $roles, 0);
 
+        $permissions = $role === 'admin' ? Permission::pluck('name')->toArray() : [];
+
         try {
-            $user = $manager->create($name, $email, $password, $role);
+            $user = $manager->create($name, $email, $password, $role, permissions: $permissions);
             $emailManager->sendVerificationEmail($user);
         } catch (\Throwable $e) {
             $this->error('Failed to create user or send verification email: ' . $e->getMessage());

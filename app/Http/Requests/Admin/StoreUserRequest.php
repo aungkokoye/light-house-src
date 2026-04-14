@@ -18,8 +18,10 @@ class StoreUserRequest extends FormRequest
             'email'     => ['required', 'email', 'unique:users'],
             'password'  => ['required', 'min:8', 'confirmed'],
             'role'      => ['required', 'in:admin,user'],
-            'activated' => ['boolean'],
+            'activated'      => ['boolean'],
             'email_verified' => ['boolean'],
+            'permissions'    => ['nullable', 'array'],
+            'permissions.*'  => ['string', 'exists:permissions,name'],
         ];
     }
 }

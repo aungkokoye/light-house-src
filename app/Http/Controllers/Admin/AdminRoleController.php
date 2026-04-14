@@ -19,12 +19,14 @@ class AdminRoleController extends Controller
         $by  = in_array(request('sort_by'), $sortable) ? request('sort_by') : 'updated_at';
         $dir = request('sort_dir') === 'asc' ? 'asc' : 'desc';
 
+        $counts = DB::table('model_has_roles')
+            ->selectRaw('role_id, count(*) as total')
+            ->groupBy('role_id')
+            ->pluck('total', 'role_id');
+
         $roles = Role::orderBy($by, $dir)
             ->get()
-            ->each(fn($role) => $role->users_count = DB::table('model_has_roles')
-                ->where('role_id', $role->id)
-                ->count()
-            );
+            ->each(fn($role) => $role->users_count = $counts[$role->id] ?? 0);
 
         return response()->json($roles);
     }
@@ -56,6 +58,7 @@ class AdminRoleController extends Controller
 
     public function destroy(Role $role): JsonResponse
     {
+        DB::table('model_has_roles')->where('role_id', $role->id)->delete();
         $role->delete();
 
         return response()->json(['message' => 'Role deleted successfully.']);

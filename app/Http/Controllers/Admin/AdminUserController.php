@@ -39,18 +39,19 @@ class AdminUserController extends Controller
             role: $request->role,
             activated: $request->boolean('activated', true),
             emailVerified: $request->boolean('email_verified'),
+            permissions: $request->input('permissions', []),
         );
 
         if (! $request->boolean('email_verified')) {
             $this->emailManager->sendVerificationEmail($user);
         }
 
-        return response()->json($user->load('roles'), 201);
+        return response()->json($user->load(['roles', 'permissions']), 201);
     }
 
     public function show(User $user): JsonResponse
     {
-        $user->load('roles');
+        $user->load(['roles', 'permissions']);
         $creator = $user->created_by ? User::find($user->created_by) : null;
         $user->created_by_name  = $creator?->name  ?? config('app.default_creator_name');
         $user->created_by_email = $creator?->email ?? config('app.default_creator_email');
@@ -60,15 +61,23 @@ class AdminUserController extends Controller
 
     public function update(UpdateUserRequest $request, User $user): JsonResponse
     {
+        $wasVerified = $user->email_verified_at !== null;
+        $nowVerified = $request->boolean('email_verified');
+
         $user = $this->userManager->update(
             user: $user,
             name: $request->name,
             email: $request->email,
             role: $request->role,
             activated: $request->boolean('activated', true),
-            emailVerified: $request->boolean('email_verified'),
+            emailVerified: $nowVerified,
             password: $request->filled('password') ? $request->password : null,
+            permissions: $request->input('permissions', []),
         );
+
+        if ($wasVerified && ! $nowVerified) {
+            $this->emailManager->sendVerificationEmail($user);
+        }
 
         return response()->json($user);
     }
@@ -78,5 +87,16 @@ class AdminUserController extends Controller
         $this->userManager->delete($user);
 
         return response()->json(['message' => 'User deleted successfully.']);
+    }
+
+    public function resendVerification(User $user): JsonResponse
+    {
+        if ($user->email_verified_at) {
+            return response()->json(['message' => 'User is already verified.'], 422);
+        }
+
+        $this->emailManager->sendVerificationEmail($user);
+
+        return response()->json(['message' => 'Verification email sent.']);
     }
 }

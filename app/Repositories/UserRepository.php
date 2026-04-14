@@ -38,6 +38,7 @@ class UserRepository
     public function delete(User $user): void
     {
         $user->syncRoles([]);
+        $user->syncPermissions([]);
         $user->delete();
     }
 }

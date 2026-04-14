@@ -15,21 +15,19 @@ class RoleSeeder extends Seeder
 
         // Create permissions
         $permissions = [
-            'view users',
-            'create users',
-            'edit users',
-            'delete users',
+            'view',
+            'create',
+            'edit',
+            'delete',
+            'super',
         ];
 
         foreach ($permissions as $permission) {
             Permission::firstOrCreate(['name' => $permission]);
         }
 
-        // Create roles and assign permissions
-        $admin = Role::firstOrCreate(['name' => 'admin']);
-        $admin->syncPermissions($permissions);
-
-        $user = Role::firstOrCreate(['name' => 'user']);
-        $user->syncPermissions([]);
+        // Roles have no permissions — permissions are managed per-user directly
+        Role::firstOrCreate(['name' => 'admin']);
+        Role::firstOrCreate(['name' => 'user']);
     }
 }

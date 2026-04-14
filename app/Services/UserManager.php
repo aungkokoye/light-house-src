@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 
 class UserManager
 {
@@ -37,6 +38,7 @@ class UserManager
         string $role,
         bool $activated = true,
         bool $emailVerified = false,
+        array $permissions = [],
     ): User {
         $user = $this->repo->create([
             'name'              => $name,
@@ -48,6 +50,7 @@ class UserManager
         ]);
 
         $user->assignRole($role);
+        $user->syncPermissions($this->filterPermissions($permissions));
 
         return $user;
     }
@@ -60,7 +63,10 @@ class UserManager
         bool $activated,
         bool $emailVerified,
         ?string $password = null,
+        array $permissions = [],
     ): User {
+        $hasSuper = Auth::user()?->hasPermissionTo('super') ?? false;
+
         $data = [
             'name'              => $name,
             'email'             => $email,
@@ -69,14 +75,34 @@ class UserManager
             'created_by'        => Auth::id(),
         ];
 
-        if ($password) {
+        if ($hasSuper && $password) {
             $data['password'] = Hash::make($password);
         }
 
         $user = $this->repo->update($user, $data);
-        $user->syncRoles([$role]);
+
+        if ($hasSuper) {
+            $user->syncRoles([$role]);
+            $user->syncPermissions($this->filterPermissions($permissions));
+        }
 
         return $user->fresh('roles');
+    }
+
+    private function filterPermissions(array $permissions): array
+    {
+        $caller = Auth::user();
+
+        // No authenticated user (CLI / seeder) — allow everything through
+        if (! $caller) {
+            return $permissions;
+        }
+
+        if ($caller->hasPermissionTo('super')) {
+            return $permissions;
+        }
+
+        return array_values(array_filter($permissions, fn($p) => $p !== 'super'));
     }
 
     public function delete(User $user): void
