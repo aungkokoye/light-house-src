@@ -286,7 +286,7 @@ If Google auth fails, the user is redirected to `/login?error=google_failed`:
 | `routes/web.php` | Registers `/auth/google/redirect` and `/auth/google/callback` |
 | `config/services.php` | Google OAuth credentials config |
 | `database/migrations/2026_03_24_000001_add_google_id_to_users_table.php` | Adds `google_id`, makes `password` nullable |
-| `resources/js/pages/LoginPage.vue` | Google button and callback token handling |
+| `resources/js/pages/auth/LoginPage.vue` | Google button and callback token handling |
 | `.env` | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI` |
 
 ---

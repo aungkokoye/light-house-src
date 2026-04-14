@@ -193,12 +193,14 @@ php artisan db:seed
 php artisan migrate:fresh --seed    (refresh the database and rerun seeder)
 ```
 
-This creates a test admin user:
+This creates two admin users and 50 normal users:
 
-```
-Name:  Admin User
-Email: admin@lighthouse.com
-```
+| Name | Email | Password | Role | Permissions |
+|------|-------|----------|------|-------------|
+| Admin User | admin@lighthouse.com | Password! | admin | all (including `super`) |
+| Second Admin User | admin2@lighthouse.com | Password! | admin | view, create, edit |
+
+Normal users are created with the `user` role and no direct permissions.
 
 ---
 
@@ -209,16 +211,29 @@ Vue 3 is set up as a SPA. All routes are handled by Vue — Laravel serves a sin
 ```
 resources/
 ├── js/
-│   ├── app.js          # Vue app entry point (mounts #app)
-│   ├── App.vue         # Root component
-│   └── bootstrap.js    # Axios setup
+│   ├── app.js               # Vue app entry point + global Axios response interceptor
+│   ├── App.vue              # Root component
+│   ├── bootstrap.js         # Axios request interceptor (attaches Bearer token)
+│   ├── router/
+│   │   └── index.js         # Vue Router — all route definitions
+│   └── pages/
+│       ├── IndexPage.vue
+│       ├── DashboardPage.vue
+│       ├── ProfilePage.vue
+│       ├── auth/            # Login, Register, ForgotPassword, ResetPassword, EmailVerification
+│       ├── admin/
+│       │   ├── AdminDashboardPage.vue
+│       │   ├── users/       # AdminUsersPage, AdminCreateUserPage, AdminEditUserPage, AdminViewUserPage
+│       │   ├── roles/       # AdminRolesPage, AdminCreateRolePage, AdminEditRolePage, AdminViewRolePage
+│       │   └── permissions/ # AdminPermissionsPage, AdminCreatePermissionPage, AdminEditPermissionPage, AdminViewPermissionPage
+│       └── errors/          # Error401Page, Error403Page, Error500Page, NotFoundPage
 ├── css/
-│   └── app.css         # Tailwind CSS entry
+│   └── app.css              # Tailwind CSS entry
 └── views/
-    └── app.blade.php   # SPA shell (contains <div id="app">)
+    └── app.blade.php        # SPA shell (contains <div id="app">)
 ```
 
-To add new pages, create `.vue` files in `resources/js/` and wire them up with Vue Router (install with `npm install vue-router`).
+To add a new page, create a `.vue` file in the appropriate subfolder and register the route in `resources/js/router/index.js`.
 
 ---
 

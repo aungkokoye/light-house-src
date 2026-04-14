@@ -150,9 +150,9 @@ sudo nano /etc/apache2/sites-available/light-house.conf
 <VirtualHost *:80>
     ServerName yourdomain.com
     ServerAlias www.yourdomain.com
-    DocumentRoot /var/www/light-house/src/public
+    DocumentRoot /var/www/light-house/light-house-src/public
 
-    <Directory /var/www/light-house/src/public>
+    <Directory /var/www/light-house/light-house-src/public>
         AllowOverride All
         Require all granted
     </Directory>
@@ -195,13 +195,13 @@ sudo nano /etc/supervisor/conf.d/light-house-worker.conf
 ```ini
 [program:light-house-worker]
 process_name=%(program_name)s_%(process_num)02d
-command=php /var/www/light-house/src/artisan queue:work --sleep=3 --tries=3
+command=php /var/www/light-house/light-house-src/artisan queue:work --sleep=3 --tries=3
 autostart=true
 autorestart=true
 user=www-data
 numprocs=1
 redirect_stderr=true
-stdout_logfile=/var/www/light-house/src/storage/logs/worker.log
+stdout_logfile=/var/www/light-house/light-house-src/storage/logs/worker.log
 ```
 
 ```bash

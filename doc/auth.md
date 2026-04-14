@@ -107,8 +107,8 @@ Validate: name (unique), email (unique), password (min 8, confirmed)
 | File | Role |
 |------|------|
 | `app/Http/Controllers/Auth/AuthController.php` | `register()` method |
-| `app/Services/UserManager.php` | (used by CLI only — API creates directly) |
-| `resources/js/pages/RegisterPage.vue` | Registration form |
+| `app/Services/UserManager.php` | Handles user creation for both API and CLI |
+| `resources/js/pages/auth/RegisterPage.vue` | Registration form |
 
 ---
 
@@ -260,7 +260,7 @@ POST /api/email/resend  { email: "..." }
 |------|------|
 | `app/Http/Controllers/Auth/AuthController.php` | `resendVerification()` method |
 | `app/Services/EmailManager.php` | Generates and sends the new token |
-| `resources/js/pages/EmailVerificationPage.vue` | Resend form |
+| `resources/js/pages/auth/EmailVerificationPage.vue` | Resend form |
 
 ---
 
@@ -351,7 +351,7 @@ Sanctum stores only a SHA-256 hash of the plain text part. The plain text is ret
 | File | Role |
 |------|------|
 | `app/Http/Controllers/Auth/AuthController.php` | `login()` method |
-| `resources/js/pages/LoginPage.vue` | Login form |
+| `resources/js/pages/auth/LoginPage.vue` | Login form |
 
 ---
 
@@ -412,7 +412,7 @@ Authorization: Bearer 2|CroLB6izlIzbmeTPsa2ZdwKd...
 | File | Role |
 |------|------|
 | `app/Http/Controllers/Auth/AuthController.php` | `logout()` method |
-| `resources/js/pages/IndexPage.vue` | Logout button |
+| `resources/js/pages/IndexPage.vue` | Logout button (also in every admin page header) |
 
 ---
 
@@ -547,8 +547,8 @@ Tokens expire after **60 minutes** (configured in `config/auth.php` → `passwor
 | `app/Http/Controllers/Auth/PasswordResetController.php` | `sendResetLink()` and `reset()` methods |
 | `app/Providers/AppServiceProvider.php` | Customises reset URL to point to SPA |
 | `routes/api.php` | `POST /api/forgot-password`, `POST /api/reset-password` |
-| `resources/js/pages/ForgotPasswordPage.vue` | Email input form |
-| `resources/js/pages/ResetPasswordPage.vue` | New password form + success screen |
+| `resources/js/pages/auth/ForgotPasswordPage.vue` | Email input form |
+| `resources/js/pages/auth/ResetPasswordPage.vue` | New password form + success screen |
 
 ---
 
@@ -702,11 +702,13 @@ If Google auth fails, the user is redirected to `/login?error=google_failed` and
 | `routes/web.php` | Google OAuth route definitions |
 | `config/services.php` | Google client credentials config |
 | `database/migrations/2026_03_24_000001_add_google_id_to_users_table.php` | Adds `google_id`, makes `password` nullable |
-| `resources/js/pages/LoginPage.vue` | Google button + token handling on callback |
+| `resources/js/pages/auth/LoginPage.vue` | Google button + token handling on callback |
 
 ---
 
-## Axios Token Interceptor
+## Axios Interceptors
+
+### Request interceptor — attaches token
 
 Every Axios request automatically attaches the token via an interceptor in `resources/js/bootstrap.js`:
 
@@ -720,7 +722,30 @@ axios.interceptors.request.use((config) => {
 })
 ```
 
-This runs before every request — no manual header management needed in individual components.
+### Response interceptor — global error redirects
+
+A response interceptor in `resources/js/app.js` catches API errors and redirects to error pages:
+
+```js
+axios.interceptors.response.use(
+    response => response,
+    error => {
+        const status = error?.response?.status
+        if (status === 401) { localStorage.removeItem('token'); router.push('/401') }
+        else if (status === 403) { router.push('/403') }
+        else if (status === 404) { router.push('/404') }
+        else if (status >= 500) { router.push('/500') }
+        return Promise.reject(error)
+    }
+)
+```
+
+| Status | Page | Action |
+|--------|------|--------|
+| `401` | `/401` | Clears token from localStorage |
+| `403` | `/403` | — |
+| `404` | `/404` | — |
+| `500+` | `/500` | — |
 
 ---
 
@@ -731,7 +756,8 @@ This runs before every request — no manual header management needed in individ
 | `POST` | `/api/register` | No | Register a new user |
 | `POST` | `/api/login` | No | Login and receive token |
 | `POST` | `/api/logout` | Yes | Delete current token |
-| `GET` | `/api/me` | Yes | Get authenticated user |
+| `GET` | `/api/me` | Yes | Get authenticated user with `roles` and `permissions` arrays |
+| `PUT` | `/api/password` | Yes | Update own password |
 | `POST` | `/api/email/resend` | No | Resend verification email |
 | `GET` | `/email/verify/{token}` | No | Verify email from link |
 | `POST` | `/api/forgot-password` | No | Send password reset link |
@@ -770,7 +796,13 @@ This runs before every request — no manual header management needed in individ
 
 | Route | Component | Purpose |
 |-------|-----------|---------|
-| `/register` | `RegisterPage.vue` | Registration form |
-| `/verify-email` | `EmailVerificationPage.vue` | Resend verification email |
-| `/login` | `LoginPage.vue` | Login form + status banners |
+| `/register` | `auth/RegisterPage.vue` | Registration form |
+| `/verify-email` | `auth/EmailVerificationPage.vue` | Resend verification email |
+| `/login` | `auth/LoginPage.vue` | Login form + status banners |
+| `/forgot-password` | `auth/ForgotPasswordPage.vue` | Request password reset link |
+| `/reset-password` | `auth/ResetPasswordPage.vue` | Set new password |
 | `/` | `IndexPage.vue` | Landing page with logout |
+| `/401` | `errors/Error401Page.vue` | Unauthenticated error |
+| `/403` | `errors/Error403Page.vue` | Forbidden error |
+| `/404` | `errors/NotFoundPage.vue` | Not found error |
+| `/500` | `errors/Error500Page.vue` | Server error |

@@ -24,14 +24,28 @@ php artisan db:seed --class=RoleSeeder
 
 ---
 
-## Default Roles & Permissions
+## Default Roles
 
-| Role | Permissions |
-|------|-------------|
-| `admin` | view users, create users, edit users, delete users |
-| `user` | _(none)_ |
+| Role    | Description                                                |
+|---------|------------------------------------------------------------|
+| `admin` | Can access the admin panel. Actions gated by permissions.  |
+| `user`  | Standard user. No admin panel access.                      |
 
-Add or change roles/permissions in `database/seeders/RoleSeeder.php`.
+> Roles carry **no permissions**. Permissions are assigned directly to individual users, not to roles.
+
+---
+
+## Default Permissions
+
+| Permission | Description                                                                       |
+|------------|-----------------------------------------------------------------------------------|
+| `view`     | Can view individual user records                                                   |
+| `create`   | Can create new users                                                               |
+| `edit`     | Can edit users (name, email, status, email verified)                              |
+| `delete`   | Can delete users                                                                   |
+| `super`    | Elevated admin. Can manage roles/permissions, change passwords, reassign roles, and assign any permission including `super` itself. |
+
+Defined and seeded in `database/seeders/RoleSeeder.php`.
 
 ---
 
@@ -39,11 +53,13 @@ Add or change roles/permissions in `database/seeders/RoleSeeder.php`.
 
 | Table | Description |
 |-------|-------------|
-| `roles` | Defined roles (admin, user, etc.) |
-| `permissions` | Defined permissions |
+| `roles` | Defined roles (`admin`, `user`). Has a `created_by` (user ID) column. |
+| `permissions` | Defined permissions. Has a `created_by` (user ID) column. |
 | `model_has_roles` | Which users have which roles |
 | `model_has_permissions` | Direct permissions assigned to users |
-| `role_has_permissions` | Which permissions belong to which roles |
+| `role_has_permissions` | Which permissions belong to which roles (unused — we assign to users directly) |
+
+The `created_by` column is `null` when created via seeders or CLI commands (no authenticated user).
 
 ---
 
@@ -53,59 +69,54 @@ Add or change roles/permissions in `database/seeders/RoleSeeder.php`.
 // Assign a role
 $user->assignRole('admin');
 
-// Assign multiple roles
-$user->assignRole(['admin', 'user']);
+// Sync roles (removes all others)
+$user->syncRoles(['admin']);
 
-// Remove a role
-$user->removeRole('admin');
-
-// Assign a permission directly to a user
-$user->givePermissionTo('edit users');
+// Sync permissions directly on a user
+$user->syncPermissions(['view', 'create', 'edit']);
 
 // Check role
 $user->hasRole('admin');
 
-// Check permission (includes permissions via role)
-$user->can('edit users');
+// Check direct permission
+$user->hasPermissionTo('super');
 ```
 
 ---
 
 ## Protecting Routes
 
+Routes use `->can()` middleware backed by Laravel Policies (not inline checks):
+
 ```php
-// By role
-Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
-    Route::get('/admin/dashboard', ...);
-});
-
-// By permission
-Route::middleware(['auth:sanctum', 'permission:edit users'])->group(function () {
-    Route::put('/users/{user}', ...);
-});
-
-// Multiple roles (user must have one of them)
-Route::middleware(['auth:sanctum', 'role:admin|editor'])->group(function () {
-    ...
+Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
+    Route::get('/roles',          [...'index'])  ->can('viewAny', Role::class);
+    Route::post('/roles',         [...'store'])  ->can('create',  Role::class);
+    Route::get('/roles/{role}',   [...'show'])   ->can('view',    'role');
+    Route::put('/roles/{role}',   [...'update']) ->can('update',  'role');
+    Route::delete('/roles/{role}',[...,'destroy'])->can('delete', 'role');
 });
 ```
+
+See `doc/access-control.md` for the full policy matrix.
 
 ---
 
-## Checking in Controllers
+## Policies
+
+Authorization logic lives in policies, not controllers. Spatie models are not in `App\Models\`, so their policies are registered manually:
 
 ```php
-public function destroy(User $user): JsonResponse
-{
-    if (! auth()->user()->can('delete users')) {
-        abort(403);
-    }
-
-    $user->delete();
-
-    return response()->json(['message' => 'Deleted.']);
-}
+// app/Providers/AppServiceProvider.php
+Gate::policy(Role::class, RolePolicy::class);
+Gate::policy(Permission::class, PermissionPolicy::class);
 ```
+
+| Policy | File |
+|--------|------|
+| `UserPolicy` | `app/Policies/UserPolicy.php` |
+| `RolePolicy` | `app/Policies/RolePolicy.php` |
+| `PermissionPolicy` | `app/Policies/PermissionPolicy.php` |
 
 ---
 
@@ -113,8 +124,13 @@ public function destroy(User $user): JsonResponse
 
 | File | Description |
 |------|-------------|
-| `app/Models/User.php` | Has `HasRoles` trait |
+| `app/Models/User.php` | Has `HasRoles` trait from Spatie |
+| `app/Policies/UserPolicy.php` | User CRUD authorization rules |
+| `app/Policies/RolePolicy.php` | Role CRUD authorization rules |
+| `app/Policies/PermissionPolicy.php` | Permission CRUD authorization rules |
+| `app/Providers/AppServiceProvider.php` | Registers Spatie model policies via `Gate::policy()` |
 | `database/seeders/RoleSeeder.php` | Creates default roles and permissions |
-| `database/seeders/DatabaseSeeder.php` | Calls RoleSeeder, assigns admin to test user |
-| `routes/api.php` | Example protected route groups |
+| `database/seeders/UserSeeder.php` | Creates test users with roles and permissions assigned |
+| `database/migrations/2026_03_23_115902_create_permission_tables.php` | Creates all Spatie tables (with `created_by` columns) |
+| `routes/api.php` | Route-level `->can()` authorization |
 | `config/permission.php` | Spatie config (cache, table names, etc.) |
