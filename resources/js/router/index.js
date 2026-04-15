@@ -29,6 +29,12 @@ import AdminCreateSitePage from '../pages/admin/sites/AdminCreateSitePage.vue';
 import AdminEditSitePage from '../pages/admin/sites/AdminEditSitePage.vue';
 import AdminViewSitePage from '../pages/admin/sites/AdminViewSitePage.vue';
 
+// Admin — Staff Positions
+import AdminStaffPositionsPage from '../pages/admin/staff-positions/AdminStaffPositionsPage.vue';
+import AdminCreateStaffPositionPage from '../pages/admin/staff-positions/AdminCreateStaffPositionPage.vue';
+import AdminEditStaffPositionPage from '../pages/admin/staff-positions/AdminEditStaffPositionPage.vue';
+import AdminViewStaffPositionPage from '../pages/admin/staff-positions/AdminViewStaffPositionPage.vue';
+
 // Admin — Permissions
 import AdminPermissionsPage from '../pages/admin/permissions/AdminPermissionsPage.vue';
 import AdminCreatePermissionPage from '../pages/admin/permissions/AdminCreatePermissionPage.vue';
@@ -63,6 +69,10 @@ const routes = [
     { path: '/admin/sites/create', component: AdminCreateSitePage },
     { path: '/admin/sites/:id', component: AdminViewSitePage },
     { path: '/admin/sites/:id/edit', component: AdminEditSitePage },
+    { path: '/admin/staff-positions', component: AdminStaffPositionsPage },
+    { path: '/admin/staff-positions/create', component: AdminCreateStaffPositionPage },
+    { path: '/admin/staff-positions/:id', component: AdminViewStaffPositionPage },
+    { path: '/admin/staff-positions/:id/edit', component: AdminEditStaffPositionPage },
     { path: '/admin/users', component: AdminUsersPage },
     { path: '/admin/users/create', component: AdminCreateUserPage },
     { path: '/admin/users/:id', component: AdminViewUserPage },

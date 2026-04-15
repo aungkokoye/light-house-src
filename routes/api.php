@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\AdminRoleController;
 use App\Http\Controllers\Admin\AdminSiteController;
 use App\Http\Controllers\Admin\AdminStaffPositionController;
 use App\Http\Controllers\Admin\AdminUserController;
+use App\Models\StaffPosition;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\ContactController;
@@ -42,7 +43,12 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::delete('/permissions/{permission}',[AdminPermissionController::class,'destroy'])->can('delete',  'permission');
 
     Route::get('/users/types',      [AdminUserController::class, 'types']);
-    Route::get('/staff-positions',  [AdminStaffPositionController::class, 'index']);
+    Route::get('/staff-positions/all',                    [AdminStaffPositionController::class, 'all']);
+    Route::get('/staff-positions',                        [AdminStaffPositionController::class, 'index'])  ->can('viewAny', StaffPosition::class);
+    Route::post('/staff-positions',                       [AdminStaffPositionController::class, 'store'])  ->can('create',  StaffPosition::class);
+    Route::get('/staff-positions/{staffPosition}',        [AdminStaffPositionController::class, 'show'])   ->can('view',    'staffPosition');
+    Route::put('/staff-positions/{staffPosition}',        [AdminStaffPositionController::class, 'update']) ->can('update',  'staffPosition');
+    Route::delete('/staff-positions/{staffPosition}',     [AdminStaffPositionController::class, 'destroy'])->can('delete',  'staffPosition');
     Route::get('/sites',          [AdminSiteController::class, 'index'])  ->can('viewAny', Site::class);
     Route::post('/sites',         [AdminSiteController::class, 'store'])  ->can('create',  Site::class);
     Route::get('/sites/{site}',   [AdminSiteController::class, 'show'])   ->can('view',    'site');

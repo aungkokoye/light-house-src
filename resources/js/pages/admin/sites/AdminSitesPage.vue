@@ -206,6 +206,30 @@ function can(permission) {
 
 const filters = ref({ search: '', created_from: '', created_to: '' })
 
+const STORAGE_KEY = 'admin_sites_state'
+
+function saveState() {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
+        filters: filters.value,
+        page: currentPage.value,
+        perPage: perPage.value,
+        sortBy: sortBy.value,
+        sortDir: sortDir.value,
+    }))
+}
+
+function restoreState() {
+    const saved = sessionStorage.getItem(STORAGE_KEY)
+    if (!saved) return false
+    const state = JSON.parse(saved)
+    filters.value  = state.filters  ?? filters.value
+    currentPage.value = state.page  ?? 1
+    perPage.value  = state.perPage  ?? 20
+    sortBy.value   = state.sortBy   ?? 'name'
+    sortDir.value  = state.sortDir  ?? 'asc'
+    return true
+}
+
 const columns = [
     { key: 'id',         label: 'ID',         sortable: true  },
     { key: 'name',       label: 'Name',        sortable: true  },
@@ -234,6 +258,7 @@ const visiblePages = computed(() => {
 
 function resetFilters() {
     filters.value = { search: '', created_from: '', created_to: '' }
+    sessionStorage.removeItem(STORAGE_KEY)
     fetchSites(1)
 }
 
@@ -273,6 +298,8 @@ async function deleteSite() {
 
 async function fetchSites(page = 1) {
     sitesLoading.value = true
+    currentPage.value = page
+    saveState()
     try {
         const params = { page, per_page: perPage.value, sort_by: sortBy.value, sort_dir: sortDir.value, ...filters.value }
         Object.keys(params).forEach(k => params[k] === '' && delete params[k])
@@ -292,6 +319,7 @@ onMounted(async () => {
     if (!me) return
     myPermissions.value = me.permissions?.map(p => p.name) ?? []
     loading.value = false
-    fetchSites()
+    const restored = restoreState()
+    fetchSites(restored ? currentPage.value : 1)
 })
 </script>

@@ -400,7 +400,7 @@ onMounted(async () => {
         const [{ data: roles }, { data: types }, { data: positions }] = await Promise.all([
             axios.get('/api/admin/roles'),
             axios.get('/api/admin/users/types'),
-            axios.get('/api/admin/staff-positions'),
+            axios.get('/api/admin/staff-positions/all'),
         ])
         myPermissions.value = me.permissions?.map(p => p.name) ?? []
         allRoles.value = roles.map(r => r.name)

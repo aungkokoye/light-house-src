@@ -48,8 +48,8 @@ class AdminSiteController extends Controller
     {
         $data = $request->validate([
             'name'        => 'required|string|max:255|unique:sites,name',
-            'description' => 'nullable|string',
-            'address'     => 'nullable|string',
+            'description' => 'nullable|string|max:10000',
+            'address'     => 'nullable|string|max:2000',
             'phone'       => 'nullable|string|max:50',
         ]);
 
@@ -60,21 +60,21 @@ class AdminSiteController extends Controller
 
     public function show(Site $site): JsonResponse
     {
-        return response()->json($site->load('createdBy'));
+        return response()->json($site->load(['createdBy:id,name,email']));
     }
 
     public function update(Request $request, Site $site): JsonResponse
     {
         $data = $request->validate([
             'name'        => "required|string|max:255|unique:sites,name,{$site->id}",
-            'description' => 'nullable|string',
-            'address'     => 'nullable|string',
+            'description' => 'nullable|string|max:10000',
+            'address'     => 'nullable|string|max:2000',
             'phone'       => 'nullable|string|max:50',
         ]);
 
         $site->update($data);
 
-        return response()->json($site->load('createdBy'));
+        return response()->json($site->load(['createdBy:id,name,email']));
     }
 
     public function destroy(Site $site): JsonResponse
