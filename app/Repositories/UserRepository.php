@@ -10,7 +10,11 @@ class UserRepository
 {
     public function query(): Builder
     {
-        return User::with('roles');
+        return User::with([
+            'roles',
+            'staffProfile.currentRole.position',
+            'companyProfile',
+        ]);
     }
 
     public function paginate(Builder $query, int $perPage): LengthAwarePaginator

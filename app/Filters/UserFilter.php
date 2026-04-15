@@ -2,6 +2,7 @@
 
 namespace App\Filters;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 
 class UserFilter
@@ -21,7 +22,35 @@ class UserFilter
             $this->query->where(fn($q) => $q
                 ->where('name', 'like', "%{$term}%")
                 ->orWhere('email', 'like', "%{$term}%")
+                ->orWhereHas('companyProfile', fn($q) => $q->where('name', 'like', "%{$term}%"))
             );
+        }
+
+        return $this;
+    }
+
+    public function position(?string $positionId): static
+    {
+        if ($positionId === null) {
+            return $this;
+        }
+
+        $this->query->where('type', User::STAFF_TYPE_ID);
+
+        if ($positionId !== '') {
+            $this->query->whereHas('staffRoles', fn($q) => $q
+                ->where('staff_position_id', (int) $positionId)
+                ->whereNull('end_date')
+            );
+        }
+
+        return $this;
+    }
+
+    public function type(?string $type): static
+    {
+        if ($type !== null && $type !== '') {
+            $this->query->where('type', (int) $type);
         }
 
         return $this;

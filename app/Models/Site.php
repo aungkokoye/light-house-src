@@ -12,6 +12,7 @@ class Site extends Model
         'name',
         'description',
         'address',
+        'phone',
         'created_by',
     ];
 

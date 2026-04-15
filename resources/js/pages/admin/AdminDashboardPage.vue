@@ -15,6 +15,20 @@
                     <p class="text-sm text-gray-500 mt-1">Welcome back, {{ user?.name }}.</p>
                 </div>
 
+                <!-- Navigation Cards -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+                    <RouterLink v-for="card in navCards" :key="card.label" :to="card.to"
+                        class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col items-center gap-3 hover:border-indigo-200 hover:shadow-md transition-all group">
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center transition-colors"
+                            :class="card.bg">
+                            <svg class="w-6 h-6" :class="card.color" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" :d="card.icon" />
+                            </svg>
+                        </div>
+                        <span class="text-sm font-medium text-gray-700 group-hover:text-indigo-600 transition-colors">{{ card.label }}</span>
+                    </RouterLink>
+                </div>
+
                 <!-- Stats -->
                 <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                     <div v-for="stat in stats" :key="stat.label" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
@@ -118,6 +132,37 @@ const loading = ref(true)
 const usersLoading = ref(true)
 const user = ref(null)
 const users = ref([])
+
+const navCards = [
+    {
+        label: 'Users',
+        to: '/admin/users',
+        bg: 'bg-indigo-50',
+        color: 'text-indigo-600',
+        icon: 'M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0zM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632z',
+    },
+    {
+        label: 'Sites',
+        to: '/admin/sites',
+        bg: 'bg-emerald-50',
+        color: 'text-emerald-600',
+        icon: 'M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0z',
+    },
+    {
+        label: 'Roles',
+        to: '/admin/roles',
+        bg: 'bg-violet-50',
+        color: 'text-violet-600',
+        icon: 'M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z',
+    },
+    {
+        label: 'Permissions',
+        to: '/admin/permissions',
+        bg: 'bg-amber-50',
+        color: 'text-amber-600',
+        icon: 'M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 0 1 21.75 8.25z',
+    },
+]
 
 const stats = [
     { label: 'Total users', value: '—', change: '', positive: true },

@@ -36,9 +36,23 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
                             </svg>
                             <input v-model="filters.search" @input="debouncedFetch"
-                                type="text" placeholder="Search name or email…"
+                                type="text" placeholder="Search name, email or company…"
                                 class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50" />
                         </div>
+
+                        <!-- Type -->
+                        <select v-model="filters.type" @change="fetchUsers(1)"
+                            class="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-gray-600">
+                            <option value="">All types</option>
+                            <option v-for="t in allTypes" :key="t.id" :value="t.id">{{ t.name }}</option>
+                        </select>
+
+                        <!-- Position (staff only) -->
+                        <select v-model="filters.position" @change="fetchUsers(1)"
+                            class="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-gray-600">
+                            <option value="">All Staff positions</option>
+                            <option v-for="p in allPositions" :key="p.id" :value="p.id">{{ p.name }}</option>
+                        </select>
 
                         <!-- Role -->
                         <select v-model="filters.role" @change="fetchUsers(1)"
@@ -145,10 +159,25 @@
                                     <td class="px-6 py-3.5 font-medium text-gray-900">{{ u.name }}</td>
                                     <td class="px-6 py-3.5 text-gray-500">{{ u.email }}</td>
                                     <td class="px-6 py-3.5">
-                                        <span class="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full"
-                                            :class="u.roles?.[0]?.name === 'admin' ? 'bg-indigo-50 text-indigo-700' : 'bg-gray-100 text-gray-600'">
-                                            {{ u.roles?.[0]?.name ?? 'user' }}
+                                        <div class="inline-flex flex-col gap-1">
+                                            <span class="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full"
+                                                :class="u.roles?.[0]?.name === 'admin' ? 'bg-indigo-50 text-indigo-700' : 'bg-gray-100 text-gray-600'">
+                                                {{ u.roles?.[0]?.name ?? 'user' }}
+                                            </span>
+                                            <span v-if="u.type" class="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full"
+                                                :class="u.type === 2 ? 'bg-amber-50 text-amber-700' : 'bg-sky-50 text-sky-700'">
+                                                {{ allTypes.find(t => t.id === u.type)?.name }}
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-3.5 text-xs text-gray-600">
+                                        <span v-if="u.type === 1">
+                                            {{ u.staff_profile?.current_role?.position?.name ?? '—' }}
                                         </span>
+                                        <span v-else-if="u.type === 2">
+                                            {{ u.company_profile?.role ?? '—' }}
+                                        </span>
+                                        <span v-else class="text-gray-300">—</span>
                                     </td>
                                     <td class="px-6 py-3.5">
                                         <span class="inline-flex items-center gap-1 text-xs font-medium"
@@ -257,6 +286,8 @@ const sortBy = ref('id')
 const sortDir = ref('asc')
 const myPermissions = ref([])
 const allRoles = ref([])
+const allTypes = ref([])
+const allPositions = ref([])
 
 function can(permission) {
     return myPermissions.value.includes('super') || myPermissions.value.includes(permission)
@@ -267,18 +298,21 @@ const columns = [
     { key: 'name',             label: 'Name',           sortable: true  },
     { key: 'email',            label: 'Email',          sortable: true  },
     { key: 'role',             label: 'Role',           sortable: false },
+    { key: 'position',         label: 'Position',       sortable: false },
     { key: 'email_verified_at',label: 'Email Verified', sortable: true  },
     { key: 'activated',        label: 'Activated',      sortable: true  },
     { key: 'updated_at',       label: 'Created / Updated', sortable: true },
 ]
 
 const filters = ref({
-    search:       route.query.search       ?? '',
-    role:         route.query.role         ?? '',
-    activated:    route.query.activated    ?? '',
+    search:         route.query.search         ?? '',
+    position:       route.query.position       ?? '',
+    type:           route.query.type           ?? '',
+    role:           route.query.role           ?? '',
+    activated:      route.query.activated      ?? '',
     email_verified: route.query.email_verified ?? '',
-    updated_from: route.query.updated_from ?? '',
-    updated_to:   route.query.updated_to   ?? '',
+    updated_from:   route.query.updated_from   ?? '',
+    updated_to:     route.query.updated_to     ?? '',
 })
 
 const hasActiveFilters = computed(() =>
@@ -302,7 +336,7 @@ const visiblePages = computed(() => {
 })
 
 function resetFilters() {
-    filters.value = { search: '', role: '', activated: '', email_verified: '', updated_from: '', updated_to: '' }
+    filters.value = { search: '', position: '', type: '', role: '', activated: '', email_verified: '', updated_from: '', updated_to: '' }
     fetchUsers(1)
 }
 
@@ -363,9 +397,15 @@ onMounted(async () => {
     const me = await requireAdmin()
     if (!me) return
     try {
-        const { data: roles } = await axios.get('/api/admin/roles')
+        const [{ data: roles }, { data: types }, { data: positions }] = await Promise.all([
+            axios.get('/api/admin/roles'),
+            axios.get('/api/admin/users/types'),
+            axios.get('/api/admin/staff-positions'),
+        ])
         myPermissions.value = me.permissions?.map(p => p.name) ?? []
         allRoles.value = roles.map(r => r.name)
+        allTypes.value = types
+        allPositions.value = positions
     } catch {
         // leave empty
     } finally {

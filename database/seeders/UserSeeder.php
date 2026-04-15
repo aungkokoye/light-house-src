@@ -21,10 +21,10 @@ class UserSeeder extends Seeder
 
         // --- Sites ---
         $sites = collect([
-            ['name' => 'Yangon Site',    'description' => 'Main printing site in Yangon.',    'address' => 'Yangon, Myanmar'],
-            ['name' => 'Mandalay Site',  'description' => 'Printing site in Mandalay.',       'address' => 'Mandalay, Myanmar'],
-            ['name' => 'Naypyidaw Site', 'description' => 'Printing site in Naypyidaw.',      'address' => 'Naypyidaw, Myanmar'],
-            ['name' => 'Bago Site',      'description' => 'Printing site in Bago.',           'address' => 'Bago, Myanmar'],
+            ['name' => 'Yangon Site',    'description' => 'Main printing site in Yangon.',    'address' => 'Yangon, Myanmar',    'phone' => '09-111-111'],
+            ['name' => 'Mandalay Site',  'description' => 'Printing site in Mandalay.',       'address' => 'Mandalay, Myanmar',  'phone' => '09-222-222'],
+            ['name' => 'Naypyidaw Site', 'description' => 'Printing site in Naypyidaw.',      'address' => 'Naypyidaw, Myanmar', 'phone' => '09-333-333'],
+            ['name' => 'Bago Site',      'description' => 'Printing site in Bago.',           'address' => 'Bago, Myanmar',      'phone' => '09-444-444'],
         ])->map(fn ($s) => Site::create($s));
 
         // --- Staff positions (created first — needed by all staff roles) ---
@@ -72,6 +72,7 @@ class UserSeeder extends Seeder
             CompanyProfile::create([
                 'user_id'     => $user->id,
                 'name'        => fake()->company(),
+                'role'        => fake()->jobTitle(),
                 'description' => fake()->sentence(),
                 'address'     => fake()->address(),
                 'phone'       => fake()->phoneNumber(),

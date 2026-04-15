@@ -2,7 +2,7 @@
     <AppHeader />
 
     <div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 pt-24 pb-12 px-4">
-        <div class="max-w-xl mx-auto">
+        <div class="max-w-5xl mx-auto">
 
             <LoadingSpinner v-if="loading" />
 
@@ -44,11 +44,24 @@
                     </span>
                 </div>
 
+                <!-- Details + Company Profile side by side -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+
                 <!-- Details -->
                 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-50">
+                    <div class="px-6 py-4">
+                        <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide">User Profile</p>
+                    </div>
                     <div class="px-6 py-4 flex items-center justify-between">
                         <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">ID</span>
                         <span class="text-sm font-mono text-gray-600">{{ user.id }}</span>
+                    </div>
+                    <div class="px-6 py-4 flex items-center justify-between">
+                        <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">User Type</span>
+                        <span class="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full"
+                            :class="user.type === 1 ? 'bg-sky-50 text-sky-700' : user.type === 2 ? 'bg-amber-50 text-amber-700' : 'bg-gray-100 text-gray-500'">
+                            {{ user.type === 1 ? 'Staff' : user.type === 2 ? 'Company' : '—' }}
+                        </span>
                     </div>
                     <div class="px-6 py-4 flex items-center justify-between">
                         <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Email Verified</span>
@@ -97,6 +110,134 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Staff Profile -->
+                <div v-if="user.type === 1 && user.staff_profile" class="bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-50">
+                    <div class="px-6 py-4">
+                        <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Staff Profile</p>
+                    </div>
+                    <div class="px-6 py-4 flex items-center justify-between">
+                        <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">ID</span>
+                        <span class="text-sm font-mono text-gray-600">{{ user.staff_profile.id }}</span>
+                    </div>
+                    <div class="px-6 py-4 flex items-center justify-between">
+                        <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Full Name</span>
+                        <span class="text-sm text-gray-700 font-medium">{{ user.staff_profile.full_name }}</span>
+                    </div>
+                    <div class="px-6 py-4 flex items-center justify-between">
+                        <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">NRC No</span>
+                        <span class="text-sm text-gray-600">{{ user.staff_profile.nrc_no ?? '—' }}</span>
+                    </div>
+                    <div class="px-6 py-4 flex items-center justify-between">
+                        <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Date of Birth</span>
+                        <span class="text-sm text-gray-600">{{ user.staff_profile.dob ? formatDate(user.staff_profile.dob) : '—' }}</span>
+                    </div>
+                    <div class="px-6 py-4 flex items-center justify-between">
+                        <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Phone</span>
+                        <span class="text-sm text-gray-600">{{ user.staff_profile.phone ?? '—' }}</span>
+                    </div>
+                    <div class="px-6 py-4 flex items-start justify-between gap-4">
+                        <span class="text-xs font-medium text-gray-400 uppercase tracking-wide shrink-0">Address</span>
+                        <span class="text-sm text-gray-600 text-right">{{ user.staff_profile.address ?? '—' }}</span>
+                    </div>
+                    <div class="px-6 py-4 flex items-center justify-between">
+                        <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Start Date</span>
+                        <span class="text-sm text-gray-600">{{ user.staff_profile.start_date ? formatDate(user.staff_profile.start_date) : '—' }}</span>
+                    </div>
+                    <div class="px-6 py-4 flex items-center justify-between">
+                        <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Created At</span>
+                        <span class="text-sm text-gray-600">{{ formatDate(user.staff_profile.created_at, true) }}</span>
+                    </div>
+                    <div class="px-6 py-4 flex items-center justify-between">
+                        <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Updated At</span>
+                        <span class="text-sm text-gray-600">{{ formatDate(user.staff_profile.updated_at, true) }}</span>
+                    </div>
+                    <div class="px-6 py-4 flex items-center justify-between">
+                        <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Created By</span>
+                        <div class="text-right">
+                            <p class="text-sm text-gray-700 font-medium">{{ user.staff_profile.created_by?.name ?? '—' }}</p>
+                            <p class="text-xs text-gray-400">{{ user.staff_profile.created_by?.email }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Company Profile -->
+                <div v-if="user.type === 2 && user.company_profile" class="bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-50">
+                    <div class="px-6 py-4">
+                        <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Company Profile</p>
+                    </div>
+                    <div class="px-6 py-4 flex items-center justify-between">
+                        <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">ID</span>
+                        <span class="text-sm font-mono text-gray-600">{{ user.company_profile.id }}</span>
+                    </div>
+                    <div class="px-6 py-4 flex items-center justify-between">
+                        <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Company Name</span>
+                        <span class="text-sm text-gray-700 font-medium">{{ user.company_profile.name }}</span>
+                    </div>
+                    <div class="px-6 py-4 flex items-center justify-between">
+                        <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Role</span>
+                        <span class="text-sm text-gray-600">{{ user.company_profile.role ?? '—' }}</span>
+                    </div>
+                    <div class="px-6 py-4 flex items-center justify-between">
+                        <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Phone</span>
+                        <span class="text-sm text-gray-600">{{ user.company_profile.phone ?? '—' }}</span>
+                    </div>
+                    <div class="px-6 py-4 flex items-start justify-between gap-4">
+                        <span class="text-xs font-medium text-gray-400 uppercase tracking-wide shrink-0">Description</span>
+                        <span class="text-sm text-gray-600 text-right">{{ user.company_profile.description ?? '—' }}</span>
+                    </div>
+                    <div class="px-6 py-4 flex items-start justify-between gap-4">
+                        <span class="text-xs font-medium text-gray-400 uppercase tracking-wide shrink-0">Address</span>
+                        <span class="text-sm text-gray-600 text-right">{{ user.company_profile.address ?? '—' }}</span>
+                    </div>
+                    <div class="px-6 py-4 flex items-center justify-between">
+                        <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Created At</span>
+                        <span class="text-sm text-gray-600">{{ formatDate(user.company_profile.created_at, true) }}</span>
+                    </div>
+                    <div class="px-6 py-4 flex items-center justify-between">
+                        <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Updated At</span>
+                        <span class="text-sm text-gray-600">{{ formatDate(user.company_profile.updated_at, true) }}</span>
+                    </div>
+                    <div class="px-6 py-4 flex items-center justify-between">
+                        <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Created By</span>
+                        <div class="text-right">
+                            <p class="text-sm text-gray-700 font-medium">{{ user.company_profile.created_by?.name ?? '—' }}</p>
+                            <p class="text-xs text-gray-400">{{ user.company_profile.created_by?.email }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                </div><!-- end grid -->
+
+                <!-- Staff Roles -->
+                <template v-if="user.type === 1 && user.staff_profile?.staff_roles?.length">
+                    <h2 class="text-xs font-semibold text-gray-600 uppercase tracking-wide mt-6 mb-2 px-1">Staff Roles</h2>
+                    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="text-left text-xs text-gray-400 border-b border-gray-50">
+                                    <th class="px-6 py-3 font-medium">Position</th>
+                                    <th class="px-6 py-3 font-medium">Site</th>
+                                    <th class="px-6 py-3 font-medium">Salary</th>
+                                    <th class="px-6 py-3 font-medium">Start Date</th>
+                                    <th class="px-6 py-3 font-medium">End Date</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-50">
+                                <tr v-for="role in user.staff_profile.staff_roles" :key="role.id" class="hover:bg-gray-50/50 transition-colors">
+                                    <td class="px-6 py-3.5">
+                                        <span class="font-medium text-gray-800">{{ role.position?.name ?? '—' }}</span>
+                                        <span v-if="!role.end_date" class="ml-2 inline-flex items-center text-xs font-medium px-1.5 py-0.5 rounded-full bg-green-50 text-green-700">Current</span>
+                                    </td>
+                                    <td class="px-6 py-3.5 text-gray-600">{{ role.site?.name ?? '—' }}</td>
+                                    <td class="px-6 py-3.5 text-gray-600">{{ role.salary?.toLocaleString() }}</td>
+                                    <td class="px-6 py-3.5 text-gray-600">{{ formatDate(role.start_date) }}</td>
+                                    <td class="px-6 py-3.5 text-gray-400">{{ role.end_date ? formatDate(role.end_date) : '—' }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </template>
             </template>
         </div>
     </div>

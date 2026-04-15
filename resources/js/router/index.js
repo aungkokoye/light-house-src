@@ -23,6 +23,12 @@ import AdminCreateRolePage from '../pages/admin/roles/AdminCreateRolePage.vue';
 import AdminEditRolePage from '../pages/admin/roles/AdminEditRolePage.vue';
 import AdminViewRolePage from '../pages/admin/roles/AdminViewRolePage.vue';
 
+// Admin — Sites
+import AdminSitesPage from '../pages/admin/sites/AdminSitesPage.vue';
+import AdminCreateSitePage from '../pages/admin/sites/AdminCreateSitePage.vue';
+import AdminEditSitePage from '../pages/admin/sites/AdminEditSitePage.vue';
+import AdminViewSitePage from '../pages/admin/sites/AdminViewSitePage.vue';
+
 // Admin — Permissions
 import AdminPermissionsPage from '../pages/admin/permissions/AdminPermissionsPage.vue';
 import AdminCreatePermissionPage from '../pages/admin/permissions/AdminCreatePermissionPage.vue';
@@ -53,6 +59,10 @@ const routes = [
     { path: '/admin/permissions/create', component: AdminCreatePermissionPage },
     { path: '/admin/permissions/:id', component: AdminViewPermissionPage },
     { path: '/admin/permissions/:id/edit', component: AdminEditPermissionPage },
+    { path: '/admin/sites', component: AdminSitesPage },
+    { path: '/admin/sites/create', component: AdminCreateSitePage },
+    { path: '/admin/sites/:id', component: AdminViewSitePage },
+    { path: '/admin/sites/:id/edit', component: AdminEditSitePage },
     { path: '/admin/users', component: AdminUsersPage },
     { path: '/admin/users/create', component: AdminCreateUserPage },
     { path: '/admin/users/:id', component: AdminViewUserPage },

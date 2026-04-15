@@ -21,6 +21,16 @@ class AdminUserController extends Controller
         private readonly EmailManager $emailManager,
     ) {}
 
+    public function types(): JsonResponse
+    {
+        $types = collect([
+            User::STAFF_TYPE_ID   => 'Staff',
+            User::COMPANY_TYPE_ID => 'Company',
+        ])->map(fn($name, $id) => ['id' => $id, 'name' => $name])->values();
+
+        return response()->json($types);
+    }
+
     public function index(Request $request): JsonResponse
     {
         $perPage = in_array((int) $request->input('per_page'), self::PER_PAGE_LIST)
@@ -51,10 +61,20 @@ class AdminUserController extends Controller
 
     public function show(User $user): JsonResponse
     {
-        $user->load(['roles', 'permissions']);
-        $creator = $user->created_by ? User::find($user->created_by) : null;
-        $user->created_by_name  = $creator?->name  ?? config('app.default_creator_name');
-        $user->created_by_email = $creator?->email ?? config('app.default_creator_email');
+        $relations = ['roles', 'permissions', 'createdBy'];
+
+        if ($user->isStaff()) {
+            $relations[] = 'staffProfile.createdBy';
+            $relations['staffProfile.staffRoles'] = fn($q) => $q->orderBy('start_date', 'desc');
+            $relations[] = 'staffProfile.staffRoles.position';
+            $relations[] = 'staffProfile.staffRoles.site';
+        } elseif ($user->isCompany()) {
+            $relations[] = 'companyProfile.createdBy';
+        }
+
+        $user->load($relations);
+        $user->created_by_name  = $user->createdBy?->name  ?? config('app.default_creator_name');
+        $user->created_by_email = $user->createdBy?->email ?? config('app.default_creator_email');
 
         return response()->json($user);
     }

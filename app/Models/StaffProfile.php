@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class StaffProfile extends Model
 {
@@ -42,8 +43,8 @@ class StaffProfile extends Model
         return $this->hasMany(StaffRole::class);
     }
 
-    public function currentRole(): HasMany
+    public function currentRole(): HasOne
     {
-        return $this->hasMany(StaffRole::class)->whereNull('end_date')->latest('start_date');
+        return $this->hasOne(StaffRole::class)->whereNull('end_date')->latestOfMany('start_date');
     }
 }

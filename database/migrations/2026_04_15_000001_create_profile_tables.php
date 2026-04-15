@@ -19,6 +19,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->unique()->constrained()->cascadeOnDelete();
             $table->string('name');
+            $table->string('role')->nullable();
             $table->text('description')->nullable();
             $table->text('address')->nullable();
             $table->string('phone')->nullable();
@@ -46,6 +47,7 @@ return new class extends Migration
             $table->string('name')->unique();
             $table->text('description')->nullable();
             $table->text('address')->nullable();
+            $table->string('phone')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });

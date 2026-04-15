@@ -20,6 +20,8 @@ class UserManager
     {
         $query = UserFilter::for($this->repo->query())
             ->search($request->input('search'))
+            ->position($request->input('position'))
+            ->type($request->input('type'))
             ->role($request->input('role'))
             ->activated($request->input('activated'))
             ->emailVerified($request->input('email_verified'))
