@@ -22,150 +22,127 @@ The frontend mirrors this by reading `me.roles` and `me.permissions` from `/api/
 
 ## Roles
 
-| Role    | Description                                         |
-|---------|-----------------------------------------------------|
+| Role | Description |
+|------|-------------|
 | `admin` | Can access the admin panel. Actions gated by permissions. |
-| `user`  | Standard user. No admin panel access.               |
+| `staff` | Internal staff. Has a staff profile and role history. |
+| `customer` | External customer. Has a company profile. |
 
-Roles are seeded in `database/seeders/RoleSeeder.php`. Roles themselves carry **no permissions** — permissions are assigned directly to users.
+Roles carry **no permissions** — permissions are assigned directly to users.
 
 ---
 
 ## Permissions
 
-| Permission | Description                                                        |
-|------------|--------------------------------------------------------------------|
-| `view`     | Can view individual user records                                   |
-| `create`   | Can create new users                                               |
-| `edit`     | Can edit users (name, email, activated, email verified)            |
-| `delete`   | Can delete users                                                   |
-| `super`    | Elevated admin. Can manage roles, permissions, and assign any permission including `super` itself. Can also change passwords and reassign roles/permissions on user edit. |
-
-Permissions are assigned **per user**, not per role.
+| Permission | Description |
+|------------|-------------|
+| `view` | View individual records |
+| `create` | Create new records |
+| `edit` | Edit records |
+| `delete` | Delete records |
+| `super` | Elevated admin — manage roles/permissions, change passwords, reassign roles, assign any permission |
 
 ---
 
 ## The `super` Permission
 
-`super` is a special elevated permission with extra privileges:
+`super` is a special elevated permission:
 
 - **User management** — only `super` admins can change a user's password, role, or permissions on the edit page
-- **Assigning `super`** — only a `super` admin can assign the `super` permission to other users
-- **Role & permission CRUD** — create, edit, and delete of roles and permissions is restricted to `super` admins
-- **Frontend guards** — edit/delete/create buttons in the admin panel are hidden for non-`super` admins; the edit pages redirect to `/403` if accessed directly
+- **Assigning `super`** — only a `super` admin can grant `super` to another user
+- **Role & permission CRUD** — create, edit, delete requires `super`
+- **Frontend guards** — edit/delete/create buttons hidden for non-`super` admins; protected pages redirect to `/403` if accessed directly
 
 ---
 
-## Policies
+## Policy Matrix
 
-Policies live in `app/Policies/` and are registered in `AppServiceProvider`.
+### UserPolicy
 
-### UserPolicy (`app/Policies/UserPolicy.php`)
+| Method | Requirement |
+|--------|-------------|
+| `viewAny` | admin role |
+| `view` | admin + (view or super) |
+| `create` | admin + (create or super) |
+| `update` | admin + (edit or super) |
+| `delete` | admin + (delete or super) |
 
-| Method     | Requirement                          |
-|------------|--------------------------------------|
-| `viewAny`  | `admin` role                         |
-| `view`     | `admin` role + (`view` or `super`)   |
-| `create`   | `admin` role + (`create` or `super`) |
-| `update`   | `admin` role + (`edit` or `super`)   |
-| `delete`   | `admin` role + (`delete` or `super`) |
+### RolePolicy / PermissionPolicy / SitePolicy / StaffPositionPolicy / StaffRolePolicy
 
-### RolePolicy (`app/Policies/RolePolicy.php`)
+| Method | Requirement |
+|--------|-------------|
+| `viewAny` | admin role |
+| `view` | admin role |
+| `create` | admin + super |
+| `update` | admin + super |
+| `delete` | admin + super |
 
-| Method     | Requirement                  |
-|------------|------------------------------|
-| `viewAny`  | `admin` role                 |
-| `view`     | `admin` role                 |
-| `create`   | `admin` role + `super`       |
-| `update`   | `admin` role + `super`       |
-| `delete`   | `admin` role + `super`       |
-
-### PermissionPolicy (`app/Policies/PermissionPolicy.php`)
-
-Same structure as `RolePolicy`.
-
-> **Note:** Spatie's `Role` and `Permission` models live outside `App\Models\`, so Laravel's auto-discovery cannot find their policies. They are registered manually via `Gate::policy()` in `AppServiceProvider::boot()`.
+> **Note:** Spatie's `Role` and `Permission` models live outside `App\Models\`, so Laravel cannot auto-discover their policies. Registered manually in `AppServiceProvider::boot()` via `Gate::policy()`.
 
 ---
 
 ## Route Authorization
 
-Routes use `->can()` middleware (not `authorizeResource` — removed in Laravel 11):
-
 ```php
 Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
-    // Roles
-    Route::get('/roles',          [...'index'])  ->can('viewAny', Role::class);
-    Route::post('/roles',         [...'store'])  ->can('create',  Role::class);
-    Route::get('/roles/{role}',   [...'show'])   ->can('view',    'role');
-    Route::put('/roles/{role}',   [...'update']) ->can('update',  'role');
-    Route::delete('/roles/{role}',[...,'destroy'])->can('delete', 'role');
-
-    // Permissions — same pattern
-    // Users — same pattern
+    Route::get('/roles',           [AdminRoleController::class, 'index'])  ->can('viewAny', Role::class);
+    Route::post('/roles',          [AdminRoleController::class, 'store'])  ->can('create',  Role::class);
+    Route::get('/roles/{role}',    [AdminRoleController::class, 'show'])   ->can('view',    'role');
+    Route::put('/roles/{role}',    [AdminRoleController::class, 'update']) ->can('update',  'role');
+    Route::delete('/roles/{role}', [AdminRoleController::class, 'destroy'])->can('delete',  'role');
+    // ...same pattern for users, permissions, sites, staff-positions, staff-roles
 });
 ```
 
-Unauthenticated requests → `401`. Missing role → `403`. Policy denial → `403`.
+Unauthenticated → `401`. Missing role → `403`. Policy denial → `403`.
 
 ---
 
 ## Frontend Guards
 
-The Vue frontend reads the current user from `/api/me` which returns `roles` and `permissions` arrays.
-
-### Page-level guards (in `onMounted`)
+### Page-level (onMounted redirect)
 
 ```js
 const { data: me } = await axios.get('/api/me')
 
-// Redirect if not admin
+// Redirect non-admins
 if (!me.roles?.some(r => r.name === 'admin')) { router.replace('/403'); return }
 
-// Redirect if not super (edit pages only)
+// Redirect non-super (for role/permission edit pages)
 if (!me.permissions?.some(p => p.name === 'super')) { router.replace('/403'); return }
 ```
 
-Applied in:
-- `AdminEditRolePage.vue` — redirects to `/403` if not `super`
-- `AdminEditPermissionPage.vue` — redirects to `/403` if not `super`
-
-### UI-level guards (`v-if="hasSuper"`)
-
-Buttons and links are conditionally rendered based on `hasSuper`:
+### UI-level (v-if)
 
 | Page | Guarded elements |
 |------|-----------------|
-| `AdminRolesPage` | New Role button, Edit icon, Delete icon |
-| `AdminPermissionsPage` | New Permission button, Edit icon, Delete icon |
+| `AdminRolesPage` | New Role button, Edit/Delete icons |
+| `AdminPermissionsPage` | New Permission button, Edit/Delete icons |
 | `AdminViewRolePage` | Edit button |
 | `AdminViewPermissionPage` | Edit button |
-| `AdminUsersPage` | New User button, View/Edit/Delete icons (per-permission) |
-| `AdminEditUserPage` | Password fields, Role select, Permission checkboxes |
+| `AdminUsersPage` | New User button, View/Edit/Delete icons |
+| `AdminEditUserPage` | Password fields, Role select, Permissions checkboxes |
 
 ---
 
 ## CLI & Seeder Context
 
-When running artisan commands or seeders, there is no authenticated user (`Auth::user()` returns `null`). `UserManager` handles this gracefully:
-
-- `filterPermissions()` — bypasses the `super` filter when called without an authenticated user, allowing all permissions to be assigned
-- `update()` — uses `Auth::user()?->hasPermissionTo('super') ?? false` (null-safe)
-
-This means `php artisan app:user-create` can assign any permission including `super` regardless of who runs it.
+When running Artisan commands or seeders, `Auth::user()` returns `null`. `UserManager::filterPermissions()` bypasses the `super` filter when there is no authenticated caller — allowing all permissions to be assigned via `php artisan app:user-create` or database seeders.
 
 ---
 
 ## Global Error Redirects
 
-A global Axios interceptor in `resources/js/app.js` catches API error responses and redirects:
+A global Axios response interceptor in `resources/js/app.js`:
 
-| HTTP Status | Redirects to |
-|-------------|-------------|
-| `401`       | `/401` (clears token) |
-| `403`       | `/403` |
-| `404`       | `/404` |
-| `500+`      | `/500` |
+| HTTP Status | Action |
+|-------------|--------|
+| `401` | Clear localStorage token, redirect `/401` |
+| `403` | Redirect `/403` |
+| `404` | Redirect `/404` |
+| `500+` | Redirect `/500` |
+
+Note: `422` is **not** handled globally — each form handles validation errors locally.
 
 ---
 
@@ -176,9 +153,11 @@ A global Axios interceptor in `resources/js/app.js` catches API error responses 
 | `app/Policies/UserPolicy.php` | User CRUD authorization |
 | `app/Policies/RolePolicy.php` | Role CRUD authorization |
 | `app/Policies/PermissionPolicy.php` | Permission CRUD authorization |
+| `app/Policies/SitePolicy.php` | Site CRUD authorization |
+| `app/Policies/StaffPositionPolicy.php` | Position CRUD authorization |
+| `app/Policies/StaffRolePolicy.php` | Staff role authorization |
 | `app/Providers/AppServiceProvider.php` | Registers Spatie model policies via `Gate::policy()` |
-| `app/Services/UserManager.php` | Business logic; enforces `super` filter on permission assignment |
-| `database/seeders/RoleSeeder.php` | Seeds default roles and permissions |
+| `app/Services/UserManager.php` | Enforces `super` filter on permission assignment |
+| `database/seeders/UserSeeder.php` | Seeds roles, permissions, and test users |
 | `routes/api.php` | Route-level `->can()` authorization |
 | `resources/js/app.js` | Global Axios error interceptor |
-| `resources/js/pages/admin/` | Vue pages with `onMounted` guards and `v-if="hasSuper"` |

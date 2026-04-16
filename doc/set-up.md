@@ -2,14 +2,13 @@
 
 ## Tech Stack
 
-| Layer | Technology                                     |
-|-------|------------------------------------------------|
-| Backend | Laravel 13 / PHP 8.4                           |
-| Frontend | Vue 3 (SinglePageApplication) + Tailwind CSS 4 |
-| Bundler | Vite 8                                         |
-| Database | MySQL 8.0                                      |
-| Runtime | Docker (PHP-Apache + Node + MySQL)             |
-| Local email | Mailcatcher (schickling/mailcatcher)       |
+| Layer | Technology |
+|-------|------------|
+| Backend | Laravel 11 / PHP 8.4 |
+| Frontend | Vue 3 SPA + Tailwind CSS 4 |
+| Bundler | Vite 8 |
+| Database | MySQL 8.0 |
+| Runtime | Docker (PHP-Apache + Node + MySQL + Mailcatcher) |
 
 ---
 
@@ -17,52 +16,40 @@
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running
 
-- In your Host Machine 
-
-    ```
-    mkdir LightHouse
-    cd LightHouse
-    git clone https://github.com/aungkokoye/light-house-docker.git
-    git clone https://github.com/aungkokoye/light-house-src.git
-    ```
+```bash
+mkdir LightHouse
+cd LightHouse
+git clone https://github.com/aungkokoye/light-house-docker.git
+git clone https://github.com/aungkokoye/light-house-src.git
+```
 
 ---
 
 ## 1. Start Docker Containers
-
-Navigate to the docker directory from the project root:
 
 ```bash
 cd light-house-docker
 docker compose up --build -d
 ```
 
-To stop containers:
-
-```bash
-docker compose down
-```
-
-**Services started:**
-
 | Service | Container | Port |
 |---------|-----------|------|
 | PHP 8.4 + Apache | `light_house_app` | http://localhost:8375 |
-| Node 22 + Vite   | `light_house_node` | http://localhost:5173 |
-| MySQL 8.0        | `light_house_db`   | `localhost:3550` |
-| Mailcatcher      | `light_house_mailer` | SMTP: `localhost:2025` · UI: http://localhost:2080 |
+| Node 22 + Vite | `light_house_node` | http://localhost:5173 |
+| MySQL 8.0 | `light_house_db` | `localhost:3550` |
+| Mailcatcher | `light_house_mailer` | SMTP: `localhost:2025` · UI: http://localhost:2080 |
 
 ---
 
 ## 2. Configure Environment
 
-Copy the example environment file inside the `backend` directory:
+Inside the app container:
 
 ```bash
 cp .env.example .env
 ```
 
-Update the following DB settings in `.env` (change from sqlite to mysql):
+Update `.env`:
 
 ```env
 APP_NAME=LightHouse
@@ -76,29 +63,25 @@ DB_USERNAME=light_house
 DB_PASSWORD=password
 ```
 
-> **Note:** `DB_HOST=db` refers to the Docker service name, not `localhost`. Use `localhost` only when connecting from an external DB editor (see below).
+For Google OAuth, add:
+
+```env
+GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-client-secret
+GOOGLE_REDIRECT_URI=http://localhost:8375/auth/google/callback
+```
 
 ---
 
-## 3. Install Dependencies & Run Migrations
+## 3. Install Dependencies & Migrate
 
-The Node container automatically runs `npm install && npm run dev` on startup.
-
-For PHP dependencies and migrations, enter the app container:
+Enter the app container:
 
 ```bash
 docker exec -it light_house_app bash
 cd /var/www/html
-mkdir -p storage/framework/cache
-mkdir -p storage/framework/sessions
-mkdir -p storage/framework/views
-mkdir -p storage/logs
+mkdir -p storage/framework/{cache,sessions,views} storage/logs
 chmod -R 775 storage bootstrap/cache
-```
-
-Then run:
-
-```bash
 composer install
 php artisan key:generate
 php artisan migrate --seed
@@ -106,137 +89,99 @@ php artisan migrate --seed
 
 ---
 
-## 4. Connecting to the Database from an Editor
+## 4. Seeded Users
 
-Use these credentials when connecting via TablePlus, DBeaver, or similar tools:
+| Name | Email | Password | Role | Permissions |
+|------|-------|----------|------|-------------|
+| Admin User | admin@lighthouse.com | Password1 | admin | all (including `super`) |
+| Second Admin | admin2@lighthouse.com | Password1 | admin | view, create, edit |
 
-```
-Host:     127.0.0.1
-Port:     3550
-Database: light_house
-Username: light_house
-Password: password
-```
-
-Root credentials (for admin access):
-
-```
-Username: root
-Password: root
-```
+> Password must be `Password1` (capital P + number 1) to pass the new password rules (min 8, uppercase, lowercase, number).
 
 ---
 
-## 5. Local Email Server (Mailcatcher)
+## 5. Database Connection (External Editor)
 
-The project uses [schickling/mailcatcher](https://hub.docker.com/r/schickling/mailcatcher) as a local SMTP server during development. It catches all outgoing emails and displays them in a web UI — no emails are ever delivered to real inboxes.
+| Field | Value |
+|-------|-------|
+| Host | `127.0.0.1` |
+| Port | `3550` |
+| Database | `light_house` |
+| Username | `light_house` |
+| Password | `password` |
 
-### Access
+Root: username `root`, password `root`.
 
-| | URL |
-|-|-----|
-| Web inbox | http://localhost:2080 |
-| SMTP (internal Docker) | `mailer:1025` |
-| SMTP (host machine) | `localhost:2025` |
+---
 
-### Environment Config
+## 6. Local Email (Mailcatcher)
 
-These values are already set in `.env.example`:
+All outgoing emails are caught by Mailcatcher — nothing is delivered to real inboxes.
+
+- Web inbox: http://localhost:2080
+- SMTP (Docker internal): `mailer:1025`
+
+`.env` settings (already in `.env.example`):
 
 ```env
 MAIL_MAILER=smtp
 MAIL_HOST=mailer
 MAIL_PORT=1025
-MAIL_USERNAME=null
-MAIL_PASSWORD=null
 MAIL_FROM_ADDRESS="noreply@lighthouse.com"
-MAIL_FROM_NAME="${APP_NAME}"
-```
-
-> `MAIL_HOST=mailer` refers to the Docker service name. The PHP container reaches Mailcatcher over the internal Docker network on port `1025`.
-
-### Usage
-
-1. Start the containers with `docker compose up -d`
-2. Trigger an email (e.g. register a new user)
-3. Open http://localhost:2080 to see the caught email
-
-All emails sent by the application (verification links, etc.) will appear here in real time.
-
----
-
-## 6. Running the Dev Environment
-
-Vite starts automatically via the `node` container when you run `docker compose up -d`.
-
-For Laravel processes, inside the `app` container:
-
-```bash
-php artisan queue:listen   # Queue worker
-php artisan pail           # Log viewer
 ```
 
 ---
 
-## 7. Running Tests
+## 7. Creating Users via CLI
+
+The interactive command supports all user types:
 
 ```bash
-composer test
+php artisan app:user-create
 ```
+
+- Prompts: name, email, password, role, optional permissions
+- For `customer` role: collects company profile (name, role/title, address, phone, description)
+- For `staff`/`admin` role: collects staff profile + initial role assignment (position, site, salary, dates)
+- Wrapped in DB transaction; verification email sent after commit
 
 ---
 
-## 8. Seeding the Database
+## 8. Fresh Database
 
 ```bash
-php artisan db:seed 
-php artisan migrate:fresh --seed    (refresh the database and rerun seeder)
+php artisan migrate:fresh --seed
 ```
-
-This creates two admin users and 50 normal users:
-
-| Name | Email | Password | Role | Permissions |
-|------|-------|----------|------|-------------|
-| Admin User | admin@lighthouse.com | Password! | admin | all (including `super`) |
-| Second Admin User | admin2@lighthouse.com | Password! | admin | view, create, edit |
-
-Normal users are created with the `user` role and no direct permissions.
 
 ---
 
 ## Frontend Structure
 
-Vue 3 is set up as a SPA. All routes are handled by Vue — Laravel serves a single blade entry point.
-
 ```
-resources/
-├── js/
-│   ├── app.js               # Vue app entry point + global Axios response interceptor
-│   ├── App.vue              # Root component
-│   ├── bootstrap.js         # Axios request interceptor (attaches Bearer token)
-│   ├── router/
-│   │   └── index.js         # Vue Router — all route definitions
-│   └── pages/
-│       ├── IndexPage.vue
-│       ├── DashboardPage.vue
-│       ├── ProfilePage.vue
-│       ├── auth/            # Login, Register, ForgotPassword, ResetPassword, EmailVerification
-│       ├── admin/
-│       │   ├── AdminDashboardPage.vue
-│       │   ├── users/       # AdminUsersPage, AdminCreateUserPage, AdminEditUserPage, AdminViewUserPage
-│       │   ├── roles/       # AdminRolesPage, AdminCreateRolePage, AdminEditRolePage, AdminViewRolePage
-│       │   └── permissions/ # AdminPermissionsPage, AdminCreatePermissionPage, AdminEditPermissionPage, AdminViewPermissionPage
-│       └── errors/          # Error401Page, Error403Page, Error500Page, NotFoundPage
-├── css/
-│   └── app.css              # Tailwind CSS entry
-└── views/
-    └── app.blade.php        # SPA shell (contains <div id="app">)
+resources/js/
+├── app.js               # Vue entry + global Axios response interceptor
+├── App.vue              # Root component
+├── bootstrap.js         # Axios request interceptor (attaches Bearer token)
+├── router/
+│   └── index.js         # All route definitions — add new pages here
+└── pages/
+    ├── auth/            # Login, Register, ForgotPassword, ResetPassword, EmailVerification, CompleteProfile
+    ├── admin/
+    │   ├── users/       # User CRUD + staff roles sub-pages
+    │   ├── roles/       # Role CRUD
+    │   ├── permissions/ # Permission CRUD
+    │   ├── sites/       # Site CRUD
+    │   └── staff-positions/ # Staff position CRUD
+    ├── errors/          # 401, 403, 404, 500
+    ├── IndexPage.vue
+    ├── DashboardPage.vue
+    └── ProfilePage.vue
 ```
 
-To add a new page, create a `.vue` file in the appropriate subfolder and register the route in `resources/js/router/index.js`.
+To add a new page: create a `.vue` file and register the route in `resources/js/router/index.js`.
 
 ---
 
 ## Xdebug
 
-Xdebug is pre-installed in the container and listens on port **9003**. Configure your IDE to connect to that port for step debugging.
+Pre-installed in the container, listens on port **9003**.

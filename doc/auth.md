@@ -1,751 +1,209 @@
 # Authentication
 
-Authentication is handled using [Laravel Sanctum](https://laravel.com/docs/sanctum) with token-based auth. Supports email/password login with email verification, and Google OAuth via [Laravel Socialite](https://laravel.com/docs/socialite).
+Authentication is handled using [Laravel Sanctum](https://laravel.com/docs/sanctum) with token-based auth. Supports email/password login with email verification, and Google OAuth via [Laravel Socialite](https://laravel.com/docs/socialite). CAPTCHA is required on all public form submissions.
 
 ---
 
 ## Overview
 
 ```
-Email/Password: Register → Email Verification → Login → Authenticated Requests → Logout
+Email/Password: Register (+ captcha) → Email Verification → Login (+ captcha) → Authenticated Requests → Logout
 Forgot Password: Forgot Password → Reset Email → Set New Password → Login
 Google OAuth:   Click "Continue with Google" → Google Consent → Callback → Token → Home
+Complete Profile: Google user without company profile → /complete-profile (+ captcha) → Home
 ```
 
 All auth API endpoints are prefixed with `/api`. The frontend is a Vue 3 SPA — forms submit via Axios, tokens are stored in `localStorage`, and every request automatically attaches the token via an Axios request interceptor.
 
 ---
 
-## Installation
+## Password Requirements
 
-Run these once inside the app container when setting up the project:
+All passwords must:
+- Be at least **8 characters**
+- Contain at least one **uppercase letter**
+- Contain at least one **lowercase letter**
+- Contain at least one **number**
 
-```bash
-composer require laravel/sanctum
-php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
-php artisan migrate
-```
+Backend: `Password::min(8)->mixedCase()->numbers()` (`Illuminate\Validation\Rules\Password`)
+Frontend placeholder: `"Min. 8 chars, A-z & 0-9"`
+Frontend hint: `"Min. 8 characters with uppercase, lowercase and a number."`
+
+---
+
+## CAPTCHA
+
+Public form submissions are protected by a server-rendered image CAPTCHA using `gregwar/captcha`.
+
+- Image endpoint: `GET /captcha` (web route — starts PHP session)
+- Consuming API routes must use `->middleware('web')` to share the session
+- Server stores the answer in `Session::put('captcha', strtolower($phrase))`
+- Validation: `strtolower($request->captcha) === Session::get('captcha')`
+- Session key cleared after every attempt (pass or fail)
+
+Applied to: `POST /api/register`, `POST /api/login`, `POST /api/profile/company`
 
 ---
 
 ## 1. Register
 
-### Flow
-
-```
-User fills in name, email, password, confirm password
-        │
-        ▼
-POST /api/register
-        │
-        ▼
-Validate: name (unique), email (unique), password (min 8, confirmed)
-        │
-     ┌──┴──────────┐
-  422 err        Create user
-                 Assign 'user' role
-                 Generate 64-char token → save to DB with 24hr expiry
-                 Send verification email
-                        │
-                        ▼
-                    201 Created
-                        │
-                        ▼
-              Frontend redirects to /verify-email?email=...
-```
-
-### Endpoint
-
-**`POST /api/register`**
+**`POST /api/register`** — requires `web` middleware (session for CAPTCHA)
 
 **Request body:**
 ```json
 {
     "name": "Jane Smith",
     "email": "jane@example.com",
-    "password": "secret123",
-    "password_confirmation": "secret123"
-}
-```
-
-**Success `201`:**
-```json
-{
-    "message": "Registration successful. Please check your email to verify your account."
-}
-```
-
-**Validation failure `422`:**
-```json
-{
-    "message": "The name has already been taken.",
-    "errors": {
-        "name": ["The name has already been taken."],
-        "email": ["The email has already been taken."],
-        "password": ["The password field confirmation does not match."]
+    "password": "Secret123",
+    "password_confirmation": "Secret123",
+    "captcha": "ab3x",
+    "company_profile": {
+        "name": "Acme Co.",
+        "role": "CEO",
+        "description": "Optional",
+        "address": "123 Main St",
+        "phone": "+95 9 111 222 333"
     }
 }
 ```
 
-**Server error `500`:**
+**Flow:**
+1. Validate all fields (captcha checked separately after validation)
+2. Verify captcha against session
+3. DB transaction: create user (role: `customer`) + company profile
+4. Send verification email
+5. Return `201`
+
+**Success `201`:**
 ```json
-{
-    "message": "We could not process your request. Please try again."
-}
+{ "message": "Registration successful. Please check your email to verify your account." }
 ```
-
-### Validation Rules
-
-| Field | Rules |
-|-------|-------|
-| `name` | required, string, max 255, unique in `users` |
-| `email` | required, valid email, unique in `users` |
-| `password` | required, min 8 characters, must match `password_confirmation` |
-
-### Files
-
-| File | Role |
-|------|------|
-| `app/Http/Controllers/Auth/AuthController.php` | `register()` method |
-| `app/Services/UserManager.php` | Handles user creation for both API and CLI |
-| `resources/js/pages/auth/RegisterPage.vue` | Registration form |
 
 ---
 
 ## 2. Email Verification
 
-### Flow
+Verification uses custom token fields on the `users` table — not Laravel's built-in `MustVerifyEmail`.
 
-```
-User receives email with verification link
-        │
-        ▼
-Clicks link: GET /email/verify/{token}
-        │
-     ┌──┴────────────────────┐
-  token not found         token found
-     │                        │
-     ▼                    Check expiry (24hr)
-redirect /login          ┌───┴───────────┐
-?verification=invalid  expired        valid
-                          │               │
-                          ▼               ▼
-                    Clear token     Set email_verified_at
-                    redirect        Clear token
-                    /login          redirect /login?verified=1
-                    ?verification=expired
-                    &email=user@example.com
-```
+| Column | Description |
+|--------|-------------|
+| `email_verification_token` | Random 64-char string |
+| `email_verification_expires_at` | 24 hours from generation |
 
-### Token Details
+**`GET /email/verify/{token}`** (web route)
 
-- Token is a random 64-character string generated by `EmailManager`
-- Stored in `email_verification_token` column on the `users` table
-- Expiry stored in `email_verification_expires_at` (default: 24 hours)
-- Token and expiry are cleared from DB after use (verified or expired)
+| Outcome | Redirect |
+|---------|----------|
+| Valid token | `/login?verified=1` |
+| Expired token | `/login?verification=expired&email=...` |
+| Invalid token | `/login?verification=invalid` |
 
-### Verification Email
-
-The email is sent using a custom Blade view at `resources/views/emails/verify-email.blade.php`. It contains a branded button linking to:
-
-```
-http://your-app.com/email/verify/{token}
-```
-
-### Login Page Banners
-
-After verification, the user is redirected to `/login` with a query parameter:
-
-| Query param | Meaning | Banner shown |
-|-------------|---------|--------------|
-| `?verified=1` | Email verified successfully | Green success |
-| `?verification=expired&email=...` | Link expired | Orange warning with resend link |
-| `?verification=invalid` | Token not found | Red error with resend link |
-
-### Files
-
-| File | Role |
-|------|------|
-| `routes/web.php` | Verification route handler |
-| `app/Services/EmailManager.php` | Generates token, saves to DB, sends notification |
-| `app/Notifications/VerifyEmailNotification.php` | Mail notification class |
-| `resources/views/emails/verify-email.blade.php` | Verification email HTML |
+**`POST /api/email/resend`** — resends verification email, refreshes token and 24hr expiry.
 
 ---
 
-## 3. Resend Verification Email
+## 3. Login
 
-### Flow
-
-```
-User visits /verify-email (with or without ?email=...)
-        │
-        ▼
-If no email in URL → show email input field
-If email in URL → show address, skip input
-        │
-        ▼
-User clicks "Resend verification email"
-        │
-        ▼
-POST /api/email/resend  { email: "..." }
-        │
-     ┌──┴────────────────────┐
-  user not found        user found
-     │                        │
-     ▼                   Already verified?
-   404                   ┌────┴────────┐
-                        yes            no
-                         │              │
-                         ▼              ▼
-                  200 "Already    Generate new token
-                   verified."    Save with new 24hr expiry
-                                 Send email
-                                      │
-                                      ▼
-                               200 "Verification email sent."
-                                      │
-                                      ▼
-                         Frontend shows success + 60s cooldown
-```
-
-### Endpoint
-
-**`POST /api/email/resend`**
-
-**Request body:**
-```json
-{
-    "email": "jane@example.com"
-}
-```
-
-**Success `200`:**
-```json
-{
-    "message": "Verification email sent."
-}
-```
-
-**Already verified `200`:**
-```json
-{
-    "message": "Email already verified."
-}
-```
-
-**User not found `404`:**
-```json
-{
-    "message": "No query results for model [App\\Models\\User]."
-}
-```
-
-**Mail failure `500`:**
-```json
-{
-    "message": "Failed to send verification email. Please try again."
-}
-```
-
-### Notes
-
-- Each resend overwrites the previous token and resets the 24hr expiry
-- The button has a 60-second cooldown after each successful send
-- This endpoint is public (no auth token required)
-
-### Files
-
-| File | Role |
-|------|------|
-| `app/Http/Controllers/Auth/AuthController.php` | `resendVerification()` method |
-| `app/Services/EmailManager.php` | Generates and sends the new token |
-| `resources/js/pages/auth/EmailVerificationPage.vue` | Resend form |
-
----
-
-## 4. Login
-
-### Flow
-
-```
-User submits email + password
-        │
-        ▼
-POST /api/login
-        │
-        ▼
-Validate credentials via Auth::attempt()
-        │
-     ┌──┴────────────────┐
-  fail                  pass
-     │                    │
-     ▼               Check email verified
-  422 err           ┌────┴──────────┐
-                  no                yes
-                   │                 │
-                   ▼                 ▼
-             Auth::logout()     createToken()
-             422 "Please        stores hashed token in
-              verify email"     personal_access_tokens
-                                returns plain text token
-                                        │
-                                        ▼
-                               200 { token: "2|abc..." }
-                                        │
-                                        ▼
-                          Frontend: localStorage.setItem('token', ...)
-                          Redirects to /
-```
-
-### Endpoint
-
-**`POST /api/login`**
+**`POST /api/login`** — requires `web` middleware (session for CAPTCHA)
 
 **Request body:**
 ```json
 {
     "email": "jane@example.com",
-    "password": "secret123"
+    "password": "Secret123",
+    "captcha": "ab3x"
 }
 ```
+
+**Flow:**
+1. Validate fields
+2. Verify captcha
+3. Check account is activated
+4. `Auth::attempt()` — verify credentials
+5. Check email is verified
+6. Create Sanctum token
+7. Return token
 
 **Success `200`:**
 ```json
-{
-    "token": "2|CroLB6izlIzbmeTPsa2ZdwKd..."
-}
+{ "token": "2|CroLB6izlIzbmeTPsa2ZdwKd..." }
 ```
 
-**Wrong credentials `422`:**
-```json
-{
-    "message": "The provided credentials are incorrect.",
-    "errors": {
-        "email": ["The provided credentials are incorrect."]
-    }
-}
-```
-
-**Email not verified `422`:**
-```json
-{
-    "message": "Please verify your email address before logging in.",
-    "errors": {
-        "email": ["Please verify your email address before logging in."]
-    }
-}
-```
-
-### Token Format
-
-```
-{id}|{plainTextToken}
- 2  | CroLB6izlIzbmeTPsa2ZdwKd...
-```
-
-Sanctum stores only a SHA-256 hash of the plain text part. The plain text is returned once and never stored — it cannot be recovered if lost.
-
-### Files
-
-| File | Role |
-|------|------|
-| `app/Http/Controllers/Auth/AuthController.php` | `login()` method |
-| `resources/js/pages/auth/LoginPage.vue` | Login form |
+Token is stored in `localStorage` and attached to every subsequent request.
 
 ---
 
-## 5. Logout
+## 4. Logout
 
-### Flow
+**`POST /api/logout`** — requires Bearer token
 
-```
-User clicks "Log out"
-        │
-        ▼
-POST /api/logout
-Authorization: Bearer {token}
-        │
-        ▼
-Sanctum resolves token → finds user
-Deletes token record from personal_access_tokens
-        │
-        ▼
-200 "Logged out successfully."
-        │
-        ▼
-Frontend: localStorage.removeItem('token')
-Redirect to /login
-```
+Deletes the current token from `personal_access_tokens`. Other active sessions are unaffected.
 
-### Endpoint
+---
 
-**`POST /api/logout`**
+## 5. Change Password
 
-**Header required:**
-```
-Authorization: Bearer 2|CroLB6izlIzbmeTPsa2ZdwKd...
-```
+**`PUT /api/password`** — requires Bearer token
 
-**Success `200`:**
 ```json
 {
-    "message": "Logged out successfully."
+    "current_password": "OldPass1",
+    "password": "NewPass2",
+    "password_confirmation": "NewPass2"
 }
 ```
 
-**No / invalid token `401`:**
-```json
-{
-    "message": "Unauthenticated."
-}
-```
-
-### Notes
-
-- Only the **current** token is deleted — other active sessions are unaffected
-- After logout, the token in `localStorage` is removed
-- Any subsequent request with the old token will return `401`
-
-### Files
-
-| File | Role |
-|------|------|
-| `app/Http/Controllers/Auth/AuthController.php` | `logout()` method |
-| `resources/js/pages/IndexPage.vue` | Logout button (also in every admin page header) |
+Not available for Google-linked accounts (`password = null`).
 
 ---
 
 ## 6. Forgot / Reset Password
 
-Users who forget their password can request a reset link by email. Clicking the link takes them to a form to set a new password. This flow uses Laravel's built-in `Password` facade and the `password_reset_tokens` table.
+**`POST /api/forgot-password`** — sends reset link via email.
 
-> Google-linked accounts cannot use this flow — they have no password.
+**`POST /api/reset-password`** — verifies token and updates password.
 
-### Flow
-
+Reset link is customised in `AppServiceProvider` to point to the Vue SPA:
 ```
-User clicks "Forgot password?" on login page
-        │
-        ▼
-/forgot-password — enter email address
-        │
-        ▼
-POST /api/forgot-password  { email }
-        │
-     ┌──┴────────────────┐
-  user not found      user found
-     │                    │
-     ▼                    ▼
-  422 error         Generate token → store in password_reset_tokens
-                    Send email with reset link
-                           │
-                           ▼
-              User clicks link in email:
-              GET /reset-password?token=...&email=...
-                           │
-                           ▼
-              /reset-password — enter new password + confirm
-                           │
-                           ▼
-              POST /api/reset-password  { token, email, password, password_confirmation }
-                           │
-                        ┌──┴────────────┐
-                    invalid            valid
-                    token               │
-                       │               ▼
-                    422 error    Update password in DB
-                                 Delete token from password_reset_tokens
-                                        │
-                                        ▼
-                                 Success screen → Sign in
+/reset-password?token=...&email=...
 ```
 
-### Endpoints
-
-**`POST /api/forgot-password`** — public
-
-**Request body:**
-```json
-{ "email": "jane@example.com" }
-```
-
-**Success `200`:**
-```json
-{ "message": "Password reset link sent to your email." }
-```
-
-**Invalid email `422`:**
-```json
-{
-    "message": "We can't find a user with that email address.",
-    "errors": { "email": ["We can't find a user with that email address."] }
-}
-```
+Tokens expire after **60 minutes** (Laravel default, configured in `config/auth.php`).
 
 ---
 
-**`POST /api/reset-password`** — public
+## 7. Google OAuth
 
-**Request body:**
-```json
-{
-    "token": "abc123...",
-    "email": "jane@example.com",
-    "password": "newpassword",
-    "password_confirmation": "newpassword"
-}
-```
+**`GET /auth/google/redirect`** → redirects to Google.
+**`GET /auth/google/callback`** → exchanges code, creates/links user, issues token.
 
-**Success `200`:**
-```json
-{ "message": "Password has been reset successfully." }
-```
-
-**Invalid/expired token `422`:**
-```json
-{
-    "message": "This password reset token is invalid.",
-    "errors": { "email": ["This password reset token is invalid."] }
-}
-```
-
-### Reset Link URL
-
-The reset link in the email is customised in `AppServiceProvider` to point to the SPA:
-
-```php
-ResetPassword::createUrlUsing(function ($user, string $token) {
-    return url('/reset-password?token=' . $token . '&email=' . urlencode($user->email));
-});
-```
-
-Without this, Laravel would generate a URL pointing to its own backend route instead of the Vue frontend.
-
-### Token Details
-
-Laravel stores a hashed token in the `password_reset_tokens` table:
-
-| Column | Description |
-|--------|-------------|
-| `email` | User's email |
-| `token` | Bcrypt hash of the plain token |
-| `created_at` | Token creation time |
-
-Tokens expire after **60 minutes** (configured in `config/auth.php` → `passwords.users.expire`).
-
-### Notes
-
-- Google-linked accounts (no password) cannot use this flow — they should sign in with Google
-- Tokens are single-use — once reset, the token is deleted
-- Laravel does not reveal whether an email exists (the same "success" message is returned either way for security)
-
-### Files
-
-| File | Role |
-|------|------|
-| `app/Http/Controllers/Auth/PasswordResetController.php` | `sendResetLink()` and `reset()` methods |
-| `app/Providers/AppServiceProvider.php` | Customises reset URL to point to SPA |
-| `routes/api.php` | `POST /api/forgot-password`, `POST /api/reset-password` |
-| `resources/js/pages/auth/ForgotPasswordPage.vue` | Email input form |
-| `resources/js/pages/auth/ResetPasswordPage.vue` | New password form + success screen |
-
----
-
-## 7. Login with Google (OAuth 2.0)
-
-Google login uses [Laravel Socialite](https://laravel.com/docs/socialite) with a stateless OAuth 2.0 flow. The user is redirected to Google, authenticates there, and is returned with a Sanctum token — no password required.
-
-### Installation
-
-```bash
-composer require laravel/socialite
-php artisan migrate
-```
-
-### Flow
-
-```
-User clicks "Continue with Google"
-        │
-        ▼
-Browser navigates to GET /auth/google/redirect
-        │
-        ▼
-Laravel redirects to Google OAuth consent screen
-        │
-        ▼
-User approves → Google redirects to GET /auth/google/callback?code=...
-        │
-        ▼
-Laravel exchanges code for Google user profile (stateless)
-        │
-     ┌──┴──────────────────────────────────┐
-  Google error                       Got Google user
-     │                                      │
-     ▼                          Search by google_id OR email
-redirect /login                        ┌───┴────────────┐
-?error=google_failed              found              not found
-                                    │                    │
-                                    ▼                    ▼
-                               Link google_id       Create user:
-                               if missing            name, email
-                                                     google_id
-                                                     email_verified_at = now()
-                                                     password = null
-                                                     role = 'user'
-                                    │                    │
-                                    └────────┬───────────┘
-                                             ▼
-                                      createToken()
-                                             │
-                                             ▼
-                               redirect /login?token={plainTextToken}
-                                             │
-                                             ▼
-                            Vue: localStorage.setItem('token', ...)
-                            window.location.href = '/'
-```
-
-### Routes
-
-These are registered in `routes/web.php` (not `api.php`) because they involve browser redirects, not JSON responses:
-
-```php
-Route::get('/auth/google/redirect', [SocialAuthController::class, 'redirectToGoogle']);
-Route::get('/auth/google/callback', [SocialAuthController::class, 'handleGoogleCallback']);
-```
-
-### User Account Handling
+After callback, user is redirected to `/login?token={token}`. Vue stores the token and navigates to `/`.
 
 | Scenario | Behaviour |
 |----------|-----------|
-| New Google user, email not in DB | Create user, assign `user` role, mark email verified |
-| Existing user matched by email (no `google_id`) | Link `google_id` to existing account, issue token |
-| Existing user matched by `google_id` | Issue token directly |
-| Name conflict on new user | Append last 4 digits of Google ID to name |
-| Google OAuth error | Redirect to `/login?error=google_failed` |
-
-> Google users have `password = null` and do not need to verify their email — Google guarantees the email is valid.
-
-### Environment Variables
-
-Add to `.env`:
-
-```env
-GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your-client-secret
-GOOGLE_REDIRECT_URI=http://localhost:8375/auth/google/callback
-```
-
-### Google Cloud Console Setup
-
-1. Go to [console.cloud.google.com](https://console.cloud.google.com)
-2. Create or select a project
-3. Navigate to **APIs & Services → Credentials**
-4. Click **Create Credentials → OAuth 2.0 Client ID**
-5. Application type: **Web application**
-6. Under **Authorized redirect URIs**, add:
-   - Local: `http://localhost:8375/auth/google/callback`
-   - Production: `https://yourdomain.com/auth/google/callback`
-7. Copy the **Client ID** and **Client Secret** into `.env`
-
-### config/services.php
-
-```php
-'google' => [
-    'client_id'     => env('GOOGLE_CLIENT_ID'),
-    'client_secret' => env('GOOGLE_CLIENT_SECRET'),
-    'redirect'      => env('GOOGLE_REDIRECT_URI'),
-],
-```
-
-### Database Changes
-
-A migration adds `google_id` to the `users` table and makes `password` nullable:
-
-```php
-$table->string('google_id')->nullable()->unique()->after('email');
-$table->string('password')->nullable()->change();
-```
-
-Migration file: `database/migrations/2026_03_24_000001_add_google_id_to_users_table.php`
-
-### Frontend
-
-The Google button in `LoginPage.vue` is a plain anchor tag — clicking it performs a full browser redirect (not an Axios call):
-
-```html
-<a href="/auth/google/redirect">Continue with Google</a>
-```
-
-After the callback, Laravel redirects to `/login?token={token}`. The login page detects this on load and stores the token:
-
-```js
-if (route.query.token) {
-    localStorage.setItem('token', route.query.token)
-    window.location.href = '/'
-}
-```
-
-### Error Banner
-
-If Google auth fails, the user is redirected to `/login?error=google_failed` and a red error banner is shown:
-
-> "Google sign-in failed. Please try again or use email and password."
-
-### Files
-
-| File | Role |
-|------|------|
-| `app/Http/Controllers/Auth/SocialAuthController.php` | Google redirect and callback handler |
-| `routes/web.php` | Google OAuth route definitions |
-| `config/services.php` | Google client credentials config |
-| `database/migrations/2026_03_24_000001_add_google_id_to_users_table.php` | Adds `google_id`, makes `password` nullable |
-| `resources/js/pages/auth/LoginPage.vue` | Google button + token handling on callback |
+| New Google user | Create user (role: `customer`), email auto-verified |
+| Existing user matched by email | Link google_id, issue token |
+| Existing user matched by google_id | Issue token directly |
+| No company profile yet | `needs_profile: true` flag → redirect to `/complete-profile` |
 
 ---
 
-## Axios Interceptors
+## 8. Complete Profile
 
-### Request interceptor — attaches token
+**`POST /api/profile/company`** — requires Bearer token + `web` middleware (CAPTCHA)
 
-Every Axios request automatically attaches the token via an interceptor in `resources/js/bootstrap.js`:
+For Google users who registered without a company profile (via OAuth). Requires CAPTCHA.
 
-```js
-axios.interceptors.request.use((config) => {
-    const token = localStorage.getItem('token')
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`
-    }
-    return config
-})
+```json
+{
+    "name": "Acme Co.",
+    "role": "CEO",
+    "description": "Optional",
+    "address": "123 Main St",
+    "phone": "+95 9 111 222 333",
+    "captcha": "ab3x"
+}
 ```
-
-### Response interceptor — global error redirects
-
-A response interceptor in `resources/js/app.js` catches API errors and redirects to error pages:
-
-```js
-axios.interceptors.response.use(
-    response => response,
-    error => {
-        const status = error?.response?.status
-        if (status === 401) { localStorage.removeItem('token'); router.push('/401') }
-        else if (status === 403) { router.push('/403') }
-        else if (status === 404) { router.push('/404') }
-        else if (status >= 500) { router.push('/500') }
-        return Promise.reject(error)
-    }
-)
-```
-
-| Status | Page | Action |
-|--------|------|--------|
-| `401` | `/401` | Clears token from localStorage |
-| `403` | `/403` | — |
-| `404` | `/404` | — |
-| `500+` | `/500` | — |
 
 ---
 
@@ -753,56 +211,33 @@ axios.interceptors.response.use(
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| `POST` | `/api/register` | No | Register a new user |
-| `POST` | `/api/login` | No | Login and receive token |
-| `POST` | `/api/logout` | Yes | Delete current token |
-| `GET` | `/api/me` | Yes | Get authenticated user with `roles` and `permissions` arrays |
-| `PUT` | `/api/password` | Yes | Update own password |
-| `POST` | `/api/email/resend` | No | Resend verification email |
-| `GET` | `/email/verify/{token}` | No | Verify email from link |
-| `POST` | `/api/forgot-password` | No | Send password reset link |
-| `POST` | `/api/reset-password` | No | Reset password with token |
-| `GET` | `/auth/google/redirect` | No | Redirect to Google OAuth |
-| `GET` | `/auth/google/callback` | No | Handle Google OAuth callback |
+| POST | `/api/register` | No (web) | Register + company profile |
+| POST | `/api/login` | No (web) | Login, get token |
+| POST | `/api/logout` | sanctum | Delete current token |
+| GET | `/api/me` | sanctum | Current user with roles/permissions |
+| PUT | `/api/password` | sanctum | Change own password |
+| POST | `/api/email/resend` | No | Resend verification email |
+| GET | `/email/verify/{token}` | No | Verify email from link |
+| POST | `/api/forgot-password` | No | Send reset link |
+| POST | `/api/reset-password` | No | Reset password |
+| POST | `/api/profile/company` | sanctum (web) | Complete company profile |
+| GET | `/auth/google/redirect` | No | Redirect to Google |
+| GET | `/auth/google/callback` | No | Google OAuth callback |
+| GET | `/captcha` | No (web) | CAPTCHA image |
 
 ---
 
-## Database Columns
+## Files Reference
 
-### `users` table (auth-related)
-
-| Column | Type | Description |
-|--------|------|-------------|
-| `email_verified_at` | timestamp, nullable | Set when email is verified |
-| `email_verification_token` | string, nullable | Random 64-char token for verification |
-| `email_verification_expires_at` | timestamp, nullable | Token expiry (24hr from generation) |
-| `google_id` | string, nullable, unique | Google account ID — null for password-based users |
-| `password` | string, nullable | Null for Google-only users |
-
-### `personal_access_tokens` table (Sanctum)
-
-| Column | Description |
-|--------|-------------|
-| `tokenable_type` | Model class (e.g. `App\Models\User`) |
-| `tokenable_id` | User ID |
-| `name` | Token name (`api-token`) |
-| `token` | SHA-256 hash of the plain text token |
-| `last_used_at` | Updated on every authenticated request |
-| `expires_at` | Optional expiry (null = never expires) |
-
----
-
-## Frontend Pages
-
-| Route | Component | Purpose |
-|-------|-----------|---------|
-| `/register` | `auth/RegisterPage.vue` | Registration form |
-| `/verify-email` | `auth/EmailVerificationPage.vue` | Resend verification email |
-| `/login` | `auth/LoginPage.vue` | Login form + status banners |
-| `/forgot-password` | `auth/ForgotPasswordPage.vue` | Request password reset link |
-| `/reset-password` | `auth/ResetPasswordPage.vue` | Set new password |
-| `/` | `IndexPage.vue` | Landing page with logout |
-| `/401` | `errors/Error401Page.vue` | Unauthenticated error |
-| `/403` | `errors/Error403Page.vue` | Forbidden error |
-| `/404` | `errors/NotFoundPage.vue` | Not found error |
-| `/500` | `errors/Error500Page.vue` | Server error |
+| File | Role |
+|------|------|
+| `app/Http/Controllers/Auth/AuthController.php` | register, login, logout, me, updatePassword, completeCompanyProfile, resendVerification |
+| `app/Http/Controllers/Auth/PasswordResetController.php` | sendResetLink, reset |
+| `app/Http/Controllers/Auth/SocialAuthController.php` | Google OAuth |
+| `app/Http/Controllers/Auth/CaptchaController.php` | CAPTCHA image generation |
+| `app/Services/UserManager.php` | User creation, permission filtering |
+| `app/Services/EmailManager.php` | Verification tokens, email dispatch |
+| `app/Services/CompanyProfileManager.php` | Create/upsert company profile |
+| `routes/api.php` | API route definitions |
+| `routes/web.php` | Web routes (verify email, captcha, Google OAuth, SPA catch-all) |
+| `resources/js/pages/auth/` | All auth Vue pages |

@@ -28,7 +28,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
     Route::put('/password', [AuthController::class, 'updatePassword']);
-    Route::post('/profile/company', [AuthController::class, 'completeCompanyProfile']);
+    Route::post('/profile/company', [AuthController::class, 'completeCompanyProfile'])->middleware('web');
 });
 
 Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {

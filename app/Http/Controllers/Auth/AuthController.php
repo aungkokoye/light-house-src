@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\PersonalAccessToken;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -22,7 +23,7 @@ class AuthController extends Controller
         $validated = $request->validate([
             'name'     => ['required', 'string', 'max:255', 'unique:users'],
             'email'    => ['required', 'email', 'unique:users'],
-            'password' => ['required', 'min:8', 'confirmed'],
+            'password' => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()],
             'captcha'  => ['required', 'string'],
 
             'company_profile'             => ['required', 'array'],
@@ -156,7 +157,7 @@ class AuthController extends Controller
 
         $request->validate([
             'current_password' => ['required'],
-            'password'         => ['required', 'min:8', 'confirmed'],
+            'password'         => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()],
         ]);
 
         if (! Hash::check($request->current_password, $user->password)) {
@@ -188,12 +189,24 @@ class AuthController extends Controller
             'description' => ['nullable', 'string', 'max:10000'],
             'address'     => ['required', 'string', 'max:2000'],
             'phone'       => ['required', 'string', 'max:50'],
+            'captcha'     => ['required', 'string'],
         ], [], [
             'name'    => 'company name',
             'role'    => 'role / title',
             'address' => 'address',
             'phone'   => 'phone',
         ]);
+
+        $expected = Session::get('captcha');
+
+        if (! $expected || strtolower($request->captcha) !== $expected) {
+            Session::forget('captcha');
+            throw ValidationException::withMessages([
+                'captcha' => ['The captcha code is incorrect. Please try again.'],
+            ]);
+        }
+
+        Session::forget('captcha');
 
         $companyProfileManager->create($user, $data);
 

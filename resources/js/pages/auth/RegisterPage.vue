@@ -49,7 +49,7 @@
                         <input
                             v-model="form.password"
                             type="password"
-                            placeholder="Min. 8 characters"
+                            placeholder="Min. 8 chars, A-z & 0-9"
                             required
                             class="w-full px-4 py-2.5 rounded-xl border border-gray-400 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                         />

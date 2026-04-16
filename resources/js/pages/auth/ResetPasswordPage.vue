@@ -24,7 +24,7 @@
 
                 <template v-else-if="!success">
                     <h1 class="text-2xl font-bold text-gray-900 mb-2">Set new password</h1>
-                    <p class="text-sm text-gray-500 mb-6">Choose a strong password of at least 8 characters.</p>
+                    <p class="text-sm text-gray-500 mb-6">Min. 8 characters with uppercase, lowercase and a number.</p>
 
                     <form @submit.prevent="submit" class="space-y-4">
                         <div>
@@ -32,7 +32,7 @@
                             <input
                                 v-model="form.password"
                                 type="password"
-                                placeholder="Min. 8 characters"
+                                placeholder="Min. 8 chars, A-z & 0-9"
                                 required
                                 class="w-full px-4 py-2.5 rounded-xl border border-gray-400 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                             />

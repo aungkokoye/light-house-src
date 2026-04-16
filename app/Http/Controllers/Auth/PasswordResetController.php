@@ -31,7 +31,7 @@ class PasswordResetController extends Controller
         $request->validate([
             'token'    => ['required'],
             'email'    => ['required', 'email'],
-            'password' => ['required', 'min:8', 'confirmed'],
+            'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::min(8)->mixedCase()->numbers()],
         ]);
 
         $status = Password::reset(

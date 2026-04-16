@@ -37,7 +37,7 @@
 
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1.5">Phone</label>
-                            <input v-model="form.phone" type="text"
+                            <input v-model="form.phone" type="text" placeholder="+95 9 xxx xxx xxx"
                                 class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50" />
                             <p v-if="errors.phone" class="mt-1 text-xs text-red-500">{{ errors.phone[0] }}</p>
                         </div>

@@ -48,7 +48,7 @@
                                 New Password
                                 <span class="text-gray-300 font-normal">(leave blank to keep current)</span>
                             </label>
-                            <input v-model="form.password" type="password" placeholder="Min. 8 characters"
+                            <input v-model="form.password" type="password" placeholder="Min. 8 chars, A-z & 0-9"
                                 class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
                                 :class="errors.password ? 'border-red-300' : 'border-gray-300'" />
                             <p v-if="errors.password" class="mt-1 text-xs text-red-500">{{ errors.password[0] }}</p>
@@ -118,7 +118,7 @@
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1.5">Phone</label>
-                                        <input v-model="form.company_profile.phone" type="text"
+                                        <input v-model="form.company_profile.phone" type="text" placeholder="+95 9 xxx xxx xxx"
                                             class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50" />
                                     </div>
                                 </div>
@@ -169,7 +169,7 @@
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1.5">Phone</label>
-                                        <input v-model="form.staff_profile.phone" type="text"
+                                        <input v-model="form.staff_profile.phone" type="text" placeholder="+95 9 xxx xxx xxx"
                                             class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
                                             :class="errors['staff_profile.phone'] ? 'border-red-300' : 'border-gray-300'" />
                                         <p v-if="errors['staff_profile.phone']" class="mt-1 text-xs text-red-500">{{ errors['staff_profile.phone'][0] }}</p>
