@@ -45,14 +45,25 @@ class SocialAuthController extends Controller
                     'email_verified_at' => now(),
                     'password'          => null,
                 ]);
-                $user->assignRole('user');
+                $user->assignRole('customer');
             } catch (\Throwable $e) {
                 return redirect('/login?error=google_failed');
             }
         }
 
+        if (! $user->activated) {
+            return redirect('/login?error=account_deactivated');
+        }
+
         $token = $user->createToken('api-token')->plainTextToken;
 
-        return redirect('/auth/callback?token=' . urlencode($token));
+        $needsProfile = $user->isCompany() && ! $user->companyProfile()->exists();
+
+        $url = '/auth/callback?token=' . urlencode($token);
+        if ($needsProfile) {
+            $url .= '&needs_profile=1';
+        }
+
+        return redirect($url);
     }
 }

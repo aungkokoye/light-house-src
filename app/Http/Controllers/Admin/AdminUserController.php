@@ -6,10 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreUserRequest;
 use App\Http\Requests\Admin\UpdateUserRequest;
 use App\Models\User;
+use App\Services\CompanyProfileManager;
 use App\Services\EmailManager;
+use App\Services\StaffProfileManager;
 use App\Services\UserManager;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class AdminUserController extends Controller
 {
@@ -19,17 +23,9 @@ class AdminUserController extends Controller
     public function __construct(
         private readonly UserManager $userManager,
         private readonly EmailManager $emailManager,
+        private readonly CompanyProfileManager $companyProfileManager,
+        private readonly StaffProfileManager $staffProfileManager,
     ) {}
-
-    public function types(): JsonResponse
-    {
-        $types = collect([
-            User::STAFF_TYPE_ID   => 'Staff',
-            User::COMPANY_TYPE_ID => 'Company',
-        ])->map(fn($name, $id) => ['id' => $id, 'name' => $name])->values();
-
-        return response()->json($types);
-    }
 
     public function index(Request $request): JsonResponse
     {
@@ -42,15 +38,32 @@ class AdminUserController extends Controller
 
     public function store(StoreUserRequest $request): JsonResponse
     {
-        $user = $this->userManager->create(
-            name: $request->name,
-            email: $request->email,
-            password: $request->password,
-            role: $request->role,
-            activated: $request->boolean('activated', true),
-            emailVerified: $request->boolean('email_verified'),
-            permissions: $request->input('permissions', []),
-        );
+        $user = DB::transaction(function () use ($request) {
+            $user = $this->userManager->create(
+                name:          $request->name,
+                email:         $request->email,
+                password:      $request->password,
+                role:          $request->role,
+                activated:     $request->boolean('activated', true),
+                emailVerified: $request->boolean('email_verified'),
+                permissions:   $request->input('permissions', []),
+            );
+
+            $createdBy = Auth::id();
+
+            if ($request->role === 'customer' && $request->filled('company_profile')) {
+                $this->companyProfileManager->create($user, $request->input('company_profile'), $createdBy);
+            } elseif ($request->role !== 'customer' && $request->filled('staff_profile')) {
+                $this->staffProfileManager->create(
+                    $user,
+                    $request->input('staff_profile'),
+                    $request->input('staff_role', []),
+                    $createdBy,
+                );
+            }
+
+            return $user;
+        });
 
         if (! $request->boolean('email_verified')) {
             $this->emailManager->sendVerificationEmail($user);
@@ -61,18 +74,19 @@ class AdminUserController extends Controller
 
     public function show(User $user): JsonResponse
     {
-        $relations = ['roles', 'permissions', 'createdBy'];
+        $user->load(['roles', 'permissions', 'createdBy']);
 
         if ($user->isStaff()) {
-            $relations[] = 'staffProfile.createdBy';
-            $relations['staffProfile.staffRoles'] = fn($q) => $q->orderBy('start_date', 'desc');
-            $relations[] = 'staffProfile.staffRoles.position';
-            $relations[] = 'staffProfile.staffRoles.site';
+            $user->load([
+                'staffProfile.createdBy',
+                'staffProfile.staffRoles' => fn($q) => $q
+                    ->orderBy('start_date', 'desc')
+                    ->with(['position', 'site']),
+            ]);
         } elseif ($user->isCompany()) {
-            $relations[] = 'companyProfile.createdBy';
+            $user->load('companyProfile.createdBy');
         }
 
-        $user->load($relations);
         $user->created_by_name  = $user->createdBy?->name  ?? config('app.default_creator_name');
         $user->created_by_email = $user->createdBy?->email ?? config('app.default_creator_email');
 
@@ -84,16 +98,33 @@ class AdminUserController extends Controller
         $wasVerified = $user->email_verified_at !== null;
         $nowVerified = $request->boolean('email_verified');
 
-        $user = $this->userManager->update(
-            user: $user,
-            name: $request->name,
-            email: $request->email,
-            role: $request->role,
-            activated: $request->boolean('activated', true),
-            emailVerified: $nowVerified,
-            password: $request->filled('password') ? $request->password : null,
-            permissions: $request->input('permissions', []),
-        );
+        $user = DB::transaction(function () use ($request, $user, $nowVerified) {
+            $updated = $this->userManager->update(
+                user:          $user,
+                name:          $request->name,
+                email:         $request->email,
+                role:          $request->role,
+                activated:     $request->boolean('activated', true),
+                emailVerified: $nowVerified,
+                password:      $request->filled('password') ? $request->password : null,
+                permissions:   $request->input('permissions', []),
+            );
+
+            $createdBy = Auth::id();
+
+            if ($request->role === 'customer' && $request->filled('company_profile')) {
+                $this->companyProfileManager->upsert($updated, $request->input('company_profile'), $createdBy);
+            } elseif ($request->role !== 'customer' && $request->filled('staff_profile')) {
+                $this->staffProfileManager->upsert(
+                    $updated,
+                    $request->input('staff_profile'),
+                    $request->input('staff_role'),
+                    $createdBy,
+                );
+            }
+
+            return $updated;
+        });
 
         if ($wasVerified && ! $nowVerified) {
             $this->emailManager->sendVerificationEmail($user);

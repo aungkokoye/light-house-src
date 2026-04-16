@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -119,6 +120,20 @@ return new class extends Migration
         app('cache')
             ->store(config('permission.cache.store') != 'default' ? config('permission.cache.store') : null)
             ->forget(config('permission.cache.key'));
+
+        $now = now();
+
+        DB::table($tableNames['permissions'])->insert(
+            collect(['view', 'create', 'edit', 'delete', 'super'])
+                ->map(fn ($name) => ['name' => $name, 'guard_name' => 'web', 'created_at' => $now, 'updated_at' => $now])
+                ->toArray()
+        );
+
+        DB::table($tableNames['roles'])->insert(
+            collect(['admin', 'customer', 'user'])
+                ->map(fn ($name) => ['name' => $name, 'guard_name' => 'web', 'created_at' => $now, 'updated_at' => $now])
+                ->toArray()
+        );
     }
 
     /**

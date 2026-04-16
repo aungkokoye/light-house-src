@@ -27,7 +27,7 @@ class UserSeeder extends Seeder
             ['name' => 'Bago Site',      'description' => 'Printing site in Bago.',           'address' => 'Bago, Myanmar',      'phone' => '09-444-444'],
         ])->map(fn ($s) => Site::create($s));
 
-        // --- Staff positions (created first — needed by all staff roles) ---
+        // --- Staff positions ---
         $positions = collect([
             ['name' => 'Operator Manager',   'description' => 'Operates printing system application.'],
             ['name' => 'Press Operator',     'description' => 'Operates printing press machines.'],
@@ -40,7 +40,7 @@ class UserSeeder extends Seeder
 
         $operatorManagerId = $positions->firstWhere('name', 'Operator Manager')->id;
 
-        // --- Admins (type = staff) ---
+        // --- Admins (staff) ---
         $admin = $this->createAdmin(
             name:        'Admin User',
             email:       'admin@lighthouse.com',
@@ -62,44 +62,40 @@ class UserSeeder extends Seeder
             now:         $now,
         );
 
-        // --- Company users (type = 2) ---
-        User::factory(10)->create([
-            'type'              => User::COMPANY_TYPE_ID,
-            'email_verified_at' => $now,
-        ])->each(function (User $user) use ($admin) {
-            $user->assignRole('user');
+        // --- Customer users ---
+        User::factory(10)->create(['email_verified_at' => $now])
+            ->each(function (User $user) use ($admin) {
+                $user->assignRole('customer');
 
-            CompanyProfile::create([
-                'user_id'     => $user->id,
-                'name'        => fake()->company(),
-                'role'        => fake()->jobTitle(),
-                'description' => fake()->sentence(),
-                'address'     => fake()->address(),
-                'phone'       => fake()->phoneNumber(),
-                'created_by'  => $admin->id,
-            ]);
-        });
+                CompanyProfile::create([
+                    'user_id'     => $user->id,
+                    'name'        => fake()->company(),
+                    'role'        => fake()->jobTitle(),
+                    'description' => fake()->sentence(),
+                    'address'     => fake()->address(),
+                    'phone'       => fake()->phoneNumber(),
+                    'created_by'  => $admin->id,
+                ]);
+            });
 
-        // --- Staff users (type = 1) ---
-        User::factory(30)->create([
-            'type'              => User::STAFF_TYPE_ID,
-            'email_verified_at' => $now,
-        ])->each(function (User $user) use ($admin, $positions, $sites) {
-            $user->assignRole('user');
+        // --- Staff users (role = user) ---
+        User::factory(30)->create(['email_verified_at' => $now])
+            ->each(function (User $user) use ($admin, $positions, $sites) {
+                $user->assignRole('user');
 
-            $staffProfile = StaffProfile::create([
-                'user_id'    => $user->id,
-                'full_name'  => $user->name,
-                'nrc_no'     => fake()->numerify('##/######(N)######'),
-                'dob'        => fake()->dateTimeBetween('-50 years', '-20 years')->format('Y-m-d'),
-                'address'    => fake()->address(),
-                'phone'      => fake()->phoneNumber(),
-                'created_by' => $admin->id,
-                'start_date' => fake()->dateTimeBetween('-5 years', '-6 months')->format('Y-m-d'),
-            ]);
+                $staffProfile = StaffProfile::create([
+                    'user_id'    => $user->id,
+                    'full_name'  => $user->name,
+                    'nrc_no'     => fake()->numerify('##/######(N)######'),
+                    'dob'        => fake()->dateTimeBetween('-50 years', '-20 years')->format('Y-m-d'),
+                    'address'    => fake()->address(),
+                    'phone'      => fake()->phoneNumber(),
+                    'created_by' => $admin->id,
+                    'start_date' => fake()->dateTimeBetween('-5 years', '-6 months')->format('Y-m-d'),
+                ]);
 
-            $this->seedStaffRoles($staffProfile, $positions, $sites, $admin->id);
-        });
+                $this->seedStaffRoles($staffProfile, $positions, $sites, $admin->id);
+            });
     }
 
     private function createAdmin(
@@ -113,7 +109,6 @@ class UserSeeder extends Seeder
         Carbon $now = new Carbon,
     ): User {
         $user = User::factory()->create([
-            'type'              => User::STAFF_TYPE_ID,
             'name'              => $name,
             'email'             => $email,
             'email_verified_at' => $now,

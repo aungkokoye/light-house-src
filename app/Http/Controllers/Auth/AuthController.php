@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\CompanyProfileManager;
 use App\Services\EmailManager;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\PersonalAccessToken;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
@@ -15,13 +17,26 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    public function register(Request $request, EmailManager $emailManager): JsonResponse
+    public function register(Request $request, EmailManager $emailManager, CompanyProfileManager $companyProfileManager): JsonResponse
     {
-        $request->validate([
+        $validated = $request->validate([
             'name'     => ['required', 'string', 'max:255', 'unique:users'],
             'email'    => ['required', 'email', 'unique:users'],
             'password' => ['required', 'min:8', 'confirmed'],
             'captcha'  => ['required', 'string'],
+
+            'company_profile'             => ['required', 'array'],
+            'company_profile.name'        => ['required', 'string', 'max:255'],
+            'company_profile.role'        => ['required', 'string', 'max:255'],
+            'company_profile.description' => ['nullable', 'string', 'max:10000'],
+            'company_profile.address'     => ['required', 'string', 'max:2000'],
+            'company_profile.phone'       => ['required', 'string', 'max:50'],
+        ], [], [
+            'company_profile.name'        => 'company name',
+            'company_profile.role'        => 'role / title',
+            'company_profile.description' => 'description',
+            'company_profile.address'     => 'address',
+            'company_profile.phone'       => 'phone',
         ]);
 
         $expected = Session::get('captcha');
@@ -36,13 +51,20 @@ class AuthController extends Controller
         Session::forget('captcha');
 
         try {
-            $user = User::create([
-                'name'     => $request->name,
-                'email'    => $request->email,
-                'password' => $request->password,
-            ]);
+            $user = DB::transaction(function () use ($validated, $companyProfileManager) {
+                $user = User::create([
+                    'name'     => $validated['name'],
+                    'email'    => $validated['email'],
+                    'password' => $validated['password'],
+                ]);
 
-            $user->assignRole('user');
+                $user->assignRole('customer');
+
+                $companyProfileManager->create($user, $validated['company_profile']);
+
+                return $user;
+            });
+
             $emailManager->sendVerificationEmail($user);
         } catch (\Throwable $e) {
             return response()->json([
@@ -111,7 +133,17 @@ class AuthController extends Controller
 
     public function me(Request $request): JsonResponse
     {
-        return response()->json($request->user()->load(['roles', 'permissions']));
+        $user = $request->user()->load(['roles', 'permissions']);
+
+        if ($user->isCompany()) {
+            $user->load('companyProfile');
+        } elseif ($user->isStaff()) {
+            $user->load([
+                'staffProfile.staffRoles' => fn($q) => $q->whereNull('end_date')->with(['position', 'site'])->limit(1),
+            ]);
+        }
+
+        return response()->json($user);
     }
 
     public function updatePassword(Request $request): JsonResponse
@@ -136,6 +168,36 @@ class AuthController extends Controller
         $user->forceFill(['password' => Hash::make($request->password)])->save();
 
         return response()->json(['message' => 'Password updated successfully.']);
+    }
+
+    public function completeCompanyProfile(Request $request, CompanyProfileManager $companyProfileManager): JsonResponse
+    {
+        $user = $request->user()->load('roles');
+
+        if (! $user->isCompany()) {
+            return response()->json(['message' => 'Only customer accounts can have a company profile.'], 403);
+        }
+
+        if ($user->companyProfile()->exists()) {
+            return response()->json(['message' => 'Company profile already exists.'], 422);
+        }
+
+        $data = $request->validate([
+            'name'        => ['required', 'string', 'max:255'],
+            'role'        => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:10000'],
+            'address'     => ['required', 'string', 'max:2000'],
+            'phone'       => ['required', 'string', 'max:50'],
+        ], [], [
+            'name'    => 'company name',
+            'role'    => 'role / title',
+            'address' => 'address',
+            'phone'   => 'phone',
+        ]);
+
+        $companyProfileManager->create($user, $data);
+
+        return response()->json(['message' => 'Company profile saved.']);
     }
 
     public function resendVerification(Request $request, EmailManager $emailManager): JsonResponse

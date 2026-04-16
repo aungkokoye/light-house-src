@@ -18,7 +18,7 @@
                         <h1 class="text-3xl font-bold text-gray-900">Users</h1>
                         <p class="text-sm text-gray-500 mt-0.5">Manage all registered users.</p>
                     </div>
-                    <RouterLink v-if="can('create')" to="/admin/users/create"
+                    <RouterLink v-if="can('create')" :to="{ path: '/admin/users/create', query: { back: route.fullPath } }"
                         class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -39,13 +39,6 @@
                                 type="text" placeholder="Search name, email or company…"
                                 class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50" />
                         </div>
-
-                        <!-- Type -->
-                        <select v-model="filters.type" @change="fetchUsers(1)"
-                            class="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-gray-600">
-                            <option value="">All types</option>
-                            <option v-for="t in allTypes" :key="t.id" :value="t.id">{{ t.name }}</option>
-                        </select>
 
                         <!-- Position (staff only) -->
                         <select v-model="filters.position" @change="fetchUsers(1)"
@@ -77,15 +70,21 @@
                             <option value="false">Unverified</option>
                         </select>
 
-                        <!-- Updated from -->
-                        <input v-model="filters.updated_from" @change="fetchUsers(1)"
-                            type="date"
-                            class="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-gray-600" />
-
-                        <!-- Updated to -->
-                        <input v-model="filters.updated_to" @change="fetchUsers(1)"
-                            type="date"
-                            class="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-gray-600" />
+                        <!-- Updated from / to -->
+                        <div class="flex gap-2">
+                            <div class="relative flex-1">
+                                <label class="absolute -top-2 left-2.5 px-1 text-xs text-gray-400 bg-gray-50">From</label>
+                                <input v-model="filters.updated_from" @change="fetchUsers(1)"
+                                    type="date"
+                                    class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-gray-600" />
+                            </div>
+                            <div class="relative flex-1">
+                                <label class="absolute -top-2 left-2.5 px-1 text-xs text-gray-400 bg-gray-50">To</label>
+                                <input v-model="filters.updated_to" @change="fetchUsers(1)"
+                                    type="date"
+                                    class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-gray-600" />
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Active filters / reset -->
@@ -164,17 +163,13 @@
                                                 :class="u.roles?.[0]?.name === 'admin' ? 'bg-indigo-50 text-indigo-700' : 'bg-gray-100 text-gray-600'">
                                                 {{ u.roles?.[0]?.name ?? 'user' }}
                                             </span>
-                                            <span v-if="u.type" class="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full"
-                                                :class="u.type === 2 ? 'bg-amber-50 text-amber-700' : 'bg-sky-50 text-sky-700'">
-                                                {{ allTypes.find(t => t.id === u.type)?.name }}
-                                            </span>
                                         </div>
                                     </td>
                                     <td class="px-6 py-3.5 text-xs text-gray-600">
-                                        <span v-if="u.type === 1">
+                                        <span v-if="u.roles?.[0]?.name && u.roles?.[0]?.name !== 'customer'">
                                             {{ u.staff_profile?.current_role?.position?.name ?? '—' }}
                                         </span>
-                                        <span v-else-if="u.type === 2">
+                                        <span v-else-if="u.roles?.[0]?.name === 'customer'">
                                             {{ u.company_profile?.role ?? '—' }}
                                         </span>
                                         <span v-else class="text-gray-300">—</span>
@@ -201,14 +196,14 @@
                                     </td>
                                     <td class="px-6 py-3.5">
                                         <div class="flex items-center gap-1">
-                                            <RouterLink v-if="can('view')" :to="`/admin/users/${u.id}`"
+                                            <RouterLink v-if="can('view')" :to="{ path: `/admin/users/${u.id}`, query: { back: route.fullPath } }"
                                                 class="p-1.5 text-indigo-600 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
                                                 </svg>
                                             </RouterLink>
-                                            <RouterLink v-if="can('edit')" :to="`/admin/users/${u.id}/edit`"
+                                            <RouterLink v-if="can('edit')" :to="{ path: `/admin/users/${u.id}/edit`, query: { back: route.fullPath } }"
                                                 class="p-1.5 text-indigo-600 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
@@ -286,7 +281,6 @@ const sortBy = ref('id')
 const sortDir = ref('asc')
 const myPermissions = ref([])
 const allRoles = ref([])
-const allTypes = ref([])
 const allPositions = ref([])
 
 function can(permission) {
@@ -307,7 +301,6 @@ const columns = [
 const filters = ref({
     search:         route.query.search         ?? '',
     position:       route.query.position       ?? '',
-    type:           route.query.type           ?? '',
     role:           route.query.role           ?? '',
     activated:      route.query.activated      ?? '',
     email_verified: route.query.email_verified ?? '',
@@ -336,7 +329,8 @@ const visiblePages = computed(() => {
 })
 
 function resetFilters() {
-    filters.value = { search: '', position: '', type: '', role: '', activated: '', email_verified: '', updated_from: '', updated_to: '' }
+    filters.value = { search: '', position: '', role: '', activated: '', email_verified: '', updated_from: '', updated_to: '' }
+    router.replace({ query: {} })
     fetchUsers(1)
 }
 
@@ -397,14 +391,12 @@ onMounted(async () => {
     const me = await requireAdmin()
     if (!me) return
     try {
-        const [{ data: roles }, { data: types }, { data: positions }] = await Promise.all([
-            axios.get('/api/admin/roles'),
-            axios.get('/api/admin/users/types'),
+        const [{ data: roles }, { data: positions }] = await Promise.all([
+            axios.get('/api/admin/roles/all'),
             axios.get('/api/admin/staff-positions/all'),
         ])
         myPermissions.value = me.permissions?.map(p => p.name) ?? []
         allRoles.value = roles.map(r => r.name)
-        allTypes.value = types
         allPositions.value = positions
     } catch {
         // leave empty
@@ -414,6 +406,9 @@ onMounted(async () => {
     if (route.query.per_page) perPage.value = Number(route.query.per_page)
     if (route.query.sort_by)  sortBy.value  = route.query.sort_by
     if (route.query.sort_dir) sortDir.value  = route.query.sort_dir
+    Object.keys(filters.value).forEach(key => {
+        if (route.query[key] !== undefined) filters.value[key] = route.query[key]
+    })
     fetchUsers(Number(route.query.page) || 1)
 })
 </script>

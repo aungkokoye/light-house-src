@@ -10,12 +10,17 @@ import RegisterPage from '../pages/auth/RegisterPage.vue';
 import EmailVerificationPage from '../pages/auth/EmailVerificationPage.vue';
 import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage.vue';
 import ResetPasswordPage from '../pages/auth/ResetPasswordPage.vue';
+import CompleteProfilePage from '../pages/auth/CompleteProfilePage.vue';
 
 // Admin — Users
 import AdminUsersPage from '../pages/admin/users/AdminUsersPage.vue';
 import AdminCreateUserPage from '../pages/admin/users/AdminCreateUserPage.vue';
 import AdminEditUserPage from '../pages/admin/users/AdminEditUserPage.vue';
 import AdminViewUserPage from '../pages/admin/users/AdminViewUserPage.vue';
+import AdminUserStaffRolesPage from '../pages/admin/users/AdminUserStaffRolesPage.vue';
+import AdminUserViewStaffRolePage from '../pages/admin/users/AdminUserViewStaffRolePage.vue';
+import AdminUserCreateStaffRolePage from '../pages/admin/users/AdminUserCreateStaffRolePage.vue';
+import AdminUserEditStaffRolePage from '../pages/admin/users/AdminUserEditStaffRolePage.vue';
 
 // Admin — Roles
 import AdminRolesPage from '../pages/admin/roles/AdminRolesPage.vue';
@@ -56,6 +61,7 @@ const routes = [
     { path: '/profile', component: ProfilePage },
     { path: '/forgot-password', component: ForgotPasswordPage },
     { path: '/reset-password', component: ResetPasswordPage },
+    { path: '/complete-profile', component: CompleteProfilePage },
     { path: '/dashboard', component: DashboardPage },
     { path: '/admin/roles', component: AdminRolesPage },
     { path: '/admin/roles/create', component: AdminCreateRolePage },
@@ -77,6 +83,10 @@ const routes = [
     { path: '/admin/users/create', component: AdminCreateUserPage },
     { path: '/admin/users/:id', component: AdminViewUserPage },
     { path: '/admin/users/:id/edit', component: AdminEditUserPage },
+    { path: '/admin/users/:id/staff-roles',                    component: AdminUserStaffRolesPage },
+    { path: '/admin/users/:id/staff-roles/create',             component: AdminUserCreateStaffRolePage },
+    { path: '/admin/users/:id/staff-roles/:roleId',            component: AdminUserViewStaffRolePage },
+    { path: '/admin/users/:id/staff-roles/:roleId/edit',       component: AdminUserEditStaffRolePage },
     { path: '/401', component: Error401Page },
     { path: '/403', component: Error403Page },
     { path: '/404', component: NotFoundPage },

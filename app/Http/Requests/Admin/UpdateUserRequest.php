@@ -2,11 +2,14 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Http\Requests\Admin\Concerns\HasUserProfileRules;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class UpdateUserRequest extends FormRequest
 {
+    use HasUserProfileRules;
+
     public function authorize(): bool
     {
         return true;
@@ -14,17 +17,27 @@ class UpdateUserRequest extends FormRequest
 
     public function rules(): array
     {
+        return array_merge(
+            $this->baseRules(),
+            $this->permissionRules(),
+            $this->customerRules(),
+            $this->staffRules()
+        );
+    }
+
+    private function baseRules(): array
+    {
         $userId = $this->route('user')->id;
 
         return [
-            'name'      => ['required', 'string', 'max:255', Rule::unique('users')->ignore($userId)],
-            'email'     => ['required', 'email', Rule::unique('users')->ignore($userId)],
-            'password'  => ['nullable', 'min:8', 'confirmed'],
-            'role'      => ['required', 'string', Rule::exists('roles', 'name')],
-            'activated'      => ['boolean'],
-            'email_verified' => ['boolean'],
-            'permissions'    => ['nullable', 'array'],
-            'permissions.*'  => ['string', 'exists:permissions,name'],
+            'name'     => ['required', 'string', 'max:255', Rule::unique('users', 'name')->ignore($userId)],
+            'email'    => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($userId)],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+
+            'role' => ['required', 'string', Rule::exists('roles', 'name')],
+
+            'activated'      => ['sometimes', 'boolean'],
+            'email_verified' => ['sometimes', 'boolean'],
         ];
     }
 }

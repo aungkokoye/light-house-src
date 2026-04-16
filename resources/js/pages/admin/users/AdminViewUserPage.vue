@@ -10,17 +10,17 @@
                 <!-- Header -->
                 <div class="mb-8 flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <button @click="router.back()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <RouterLink :to="route.query.back || '/admin/users'" class="text-gray-400 hover:text-gray-600 transition-colors">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                             </svg>
-                        </button>
+                        </RouterLink>
                         <div>
                             <h1 class="text-3xl font-bold text-gray-900">User Details</h1>
                             <p class="text-sm text-gray-500 mt-0.5">Viewing account for <span class="font-medium text-gray-700">{{ user.name }}</span>.</p>
                         </div>
                     </div>
-                    <RouterLink :to="`/admin/users/${user.id}/edit`"
+                    <RouterLink v-if="can('edit')" :to="{ path: `/admin/users/${user.id}/edit`, query: { back: route.query.back || '/admin/users' } }"
                         class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931z" />
@@ -55,13 +55,6 @@
                     <div class="px-6 py-4 flex items-center justify-between">
                         <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">ID</span>
                         <span class="text-sm font-mono text-gray-600">{{ user.id }}</span>
-                    </div>
-                    <div class="px-6 py-4 flex items-center justify-between">
-                        <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">User Type</span>
-                        <span class="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full"
-                            :class="user.type === 1 ? 'bg-sky-50 text-sky-700' : user.type === 2 ? 'bg-amber-50 text-amber-700' : 'bg-gray-100 text-gray-500'">
-                            {{ user.type === 1 ? 'Staff' : user.type === 2 ? 'Company' : '—' }}
-                        </span>
                     </div>
                     <div class="px-6 py-4 flex items-center justify-between">
                         <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Email Verified</span>
@@ -112,7 +105,7 @@
                 </div>
 
                 <!-- Staff Profile -->
-                <div v-if="user.type === 1 && user.staff_profile" class="bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-50">
+                <div v-if="user.roles?.[0]?.name !== 'customer' && user.staff_profile" class="bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-50">
                     <div class="px-6 py-4">
                         <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Staff Profile</p>
                     </div>
@@ -162,7 +155,7 @@
                 </div>
 
                 <!-- Company Profile -->
-                <div v-if="user.type === 2 && user.company_profile" class="bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-50">
+                <div v-if="user.roles?.[0]?.name === 'customer' && user.company_profile" class="bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-50">
                     <div class="px-6 py-4">
                         <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Company Profile</p>
                     </div>
@@ -210,7 +203,7 @@
                 </div><!-- end grid -->
 
                 <!-- Staff Roles -->
-                <template v-if="user.type === 1 && user.staff_profile?.staff_roles?.length">
+                <template v-if="user.roles?.[0]?.name !== 'customer' && user.staff_profile?.staff_roles?.length">
                     <h2 class="text-xs font-semibold text-gray-600 uppercase tracking-wide mt-6 mb-2 px-1">Staff Roles</h2>
                     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                         <table class="w-full text-sm">
@@ -259,6 +252,11 @@ const { formatDate } = useFormatDate()
 const loading = ref(true)
 const user = ref(null)
 const resending = ref(false)
+const myPermissions = ref([])
+
+function can(permission) {
+    return myPermissions.value.includes('super') || myPermissions.value.includes(permission)
+}
 
 async function resendVerification() {
     resending.value = true
@@ -272,6 +270,8 @@ async function resendVerification() {
 onMounted(async () => {
     const me = await requireAdmin()
     if (!me) return
+
+    myPermissions.value = me.permissions?.map(p => p.name) ?? []
 
     try {
         const { data } = await axios.get(`/api/admin/users/${route.params.id}`)

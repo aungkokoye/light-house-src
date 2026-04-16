@@ -65,8 +65,8 @@ async function submit() {
     generalError.value = ''
     submitting.value = true
     try {
-        await axios.post('/api/admin/permissions', form.value)
-        router.push('/admin/permissions')
+        const { data } = await axios.post('/api/admin/permissions', form.value)
+        router.push(`/admin/permissions/${data.id}`)
     } catch (e) {
         if (e?.response?.status === 422) errors.value = e.response.data.errors ?? {}
         else generalError.value = 'Something went wrong. Please try again.'

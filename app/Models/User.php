@@ -15,14 +15,10 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
-    const int STAFF_TYPE_ID   = 1;
-    const int COMPANY_TYPE_ID = 2;
-
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
     protected $fillable = [
-        'type',
         'name',
         'email',
         'password',
@@ -37,7 +33,6 @@ class User extends Authenticatable implements MustVerifyEmail
     protected function casts(): array
     {
         return [
-            'type'              => 'integer',
             'email_verified_at' => 'datetime',
             'password'          => 'hashed',
         ];
@@ -55,7 +50,12 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function staffRoles(): HasManyThrough
     {
-        return $this->hasManyThrough(StaffRole::class, StaffProfile::class);
+        return $this->hasManyThrough(
+            StaffRole::class,
+            StaffProfile::class,
+            'user_id',          // FK on staff_profiles → users.id
+            'staff_profile_id', // FK on staff_roles → staff_profiles.id
+        );
     }
 
     public function createdBy(): BelongsTo
@@ -65,20 +65,11 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function isStaff(): bool
     {
-        return $this->type === self::STAFF_TYPE_ID;
+        return ! $this->hasRole('customer');
     }
 
     public function isCompany(): bool
     {
-        return $this->type === self::COMPANY_TYPE_ID;
-    }
-
-    public function getTypeName(): ?string
-    {
-        return match($this->type) {
-            self::STAFF_TYPE_ID   => 'Staff',
-            self::COMPANY_TYPE_ID => 'Company',
-            default               => null,
-        };
+        return $this->hasRole('customer');
     }
 }

@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminPermissionController;
 use App\Http\Controllers\Admin\AdminRoleController;
 use App\Http\Controllers\Admin\AdminSiteController;
 use App\Http\Controllers\Admin\AdminStaffPositionController;
+use App\Http\Controllers\Admin\AdminStaffRoleController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Models\StaffPosition;
 use App\Http\Controllers\Auth\AuthController;
@@ -27,9 +28,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
     Route::put('/password', [AuthController::class, 'updatePassword']);
+    Route::post('/profile/company', [AuthController::class, 'completeCompanyProfile']);
 });
 
 Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
+    Route::get('/roles/all',      [AdminRoleController::class, 'all']);
     Route::get('/roles',         [AdminRoleController::class, 'index'])  ->can('viewAny', Role::class);
     Route::post('/roles',        [AdminRoleController::class, 'store'])  ->can('create',  Role::class);
     Route::get('/roles/{role}',  [AdminRoleController::class, 'show'])   ->can('view',    'role');
@@ -42,18 +45,23 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::put('/permissions/{permission}', [AdminPermissionController::class, 'update']) ->can('update',  'permission');
     Route::delete('/permissions/{permission}',[AdminPermissionController::class,'destroy'])->can('delete',  'permission');
 
-    Route::get('/users/types',      [AdminUserController::class, 'types']);
     Route::get('/staff-positions/all',                    [AdminStaffPositionController::class, 'all']);
     Route::get('/staff-positions',                        [AdminStaffPositionController::class, 'index'])  ->can('viewAny', StaffPosition::class);
     Route::post('/staff-positions',                       [AdminStaffPositionController::class, 'store'])  ->can('create',  StaffPosition::class);
     Route::get('/staff-positions/{staffPosition}',        [AdminStaffPositionController::class, 'show'])   ->can('view',    'staffPosition');
     Route::put('/staff-positions/{staffPosition}',        [AdminStaffPositionController::class, 'update']) ->can('update',  'staffPosition');
     Route::delete('/staff-positions/{staffPosition}',     [AdminStaffPositionController::class, 'destroy'])->can('delete',  'staffPosition');
+    Route::get('/sites/all',      [AdminSiteController::class, 'all']);
     Route::get('/sites',          [AdminSiteController::class, 'index'])  ->can('viewAny', Site::class);
     Route::post('/sites',         [AdminSiteController::class, 'store'])  ->can('create',  Site::class);
     Route::get('/sites/{site}',   [AdminSiteController::class, 'show'])   ->can('view',    'site');
     Route::put('/sites/{site}',   [AdminSiteController::class, 'update']) ->can('update',  'site');
     Route::delete('/sites/{site}',[AdminSiteController::class, 'destroy'])->can('delete',  'site');
+    Route::get('/users/{user}/staff-roles',              [AdminStaffRoleController::class, 'index'])  ->can('viewAny', \App\Models\StaffRole::class);
+    Route::post('/users/{user}/staff-roles',             [AdminStaffRoleController::class, 'store'])  ->can('create',  \App\Models\StaffRole::class);
+    Route::get('/users/{user}/staff-roles/{staffRole}',  [AdminStaffRoleController::class, 'show'])   ->can('view',    'staffRole');
+    Route::put('/users/{user}/staff-roles/{staffRole}',  [AdminStaffRoleController::class, 'update']) ->can('update',  'staffRole');
+    Route::delete('/users/{user}/staff-roles/{staffRole}',[AdminStaffRoleController::class, 'destroy'])->can('delete',  'staffRole');
     Route::get('/users',         [AdminUserController::class, 'index'])
         ->can('viewAny', User::class);
     Route::post('/users',        [AdminUserController::class, 'store'])

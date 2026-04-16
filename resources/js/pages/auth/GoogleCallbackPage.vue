@@ -21,7 +21,8 @@ onMounted(() => {
     if (token) {
         clearAuth()
         localStorage.setItem('token', token)
-        window.location.replace('/')
+        const needsProfile = params.get('needs_profile') === '1'
+        window.location.replace(needsProfile ? '/complete-profile' : '/')
     } else {
         window.location.replace('/login?error=google_failed')
     }

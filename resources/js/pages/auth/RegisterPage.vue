@@ -1,6 +1,6 @@
 <template>
     <div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 flex items-center justify-center px-4">
-        <div class="w-full max-w-md">
+        <div class="w-full max-w-lg">
 
             <!-- Logo -->
             <div class="flex items-center justify-center mb-8">
@@ -66,6 +66,49 @@
                             required
                             class="w-full px-4 py-2.5 rounded-xl border border-gray-400 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                         />
+                    </div>
+
+                    <!-- Company Profile -->
+                    <div class="border-t border-gray-100 pt-4 mt-2">
+                        <p class="text-sm font-semibold text-gray-700 mb-3">Company Profile</p>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Company Name</label>
+                                <input v-model="form.company_profile.name" type="text" placeholder="Your company name"
+                                    class="w-full px-4 py-2.5 rounded-xl border text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                    :class="errors['company_profile.name'] ? 'border-red-400' : 'border-gray-400'" />
+                                <p v-if="errors['company_profile.name']" class="text-xs text-red-500 mt-1">{{ errors['company_profile.name'][0] }}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Role / Title</label>
+                                <input v-model="form.company_profile.role" type="text" placeholder="Your role or title"
+                                    class="w-full px-4 py-2.5 rounded-xl border text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                    :class="errors['company_profile.role'] ? 'border-red-400' : 'border-gray-400'" />
+                                <p v-if="errors['company_profile.role']" class="text-xs text-red-500 mt-1">{{ errors['company_profile.role'][0] }}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Phone</label>
+                                <input v-model="form.company_profile.phone" type="text" placeholder="+95 9 xxx xxx xxx"
+                                    class="w-full px-4 py-2.5 rounded-xl border text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                    :class="errors['company_profile.phone'] ? 'border-red-400' : 'border-gray-400'" />
+                                <p v-if="errors['company_profile.phone']" class="text-xs text-red-500 mt-1">{{ errors['company_profile.phone'][0] }}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Address</label>
+                                <input v-model="form.company_profile.address" type="text" placeholder="Company address"
+                                    class="w-full px-4 py-2.5 rounded-xl border text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                    :class="errors['company_profile.address'] ? 'border-red-400' : 'border-gray-400'" />
+                                <p v-if="errors['company_profile.address']" class="text-xs text-red-500 mt-1">{{ errors['company_profile.address'][0] }}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                    Description
+                                    <span class="text-gray-400 font-normal">(optional)</span>
+                                </label>
+                                <textarea v-model="form.company_profile.description" rows="3" placeholder="Brief description of your company"
+                                    class="w-full px-4 py-2.5 rounded-xl border border-gray-400 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition resize-none"></textarea>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Captcha -->
@@ -144,6 +187,13 @@ const form = reactive({
     password: '',
     password_confirmation: '',
     captcha: '',
+    company_profile: {
+        name: '',
+        role: '',
+        phone: '',
+        address: '',
+        description: '',
+    },
 })
 
 function buildCaptchaUrl() {

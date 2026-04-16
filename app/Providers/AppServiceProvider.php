@@ -4,10 +4,12 @@ namespace App\Providers;
 
 use App\Models\Site;
 use App\Models\StaffPosition;
+use App\Models\StaffRole;
 use App\Policies\PermissionPolicy;
 use App\Policies\RolePolicy;
 use App\Policies\SitePolicy;
 use App\Policies\StaffPositionPolicy;
+use App\Policies\StaffRolePolicy;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -33,6 +35,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Permission::class, PermissionPolicy::class);
         Gate::policy(Site::class, SitePolicy::class);
         Gate::policy(StaffPosition::class, StaffPositionPolicy::class);
+        Gate::policy(StaffRole::class, StaffRolePolicy::class);
 
         ResetPassword::createUrlUsing(function ($user, string $token) {
             return url('/reset-password?token=' . $token . '&email=' . urlencode($user->email));

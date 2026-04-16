@@ -12,8 +12,11 @@ class UserRepository
     {
         return User::with([
             'roles',
-            'staffProfile.currentRole.position',
+            // Load profiles for all users; companyProfile for customers,
+            // staffProfile.currentRole.position for staff — Eloquent batches these
+            // so it's 3 queries regardless of result set size.
             'companyProfile',
+            'staffProfile.currentRole.position',
         ]);
     }
 
@@ -41,8 +44,6 @@ class UserRepository
 
     public function delete(User $user): void
     {
-        $user->syncRoles([]);
-        $user->syncPermissions([]);
         $user->delete();
     }
 }

@@ -2,12 +2,11 @@
 
 namespace App\Filters;
 
-use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 
 class UserFilter
 {
-    private const SORTABLE = ['id', 'name', 'email', 'email_verified_at', 'activated', 'updated_at'];
+    private const array SORTABLE = ['id', 'name', 'email', 'email_verified_at', 'activated', 'updated_at'];
 
     public function __construct(private Builder $query) {}
 
@@ -31,27 +30,14 @@ class UserFilter
 
     public function position(?string $positionId): static
     {
-        if ($positionId === null) {
+        if ($positionId === null || $positionId === '') {
             return $this;
         }
 
-        $this->query->where('type', User::STAFF_TYPE_ID);
-
-        if ($positionId !== '') {
-            $this->query->whereHas('staffRoles', fn($q) => $q
-                ->where('staff_position_id', (int) $positionId)
-                ->whereNull('end_date')
-            );
-        }
-
-        return $this;
-    }
-
-    public function type(?string $type): static
-    {
-        if ($type !== null && $type !== '') {
-            $this->query->where('type', (int) $type);
-        }
+        $this->query->whereHas('staffRoles', fn($q) => $q
+            ->where('staff_position_id', (int) $positionId)
+            ->whereNull('end_date')
+        );
 
         return $this;
     }

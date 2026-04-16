@@ -21,7 +21,6 @@ class UserManager
         $query = UserFilter::for($this->repo->query())
             ->search($request->input('search'))
             ->position($request->input('position'))
-            ->type($request->input('type'))
             ->role($request->input('role'))
             ->activated($request->input('activated'))
             ->emailVerified($request->input('email_verified'))
@@ -109,6 +108,8 @@ class UserManager
 
     public function delete(User $user): void
     {
+        $user->syncRoles([]);
+        $user->syncPermissions([]);
         $this->repo->delete($user);
     }
 
