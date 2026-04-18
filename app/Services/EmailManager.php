@@ -13,7 +13,7 @@ class EmailManager
 
     public function sendContactInquiry(string $name, string $contact, string $service, string $message): void
     {
-        Notification::route('mail', 'info@lighthouse-print.com')
+        Notification::route('mail', env('CONTACT_INQUIRY_EMAIL', 'info@lighthouse-print.com'))
             ->notify(new ContactInquiryNotification($name, $contact, $service, $message));
     }
 
