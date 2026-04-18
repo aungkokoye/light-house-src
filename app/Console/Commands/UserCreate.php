@@ -136,19 +136,27 @@ class UserCreate extends Command
 
         $positions = StaffPosition::orderBy('name')->pluck('name', 'id')->toArray();
         if (empty($positions)) {
-            $this->error('No staff positions found. Run the seeder first.');
-            exit(self::FAILURE);
+            $this->warn('No staff positions found.');
+            $newPositionName = $this->ask('Enter a new staff position name to create');
+            $position = StaffPosition::create(['name' => $newPositionName]);
+            $positionId = $position->id;
+            $positionName = $position->name;
+        } else {
+            $positionName = $this->choice('Position', array_values($positions));
+            $positionId   = array_search($positionName, $positions);
         }
-        $positionName = $this->choice('Position', array_values($positions));
-        $positionId   = array_search($positionName, $positions);
 
         $sites = Site::orderBy('name')->pluck('name', 'id')->toArray();
         if (empty($sites)) {
-            $this->error('No sites found. Run the seeder first.');
-            exit(self::FAILURE);
+            $this->warn('No sites found.');
+            $newSiteName = $this->ask('Enter a new site name to create');
+            $site = Site::create(['name' => $newSiteName]);
+            $siteId = $site->id;
+            $siteName = $site->name;
+        } else {
+            $siteName = $this->choice('Site', array_values($sites));
+            $siteId   = array_search($siteName, $sites);
         }
-        $siteName = $this->choice('Site', array_values($sites));
-        $siteId   = array_search($siteName, $sites);
 
         $salary    = $this->ask('Salary (integer)');
         $startDate = $this->ask('Role start date (YYYY-MM-DD)');
