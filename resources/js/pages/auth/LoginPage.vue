@@ -211,12 +211,16 @@ async function handleSubmit() {
         localStorage.setItem('token', data.token)
         window.location.href = '/'
     } catch (e) {
-        const errors = e.response?.data?.errors
-        if (errors?.captcha) {
-            refreshCaptcha()
-            captchaError.value = errors.captcha[0]
+        if (e.response?.status === 429) {
+            error.value = 'Too many login attempts. Please wait a minute and try again.'
         } else {
-            error.value = e.response?.data?.message ?? 'Invalid email or password.'
+            const errors = e.response?.data?.errors
+            if (errors?.captcha) {
+                refreshCaptcha()
+                captchaError.value = errors.captcha[0]
+            } else {
+                error.value = e.response?.data?.message ?? 'Invalid email or password.'
+            }
         }
     } finally {
         loading.value = false

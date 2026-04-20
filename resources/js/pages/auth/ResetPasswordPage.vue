@@ -117,9 +117,13 @@ async function submit() {
         })
         success.value = true
     } catch (e) {
-        errors.value = e.response?.data?.errors ?? {}
-        if (!Object.keys(errors.value).length) {
-            errors.value = { message: e.response?.data?.message ?? 'Something went wrong.' }
+        if (e.response?.status === 429) {
+            errors.value = { message: 'Too many attempts. Please wait a minute and try again.' }
+        } else {
+            errors.value = e.response?.data?.errors ?? {}
+            if (!Object.keys(errors.value).length) {
+                errors.value = { message: e.response?.data?.message ?? 'Something went wrong.' }
+            }
         }
     } finally {
         loading.value = false

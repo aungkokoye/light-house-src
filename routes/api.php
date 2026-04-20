@@ -16,22 +16,22 @@ use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
-Route::post('/contact', [ContactController::class, 'send'])->middleware(['web']);
+Route::post('/contact', [ContactController::class, 'send'])->middleware(['web', 'throttle:5,1']);
 
-Route::post('/register', [AuthController::class, 'register'])->middleware(['web']);
-Route::post('/login', [AuthController::class, 'login'])->middleware(['web']);
-Route::post('/email/resend', [AuthController::class, 'resendVerification']);
-Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink']);
-Route::post('/reset-password', [PasswordResetController::class, 'reset']);
+Route::post('/register', [AuthController::class, 'register'])->middleware(['web', 'throttle:10,1']);
+Route::post('/login', [AuthController::class, 'login'])->middleware(['web', 'throttle:5,1']);
+Route::post('/email/resend', [AuthController::class, 'resendVerification'])->middleware('throttle:5,1');
+Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])->middleware('throttle:5,1');
+Route::post('/reset-password', [PasswordResetController::class, 'reset'])->middleware('throttle:5,1');
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
     Route::put('/password', [AuthController::class, 'updatePassword']);
     Route::post('/profile/company', [AuthController::class, 'completeCompanyProfile'])->middleware('web');
 });
 
-Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
+Route::middleware(['auth:sanctum', 'role:admin', 'throttle:60,1'])->prefix('admin')->group(function () {
     Route::get('/roles/all',      [AdminRoleController::class, 'all']);
     Route::get('/roles',         [AdminRoleController::class, 'index'])  ->can('viewAny', Role::class);
     Route::post('/roles',        [AdminRoleController::class, 'store'])  ->can('create',  Role::class);
@@ -51,17 +51,20 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::get('/staff-positions/{staffPosition}',        [AdminStaffPositionController::class, 'show'])   ->can('view',    'staffPosition');
     Route::put('/staff-positions/{staffPosition}',        [AdminStaffPositionController::class, 'update']) ->can('update',  'staffPosition');
     Route::delete('/staff-positions/{staffPosition}',     [AdminStaffPositionController::class, 'destroy'])->can('delete',  'staffPosition');
+
     Route::get('/sites/all',      [AdminSiteController::class, 'all']);
     Route::get('/sites',          [AdminSiteController::class, 'index'])  ->can('viewAny', Site::class);
     Route::post('/sites',         [AdminSiteController::class, 'store'])  ->can('create',  Site::class);
     Route::get('/sites/{site}',   [AdminSiteController::class, 'show'])   ->can('view',    'site');
     Route::put('/sites/{site}',   [AdminSiteController::class, 'update']) ->can('update',  'site');
     Route::delete('/sites/{site}',[AdminSiteController::class, 'destroy'])->can('delete',  'site');
+
     Route::get('/users/{user}/staff-roles',              [AdminStaffRoleController::class, 'index'])  ->can('viewAny', \App\Models\StaffRole::class);
     Route::post('/users/{user}/staff-roles',             [AdminStaffRoleController::class, 'store'])  ->can('create',  \App\Models\StaffRole::class);
     Route::get('/users/{user}/staff-roles/{staffRole}',  [AdminStaffRoleController::class, 'show'])   ->can('view',    'staffRole');
     Route::put('/users/{user}/staff-roles/{staffRole}',  [AdminStaffRoleController::class, 'update']) ->can('update',  'staffRole');
     Route::delete('/users/{user}/staff-roles/{staffRole}',[AdminStaffRoleController::class, 'destroy'])->can('delete',  'staffRole');
+
     Route::get('/users',         [AdminUserController::class, 'index'])
         ->can('viewAny', User::class);
     Route::post('/users',        [AdminUserController::class, 'store'])
@@ -77,6 +80,6 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
 });
 
 // Example: restrict to permission
-Route::middleware(['auth:sanctum', 'permission:view users'])->group(function () {
+Route::middleware(['auth:sanctum', 'permission:view users', 'throttle:60,1'])->group(function () {
     // routes requiring a specific permission go here
 });

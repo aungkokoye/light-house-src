@@ -374,7 +374,9 @@ async function sendMessage() {
         refreshCaptcha()
         setTimeout(() => messageSent.value = false, 6000)
     } catch (e) {
-        if (e?.response?.status === 422) {
+        if (e?.response?.status === 429) {
+            sendError.value = 'Too many attempts. Please wait a minute and try again.'
+        } else if (e?.response?.status === 422) {
             const errs = e.response.data.errors ?? {}
             formErrors.value = { ...formErrors.value, ...errs }
             if (errs.captcha) refreshCaptcha()

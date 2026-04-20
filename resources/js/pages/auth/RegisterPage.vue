@@ -214,13 +214,17 @@ async function handleSubmit() {
         await axios.post('/api/register', form)
         router.push({ path: '/verify-email', query: { email: form.email } })
     } catch (e) {
-        const serverErrors = e.response?.data?.errors ?? {}
-        if (serverErrors.captcha) {
-            refreshCaptcha()
-        }
-        errors.value = serverErrors
-        if (!Object.keys(errors.value).length) {
-            errors.value = { message: 'We could not process your request. Please try again.' }
+        if (e.response?.status === 429) {
+            errors.value = { message: 'Too many attempts. Please wait a minute and try again.' }
+        } else {
+            const serverErrors = e.response?.data?.errors ?? {}
+            if (serverErrors.captcha) {
+                refreshCaptcha()
+            }
+            errors.value = serverErrors
+            if (!Object.keys(errors.value).length) {
+                errors.value = { message: 'We could not process your request. Please try again.' }
+            }
         }
     } finally {
         loading.value = false

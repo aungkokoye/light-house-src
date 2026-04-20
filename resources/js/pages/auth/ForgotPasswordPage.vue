@@ -88,7 +88,11 @@ async function submit() {
         await axios.post('/api/forgot-password', { email: email.value })
         sent.value = true
     } catch (e) {
-        error.value = e.response?.data?.errors?.email?.[0] ?? 'Something went wrong.'
+        if (e.response?.status === 429) {
+            error.value = 'Too many attempts. Please wait a minute and try again.'
+        } else {
+            error.value = e.response?.data?.errors?.email?.[0] ?? 'Something went wrong.'
+        }
     } finally {
         loading.value = false
     }
