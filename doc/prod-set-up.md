@@ -257,7 +257,7 @@ set -e
 APP_DIR="/var/www/light-house-src"
 
 echo "==> Pulling latest code..."
-sudo -u www-data git -C "$APP_DIR" pull
+sudo -u www-data git -C "$APP_DIR" pull --rebase=false
 
 echo "==> Installing PHP dependencies..."
 sudo -u www-data composer install --no-dev --optimize-autoloader --no-interaction --working-dir="$APP_DIR"
@@ -288,6 +288,13 @@ echo "==> Reloading Apache..."
 sudo systemctl reload apache2
 
 echo "==> Deploy complete."
+```
+
+## Set it at the repo level instead:
+
+```bash
+sudo -u www-data git -C /var/www/light-house-src config user.email "admin@aungkokoye.cloud"                                                                                                                                                                                                                                                                                                                                               
+sudo -u www-data git -C /var/www/light-house-src config user.name "LightHouse Deploy"
 ```
 
 ---
