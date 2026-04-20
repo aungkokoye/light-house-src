@@ -1,13 +1,8 @@
 # Production Setup
 
-## Server Requirements
-
-- Ubuntu 22.04+ (or any Debian-based Linux)
-- PHP 8.3+
-- Apache2
-- MySQL 8.0
-- Composer
-- Node.js 22.x (build only, can be removed after)
+**Domain:** aungkokoye.cloud
+**App path:** `/var/www/light-house-src`
+**Run as:** root (use `sudo -u www-data` for app commands)
 
 ---
 
@@ -16,40 +11,36 @@
 ```bash
 sudo apt update && sudo apt upgrade -y
 
+# Apache
+sudo apt install -y apache2
+sudo a2enmod rewrite headers ssl
+sudo systemctl enable apache2
+
 # PHP 8.4
 sudo apt install -y software-properties-common
 sudo add-apt-repository ppa:ondrej/php
 sudo apt update
-sudo apt install -y php8.4 php8.4-cli php8.4-fpm php8.4-mysql php8.4-mbstring \
-    php8.4-zip php8.4-bcmath php8.4-xml php8.4-curl php8.4-intl libapache2-mod-php8.4
+sudo apt install -y php8.4 php8.4-cli php8.4-mysql php8.4-mbstring \
+    php8.4-zip php8.4-bcmath php8.4-xml php8.4-curl php8.4-intl \
+    php8.4-gd php8.4-exif libapache2-mod-php8.4
 
-# Apache
-sudo apt install -y apache2
-sudo a2enmod rewrite
-sudo systemctl enable apache2
-
-# MySQL
+# MySQL 8.0
 sudo apt install -y mysql-server
+sudo systemctl start mysql
 sudo systemctl enable mysql
 
 # Composer
 curl -sS https://getcomposer.org/installer | php
 sudo mv composer.phar /usr/local/bin/composer
 
-# Node.js 22 (for building assets only)
-curl -fsSL https://deb.nodesource.com/setup_22.x | sudo bash -
+# Node.js 22 (for building assets)
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 sudo apt install -y nodejs
 ```
 
 ---
 
 ## 2. Configure MySQL
-
-```bash
-sudo mysql_secure_installation
-```
-
-Then create the database and user:
 
 ```bash
 sudo mysql -u root -p
@@ -65,32 +56,48 @@ EXIT;
 
 ---
 
-## 3. Deploy Application
+## 3. Clone Repository
 
 ```bash
-# Clone the repository
-sudo mkdir -p /var/www/light-house
-sudo chown $USER:$USER /var/www/light-house
-git clone <repository-url> /var/www/light-house
-cd /var/www/light-house/light-house-src
-```
-
-Install dependencies and build frontend assets:
-
-```bash
-composer install --no-dev --optimize-autoloader
-npm install
-npm run build
-rm -rf node_modules
+cd /var/www
+sudo apt install -y git
+git clone https://github.com/aungkokoye/light-house-src.git
+sudo chown -R www-data:www-data /var/www/light-house-src
 ```
 
 ---
 
-## 4. Configure Environment
+## 4. Git Deploy Key (pull as www-data)
 
 ```bash
-cp .env.example .env
-php artisan key:generate
+# Generate SSH key for www-data
+sudo mkdir -p /var/www/.ssh
+sudo ssh-keygen -t ed25519 -C "deploy@lighthouse" -f /var/www/.ssh/id_ed25519 -N ""
+sudo chown -R www-data:www-data /var/www/.ssh
+sudo chmod 700 /var/www/.ssh
+sudo chmod 600 /var/www/.ssh/id_ed25519
+
+# Print public key → add to GitHub repo → Settings → Deploy keys
+sudo cat /var/www/.ssh/id_ed25519.pub
+
+# Switch remote to SSH
+sudo -u www-data git -C /var/www/light-house-src remote set-url origin git@github.com:aungkokoye/light-house-src.git
+
+# Trust GitHub host
+sudo -u www-data ssh -o StrictHostKeyChecking=accept-new git@github.com
+
+# Test
+sudo -u www-data git -C /var/www/light-house-src pull
+```
+
+---
+
+## 5. Configure Environment
+
+```bash
+sudo cp /var/www/light-house-src/.env.example /var/www/light-house-src/.env
+sudo chown www-data:www-data /var/www/light-house-src/.env
+sudo chmod 640 /var/www/light-house-src/.env
 ```
 
 Edit `.env` with production values:
@@ -99,7 +106,7 @@ Edit `.env` with production values:
 APP_NAME=LightHouse
 APP_ENV=production
 APP_DEBUG=false
-APP_URL=https://yourdomain.com
+APP_URL=https://aungkokoye.cloud
 
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
@@ -111,127 +118,176 @@ DB_PASSWORD=your_strong_password
 SESSION_DRIVER=database
 QUEUE_CONNECTION=database
 CACHE_STORE=database
+
+MAIL_MAILER=smtp
+MAIL_SCHEME=null
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=aungkokoye@gmail.com
+MAIL_PASSWORD=your_app_password
+MAIL_FROM_ADDRESS="noreply@lighthouse-print.com"
+MAIL_FROM_NAME="${APP_NAME}"
+CONTACT_INQUIRY_EMAIL="info@lighthouse-print.com"
+
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
 ```
 
 ---
 
-## 5. Run Migrations & Optimize Laravel
+## 6. Install Dependencies & Build Assets
 
 ```bash
-php artisan migrate --force
-
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+sudo -u www-data composer install --no-dev --optimize-autoloader --no-interaction --working-dir=/var/www/light-house-src
+cd /var/www/light-house-src
+npm ci
+npm run build
+rm -rf node_modules
 ```
 
 ---
 
-## 6. Set File Permissions
+## 7. Storage & Bootstrap Directories
 
 ```bash
-sudo chown -R www-data:www-data /var/www/light-house/light-house-src
-sudo chmod -R 755 /var/www/light-house/light-house-src
-sudo chmod -R 775 /var/www/light-house/light-house-src/storage
-sudo chmod -R 775 /var/www/light-house/light-house-src/bootstrap/cache
+cd /var/www/light-house-src
+mkdir -p storage/framework/cache/data
+mkdir -p storage/framework/views
+mkdir -p storage/framework/sessions
+mkdir -p bootstrap/cache
+
+sudo chown -R www-data:www-data storage bootstrap/cache
+sudo chmod -R 775 storage bootstrap/cache
 ```
 
 ---
 
-## 7. Configure Apache Virtual Host
-
-Create a new virtual host config:
+## 8. Run Migrations & Cache
 
 ```bash
-sudo nano /etc/apache2/sites-available/light-house.conf
+sudo -u www-data php /var/www/light-house-src/artisan key:generate
+sudo -u www-data php /var/www/light-house-src/artisan migrate --force
+sudo -u www-data php /var/www/light-house-src/artisan optimize
+```
+
+---
+
+## 9. File Permissions
+
+```bash
+sudo chown -R www-data:www-data /var/www/light-house-src
+sudo chmod -R 775 /var/www/light-house-src/storage
+sudo chmod -R 775 /var/www/light-house-src/bootstrap/cache
+```
+
+---
+
+## 10. Configure Apache Virtual Host
+
+```bash
+sudo vim /etc/apache2/sites-available/lighthouse.conf
 ```
 
 ```apache
 <VirtualHost *:80>
-    ServerName yourdomain.com
-    ServerAlias www.yourdomain.com
-    DocumentRoot /var/www/light-house/light-house-src/public
+    ServerAdmin admin@aungkokoye.cloud
+    DocumentRoot /var/www/light-house-src/public
+    ServerName aungkokoye.cloud
+    ServerAlias www.aungkokoye.cloud
 
-    <Directory /var/www/light-house/light-house-src/public>
+    <Directory /var/www/light-house-src/public>
+        Options Indexes FollowSymLinks
         AllowOverride All
         Require all granted
     </Directory>
 
-    ErrorLog ${APACHE_LOG_DIR}/light-house-error.log
-    CustomLog ${APACHE_LOG_DIR}/light-house-access.log combined
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
 </VirtualHost>
 ```
 
-Enable the site:
-
 ```bash
-sudo a2ensite light-house.conf
+sudo a2ensite lighthouse.conf
 sudo a2dissite 000-default.conf
-sudo systemctl restart apache2
+sudo systemctl reload apache2
 ```
 
 ---
 
-## 8. SSL Certificate (HTTPS)
+## 11. SSL Certificate (HTTPS)
 
 ```bash
 sudo apt install -y certbot python3-certbot-apache
-sudo certbot --apache -d yourdomain.com -d www.yourdomain.com
+sudo certbot --apache -d aungkokoye.cloud -d www.aungkokoye.cloud
 ```
 
-Certbot will automatically update your Apache config to redirect HTTP to HTTPS.
-
----
-
-## 9. Queue Worker (optional)
-
-If using queues, set up Supervisor to keep the worker running:
+Certificates expire every 90 days — auto-renewal runs twice daily and renews when <30 days left.
 
 ```bash
-sudo apt install -y supervisor
-sudo nano /etc/supervisor/conf.d/light-house-worker.conf
-```
-
-```ini
-[program:light-house-worker]
-process_name=%(program_name)s_%(process_num)02d
-command=php /var/www/light-house/light-house-src/artisan queue:work --sleep=3 --tries=3
-autostart=true
-autorestart=true
-user=www-data
-numprocs=1
-redirect_stderr=true
-stdout_logfile=/var/www/light-house/light-house-src/storage/logs/worker.log
-```
-
-```bash
-sudo supervisorctl reread
-sudo supervisorctl update
-sudo supervisorctl start light-house-worker:*
+# Manual renewal
+certbot renew
 ```
 
 ---
 
-## 10. Deploying Updates
-
-Each time you deploy new code:
+## 12. After Changing .env
 
 ```bash
-cd /var/www/light-house/light-house-src
+sudo -u www-data php /var/www/light-house-src/artisan optimize:clear
+sudo -u www-data php /var/www/light-house-src/artisan optimize
+```
 
-git pull
+---
 
-composer install --no-dev --optimize-autoloader
-npm install
+## 13. Deploying Updates
+
+Use the deploy script:
+
+```bash
+bash /var/www/light-house-src/deploy.sh
+```
+
+```bash
+#!/bin/bash
+
+# command to run: bash /var/www/light-house-src/deploy.sh
+
+set -e
+
+APP_DIR="/var/www/light-house-src"
+
+echo "==> Pulling latest code..."
+sudo -u www-data git -C "$APP_DIR" pull
+
+echo "==> Installing PHP dependencies..."
+sudo -u www-data composer install --no-dev --optimize-autoloader --no-interaction --working-dir="$APP_DIR"
+
+echo "==> Clearing cache and config..."
+sudo -u www-data php "$APP_DIR/artisan" optimize:clear
+
+echo "==> Building frontend assets..."
+cd "$APP_DIR"
+npm ci
 npm run build
 rm -rf node_modules
 
-php artisan migrate --force
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+echo "==> Running database migrations..."
+sudo -u www-data php "$APP_DIR/artisan" migrate --force
 
-sudo supervisorctl restart light-house-worker:*
+echo "==> Caching config, routes, views..."
+sudo -u www-data php "$APP_DIR/artisan" optimize
+
+echo "==> Restarting queue workers..."
+#sudo -u www-data php "$APP_DIR/artisan" queue:restart
+
+echo "==> Fixing permissions..."
+sudo chown -R www-data:www-data "$APP_DIR/storage" "$APP_DIR/bootstrap/cache"
+sudo chmod -R 775 "$APP_DIR/storage" "$APP_DIR/bootstrap/cache"
+
+echo "==> Reloading Apache..."
+sudo systemctl reload apache2
+
+echo "==> Deploy complete."
 ```
 
 ---
@@ -243,6 +299,7 @@ sudo supervisorctl restart light-house-worker:*
 | `APP_DEBUG` | `true` | `false` |
 | `APP_ENV` | `local` | `production` |
 | Assets | Vite dev server | `npm run build` static files |
-| Node container | Running | Not needed after build |
+| Node | Running container | Removed after build |
 | Composer | with dev deps | `--no-dev` |
-| Laravel cache | Off | `config:cache`, `route:cache`, `view:cache` |
+| Laravel cache | Off | `optimize` |
+| Mail | Mailcatcher | Gmail SMTP |
