@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Events\UserLoggedIn;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Laravel\Socialite\Facades\Socialite;
@@ -56,6 +57,12 @@ class SocialAuthController extends Controller
         }
 
         $token = $user->createToken('api-token')->plainTextToken;
+
+        UserLoggedIn::dispatch(
+            $user,
+            request()->ip(),
+            request()->userAgent() ?? '',
+        );
 
         $needsProfile = $user->isCompany() && ! $user->companyProfile()->exists();
 

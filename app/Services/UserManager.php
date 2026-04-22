@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Concerns\DispatchesAuditEvents;
 use App\Filters\UserFilter;
 use App\Models\User;
 use App\Repositories\UserRepository;
@@ -10,11 +11,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 
 class UserManager
 {
-    public function __construct(private UserRepository $repo) {}
+    use DispatchesAuditEvents;
+
+    public function __construct(
+        private UserRepository $repo,
+        private CompanyProfileManager $companyProfileManager,
+        private StaffProfileManager $staffProfileManager,
+    ) {}
 
     public function list(Request $request, int $perPage): LengthAwarePaginator
     {
@@ -40,6 +46,9 @@ class UserManager
         bool $activated = true,
         bool $emailVerified = false,
         array $permissions = [],
+        ?array $companyProfile = null,
+        ?array $staffProfile = null,
+        ?array $staffRole = null,
     ): User {
         $user = $this->repo->create([
             'name'              => $name,
@@ -53,6 +62,17 @@ class UserManager
         $user->assignRole($role);
         $user->syncPermissions($this->filterPermissions($permissions));
 
+        $createdBy = Auth::id();
+
+        if ($role === 'customer' && $companyProfile) {
+            $this->companyProfileManager->create($user, $companyProfile, $createdBy);
+        } elseif ($role !== 'customer' && $staffProfile) {
+            $this->staffProfileManager->create($user, $staffProfile, $staffRole ?? [], $createdBy);
+        }
+
+        $user = $user->fresh(['roles', 'permissions', 'staffProfile.staffRoles', 'companyProfile']);
+        $this->auditCreated($user, $this->buildSnapshot($user));
+
         return $user;
     }
 
@@ -65,8 +85,13 @@ class UserManager
         bool $emailVerified,
         ?string $password = null,
         array $permissions = [],
+        ?array $companyProfile = null,
+        ?array $staffProfile = null,
+        ?array $staffRole = null,
     ): User {
-        $hasSuper = Auth::user()?->hasPermissionTo('super') ?? false;
+        $user->load(['roles', 'permissions', 'staffProfile.staffRoles', 'companyProfile']);
+        $oldValues = $this->buildSnapshot($user);
+        $hasSuper  = Auth::user()?->hasPermissionTo('super') ?? false;
 
         $data = [
             'name'              => $name,
@@ -87,14 +112,51 @@ class UserManager
             $user->syncPermissions($this->filterPermissions($permissions));
         }
 
-        return $user->fresh('roles');
+        $createdBy = Auth::id();
+
+        if ($role === 'customer' && $companyProfile) {
+            $this->companyProfileManager->upsert($user, $companyProfile, $createdBy);
+        } elseif ($role !== 'customer' && $staffProfile) {
+            $this->staffProfileManager->upsert($user, $staffProfile, $staffRole, $createdBy);
+        }
+
+        $user = $user->fresh(['roles', 'permissions', 'staffProfile.staffRoles', 'companyProfile']);
+        $this->auditUpdated($user, $oldValues, $this->buildSnapshot($user));
+
+        return $user;
+    }
+
+    public function delete(User $user): void
+    {
+        $user->load(['roles', 'permissions', 'staffProfile.staffRoles', 'companyProfile']);
+        $this->auditDeleted($user, $this->buildSnapshot($user));
+        $user->syncRoles([]);
+        $user->syncPermissions([]);
+        $this->repo->delete($user);
+    }
+
+    public function availableRoles(): array
+    {
+        return Role::pluck('name')->toArray();
+    }
+
+    private function buildSnapshot(User $user): array
+    {
+        return array_merge(
+            $this->filterAuditValues($user->getAttributes()),
+            [
+                'roles'          => $user->roles->pluck('name')->toArray(),
+                'permissions'    => $user->permissions->pluck('name')->toArray(),
+                'staffProfile'   => $user->staffProfile?->toArray(),
+                'companyProfile' => $user->companyProfile?->toArray(),
+            ]
+        );
     }
 
     private function filterPermissions(array $permissions): array
     {
         $caller = Auth::user();
 
-        // No authenticated user (CLI / seeder) — allow everything through
         if (! $caller) {
             return $permissions;
         }
@@ -104,17 +166,5 @@ class UserManager
         }
 
         return array_values(array_filter($permissions, fn($p) => $p !== 'super'));
-    }
-
-    public function delete(User $user): void
-    {
-        $user->syncRoles([]);
-        $user->syncPermissions([]);
-        $this->repo->delete($user);
-    }
-
-    public function availableRoles(): array
-    {
-        return Role::pluck('name')->toArray();
     }
 }

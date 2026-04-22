@@ -6,13 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreUserRequest;
 use App\Http\Requests\Admin\UpdateUserRequest;
 use App\Models\User;
-use App\Services\CompanyProfileManager;
 use App\Services\EmailManager;
-use App\Services\StaffProfileManager;
 use App\Services\UserManager;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class AdminUserController extends Controller
@@ -23,8 +20,6 @@ class AdminUserController extends Controller
     public function __construct(
         private readonly UserManager $userManager,
         private readonly EmailManager $emailManager,
-        private readonly CompanyProfileManager $companyProfileManager,
-        private readonly StaffProfileManager $staffProfileManager,
     ) {}
 
     public function index(Request $request): JsonResponse
@@ -38,32 +33,18 @@ class AdminUserController extends Controller
 
     public function store(StoreUserRequest $request): JsonResponse
     {
-        $user = DB::transaction(function () use ($request) {
-            $user = $this->userManager->create(
-                name:          $request->name,
-                email:         $request->email,
-                password:      $request->password,
-                role:          $request->role,
-                activated:     $request->boolean('activated', true),
-                emailVerified: $request->boolean('email_verified'),
-                permissions:   $request->input('permissions', []),
-            );
-
-            $createdBy = Auth::id();
-
-            if ($request->role === 'customer' && $request->filled('company_profile')) {
-                $this->companyProfileManager->create($user, $request->input('company_profile'), $createdBy);
-            } elseif ($request->role !== 'customer' && $request->filled('staff_profile')) {
-                $this->staffProfileManager->create(
-                    $user,
-                    $request->input('staff_profile'),
-                    $request->input('staff_role', []),
-                    $createdBy,
-                );
-            }
-
-            return $user;
-        });
+        $user = DB::transaction(fn() => $this->userManager->create(
+            name:           $request->name,
+            email:          $request->email,
+            password:       $request->password,
+            role:           $request->role,
+            activated:      $request->boolean('activated', true),
+            emailVerified:  $request->boolean('email_verified'),
+            permissions:    $request->input('permissions', []),
+            companyProfile: $request->role === 'customer' ? $request->input('company_profile') : null,
+            staffProfile:   $request->role !== 'customer' ? $request->input('staff_profile') : null,
+            staffRole:      $request->role !== 'customer' ? $request->input('staff_role', []) : null,
+        ));
 
         if (! $request->boolean('email_verified')) {
             $this->emailManager->sendVerificationEmail($user);
@@ -98,33 +79,19 @@ class AdminUserController extends Controller
         $wasVerified = $user->email_verified_at !== null;
         $nowVerified = $request->boolean('email_verified');
 
-        $user = DB::transaction(function () use ($request, $user, $nowVerified) {
-            $updated = $this->userManager->update(
-                user:          $user,
-                name:          $request->name,
-                email:         $request->email,
-                role:          $request->role,
-                activated:     $request->boolean('activated', true),
-                emailVerified: $nowVerified,
-                password:      $request->filled('password') ? $request->password : null,
-                permissions:   $request->input('permissions', []),
-            );
-
-            $createdBy = Auth::id();
-
-            if ($request->role === 'customer' && $request->filled('company_profile')) {
-                $this->companyProfileManager->upsert($updated, $request->input('company_profile'), $createdBy);
-            } elseif ($request->role !== 'customer' && $request->filled('staff_profile')) {
-                $this->staffProfileManager->upsert(
-                    $updated,
-                    $request->input('staff_profile'),
-                    $request->input('staff_role'),
-                    $createdBy,
-                );
-            }
-
-            return $updated;
-        });
+        $user = DB::transaction(fn() => $this->userManager->update(
+            user:           $user,
+            name:           $request->name,
+            email:          $request->email,
+            role:           $request->role,
+            activated:      $request->boolean('activated', true),
+            emailVerified:  $nowVerified,
+            password:       $request->filled('password') ? $request->password : null,
+            permissions:    $request->input('permissions', []),
+            companyProfile: $request->role === 'customer' ? $request->input('company_profile') : null,
+            staffProfile:   $request->role !== 'customer' ? $request->input('staff_profile') : null,
+            staffRole:      $request->role !== 'customer' ? $request->input('staff_role') : null,
+        ));
 
         if ($wasVerified && ! $nowVerified) {
             $this->emailManager->sendVerificationEmail($user);

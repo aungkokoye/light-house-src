@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Events\AuditableActionPerformed;
+use App\Events\UserLoggedIn;
+use App\Events\UserLoggedOut;
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\User;
 use App\Services\CompanyProfileManager;
 use App\Services\EmailManager;
@@ -119,15 +123,28 @@ class AuthController extends Controller
 
         $token = $request->user()->createToken('api-token')->plainTextToken;
 
+        UserLoggedIn::dispatch(
+            $request->user(),
+            $request->ip(),
+            $request->userAgent() ?? '',
+        );
+
         return response()->json(['token' => $token]);
     }
 
     public function logout(Request $request): JsonResponse
     {
-        $token = $request->user()->currentAccessToken();
+        $user  = $request->user();
+        $token = $user->currentAccessToken();
         if ($token instanceof PersonalAccessToken) {
             $token->delete();
         }
+
+        UserLoggedOut::dispatch(
+            $user,
+            $request->ip(),
+            $request->userAgent() ?? '',
+        );
 
         return response()->json(['message' => 'Logged out successfully.']);
     }
@@ -167,6 +184,16 @@ class AuthController extends Controller
         }
 
         $user->forceFill(['password' => Hash::make($request->password)])->save();
+
+        AuditableActionPerformed::dispatch(
+            $user,
+            AuditLog::EVENT_PASSWORD_CHANGED,
+            $user,
+            null,
+            null,
+            $request->ip(),
+            $request->userAgent() ?? '',
+        );
 
         return response()->json(['message' => 'Password updated successfully.']);
     }

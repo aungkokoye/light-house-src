@@ -8,11 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class CompanyProfileManager
 {
-    /**
-     * Create a brand-new company profile for a user.
-     *
-     * @param  array{name:string, role:string, description:string|null, address:string, phone:string}  $data
-     */
     public function create(User $user, array $data, ?int $createdBy = null): CompanyProfile
     {
         return CompanyProfile::create([
@@ -26,11 +21,6 @@ class CompanyProfileManager
         ]);
     }
 
-    /**
-     * Create or update the company profile for a user.
-     *
-     * @param  array{name:string, role:string, description:string|null, address:string, phone:string}  $data
-     */
     public function upsert(User $user, array $data, ?int $createdBy = null): Model | CompanyProfile
     {
         return $user->companyProfile()->updateOrCreate(

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Concerns\AuditableCrud;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreStaffPositionRequest;
 use App\Http\Requests\Admin\UpdateStaffPositionRequest;
@@ -12,6 +13,8 @@ use Illuminate\Http\Request;
 
 class AdminStaffPositionController extends Controller
 {
+    use AuditableCrud;
+
     public function __construct(private readonly StaffPositionManager $staffPositionManager) {}
 
     public function all(): JsonResponse
@@ -28,7 +31,10 @@ class AdminStaffPositionController extends Controller
 
     public function store(StoreStaffPositionRequest $request): JsonResponse
     {
-        return response()->json($this->staffPositionManager->create($request->validated()), 201);
+        $staffPosition = $this->staffPositionManager->create($request->validated());
+        $this->auditCreated($staffPosition);
+
+        return response()->json($staffPosition, 201);
     }
 
     public function show(StaffPosition $staffPosition): JsonResponse
@@ -38,11 +44,16 @@ class AdminStaffPositionController extends Controller
 
     public function update(UpdateStaffPositionRequest $request, StaffPosition $staffPosition): JsonResponse
     {
-        return response()->json($this->staffPositionManager->update($staffPosition, $request->validated()));
+        $oldValues = $this->filterAuditValues($staffPosition->getAttributes());
+        $updated   = $this->staffPositionManager->update($staffPosition, $request->validated());
+        $this->auditUpdated($updated, $oldValues);
+
+        return response()->json($updated);
     }
 
     public function destroy(StaffPosition $staffPosition): JsonResponse
     {
+        $this->auditDeleted($staffPosition);
         $this->staffPositionManager->delete($staffPosition);
 
         return response()->json(['message' => 'Staff position deleted successfully.']);

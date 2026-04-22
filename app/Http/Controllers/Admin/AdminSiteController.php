@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Concerns\AuditableCrud;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreSiteRequest;
 use App\Http\Requests\Admin\UpdateSiteRequest;
@@ -12,6 +13,8 @@ use Illuminate\Http\Request;
 
 class AdminSiteController extends Controller
 {
+    use AuditableCrud;
+
     public function __construct(private readonly SiteManager $siteManager) {}
 
     public function all(): JsonResponse
@@ -28,7 +31,10 @@ class AdminSiteController extends Controller
 
     public function store(StoreSiteRequest $request): JsonResponse
     {
-        return response()->json($this->siteManager->create($request->validated()), 201);
+        $site = $this->siteManager->create($request->validated());
+        $this->auditCreated($site);
+
+        return response()->json($site, 201);
     }
 
     public function show(Site $site): JsonResponse
@@ -38,11 +44,16 @@ class AdminSiteController extends Controller
 
     public function update(UpdateSiteRequest $request, Site $site): JsonResponse
     {
-        return response()->json($this->siteManager->update($site, $request->validated()));
+        $oldValues = $this->filterAuditValues($site->getAttributes());
+        $updated   = $this->siteManager->update($site, $request->validated());
+        $this->auditUpdated($updated, $oldValues);
+
+        return response()->json($updated);
     }
 
     public function destroy(Site $site): JsonResponse
     {
+        $this->auditDeleted($site);
         $this->siteManager->delete($site);
 
         return response()->json(['message' => 'Site deleted successfully.']);

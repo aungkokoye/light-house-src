@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Concerns\AuditableCrud;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreStaffRoleRequest;
 use App\Http\Requests\Admin\UpdateStaffRoleRequest;
@@ -13,6 +14,8 @@ use Illuminate\Http\Request;
 
 class AdminStaffRoleController extends Controller
 {
+    use AuditableCrud;
+
     public function __construct(private readonly StaffRoleManager $staffRoleManager) {}
 
     public function index(Request $request, User $user): JsonResponse
@@ -24,7 +27,10 @@ class AdminStaffRoleController extends Controller
 
     public function store(StoreStaffRoleRequest $request, User $user): JsonResponse
     {
-        return response()->json($this->staffRoleManager->create($user, $request->validated()), 201);
+        $staffRole = $this->staffRoleManager->create($user, $request->validated());
+        $this->auditCreated($staffRole);
+
+        return response()->json($staffRole, 201);
     }
 
     public function show(User $user, StaffRole $staffRole): JsonResponse
@@ -37,13 +43,17 @@ class AdminStaffRoleController extends Controller
     public function update(UpdateStaffRoleRequest $request, User $user, StaffRole $staffRole): JsonResponse
     {
         $this->staffRoleManager->authorize($user, $staffRole);
+        $oldValues = $this->filterAuditValues($staffRole->getAttributes());
+        $updated   = $this->staffRoleManager->update($staffRole, $request->validated());
+        $this->auditUpdated($updated, $oldValues);
 
-        return response()->json($this->staffRoleManager->update($staffRole, $request->validated()));
+        return response()->json($updated);
     }
 
     public function destroy(User $user, StaffRole $staffRole): JsonResponse
     {
         $this->staffRoleManager->authorize($user, $staffRole);
+        $this->auditDeleted($staffRole);
         $this->staffRoleManager->delete($staffRole);
 
         return response()->json(['message' => 'Staff role deleted successfully.']);

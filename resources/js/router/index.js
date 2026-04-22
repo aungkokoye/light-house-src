@@ -40,6 +40,10 @@ import AdminCreateStaffPositionPage from '../pages/admin/staff-positions/AdminCr
 import AdminEditStaffPositionPage from '../pages/admin/staff-positions/AdminEditStaffPositionPage.vue';
 import AdminViewStaffPositionPage from '../pages/admin/staff-positions/AdminViewStaffPositionPage.vue';
 
+// Admin — Audit Logs
+import AdminAuditLogsPage from '../pages/admin/audit-logs/AdminAuditLogsPage.vue';
+import AdminViewAuditLogPage from '../pages/admin/audit-logs/AdminViewAuditLogPage.vue';
+
 // Admin — Permissions
 import AdminPermissionsPage from '../pages/admin/permissions/AdminPermissionsPage.vue';
 import AdminCreatePermissionPage from '../pages/admin/permissions/AdminCreatePermissionPage.vue';
@@ -87,6 +91,8 @@ const routes = [
     { path: '/admin/users/:id/staff-roles/create',             component: AdminUserCreateStaffRolePage },
     { path: '/admin/users/:id/staff-roles/:roleId',            component: AdminUserViewStaffRolePage },
     { path: '/admin/users/:id/staff-roles/:roleId/edit',       component: AdminUserEditStaffRolePage },
+    { path: '/admin/audit-logs',      component: AdminAuditLogsPage },
+    { path: '/admin/audit-logs/:id',  component: AdminViewAuditLogPage },
     { path: '/401', component: Error401Page },
     { path: '/403', component: Error403Page },
     { path: '/404', component: NotFoundPage },

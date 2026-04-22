@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Events\AuditableActionPerformed;
+use App\Events\UserLoggedIn;
+use App\Events\UserLoggedOut;
+use App\Listeners\DispatchAuditLog;
 use App\Models\Site;
 use App\Models\StaffPosition;
 use App\Models\StaffRole;
@@ -11,6 +15,7 @@ use App\Policies\SitePolicy;
 use App\Policies\StaffPositionPolicy;
 use App\Policies\StaffRolePolicy;
 use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Spatie\Permission\Models\Permission;
@@ -31,6 +36,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Event::listen(UserLoggedIn::class, DispatchAuditLog::class);
+        Event::listen(UserLoggedOut::class, DispatchAuditLog::class);
+        Event::listen(AuditableActionPerformed::class, DispatchAuditLog::class);
+
         Gate::policy(Role::class, RolePolicy::class);
         Gate::policy(Permission::class, PermissionPolicy::class);
         Gate::policy(Site::class, SitePolicy::class);

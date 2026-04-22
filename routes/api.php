@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminAuditLogController;
 use App\Http\Controllers\Admin\AdminPermissionController;
 use App\Http\Controllers\Admin\AdminRoleController;
 use App\Http\Controllers\Admin\AdminSiteController;
@@ -77,6 +78,10 @@ Route::middleware(['auth:sanctum', 'role:admin', 'throttle:60,1'])->prefix('admi
         ->can('delete',  'user');
     Route::post('/users/{user}/resend-verification', [AdminUserController::class, 'resendVerification'])
         ->can('view', 'user');
+
+    Route::get('/audit-logs/events',      [AdminAuditLogController::class, 'events']);
+    Route::get('/audit-logs',             [AdminAuditLogController::class, 'index']);
+    Route::get('/audit-logs/{auditLog}',  [AdminAuditLogController::class, 'show']);
 });
 
 // Example: restrict to permission

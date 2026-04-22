@@ -5,15 +5,10 @@ namespace App\Services;
 use App\Models\StaffProfile;
 use App\Models\StaffRole;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 
 class StaffProfileManager
 {
-    /**
-     * Create a staff profile and its first active role for a new user.
-     *
-     * @param  array{full_name:string, nrc_no:string|null, dob:string|null, address:string|null, phone:string|null, start_date:string|null}  $profileData
-     * @param  array{staff_position_id:int, site_id:int|null, salary:int, start_date:string}  $roleData
-     */
     public function create(User $user, array $profileData, array $roleData, ?int $createdBy = null): StaffProfile
     {
         $profile = StaffProfile::create([
@@ -39,13 +34,7 @@ class StaffProfileManager
         return $profile;
     }
 
-    /**
-     * Create or update a staff profile. Upserts the active role if role data is provided.
-     *
-     * @param  array{full_name:string, nrc_no:string|null, dob:string|null, address:string|null, phone:string|null, start_date:string|null}  $profileData
-     * @param  array{staff_position_id:int, site_id:int|null, salary:int, start_date:string}|null  $roleData
-     */
-    public function upsert(User $user, array $profileData, ?array $roleData = null, ?int $createdBy = null): StaffProfile
+    public function upsert(User $user, array $profileData, ?array $roleData = null, ?int $createdBy = null): StaffProfile | Model
     {
         $profile = $user->staffProfile()->updateOrCreate(
             ['user_id' => $user->id],
