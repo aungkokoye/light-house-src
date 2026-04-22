@@ -239,7 +239,87 @@ sudo -u www-data php /var/www/light-house-src/artisan optimize
 
 ---
 
-## 13. Deploying Updates
+## 13. Supervisor (Queue Worker)
+
+Supervisor keeps the queue worker running continuously and restarts it automatically on crash or memory limit.
+
+### Install
+
+```bash
+sudo apt install -y supervisor
+sudo systemctl enable supervisor
+sudo systemctl start supervisor
+```
+
+### Deploy Config File
+
+```bash
+sudo cp /var/www/light-house-src/light-house-docker/supervisor/lighthouse-worker.conf \
+    /etc/supervisor/conf.d/lighthouse-worker.conf
+```
+
+The config file (`lighthouse-worker.conf`):
+
+```ini
+[program:lighthouse-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=php /var/www/light-house-src/artisan queue:work --sleep=3 --tries=3 --timeout=60 --memory=256
+autostart=true
+autorestart=true
+user=www-data
+numprocs=1
+redirect_stderr=true
+stdout_logfile=/var/www/light-house-src/storage/logs/worker.log
+stopwaitsecs=60
+```
+
+### Start the Worker
+
+```bash
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl start lighthouse-worker:*
+```
+
+### Check Status
+
+```bash
+sudo supervisorctl status
+```
+
+Expected output:
+```
+lighthouse-worker:lighthouse-worker_00   RUNNING   pid 12345, uptime 0:00:10
+```
+
+### Manage Worker
+
+```bash
+# Start / stop / restart
+sudo supervisorctl start   lighthouse-worker:*
+sudo supervisorctl stop    lighthouse-worker:*
+sudo supervisorctl restart lighthouse-worker:*
+
+# Tail live worker logs
+sudo supervisorctl tail -f lighthouse-worker:lighthouse-worker_00
+
+# Or directly
+tail -f /var/www/light-house-src/storage/logs/worker.log
+```
+
+### After Config Changes
+
+If you edit `lighthouse-worker.conf`:
+
+```bash
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl restart lighthouse-worker:*
+```
+
+---
+
+## 14. Deploying Updates
 
 Use the deploy script:
 
@@ -278,7 +358,8 @@ echo "==> Caching config, routes, views..."
 sudo -u www-data php "$APP_DIR/artisan" optimize
 
 echo "==> Restarting queue workers..."
-#sudo -u www-data php "$APP_DIR/artisan" queue:restart
+sudo -u www-data php "$APP_DIR/artisan" queue:restart
+sudo supervisorctl restart lighthouse-worker:*
 
 echo "==> Fixing permissions..."
 sudo chown -R www-data:www-data "$APP_DIR/storage" "$APP_DIR/bootstrap/cache"
