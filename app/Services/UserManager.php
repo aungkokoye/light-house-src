@@ -6,6 +6,8 @@ use App\Concerns\DispatchesAuditEvents;
 use App\Filters\UserFilter;
 use App\Models\User;
 use App\Repositories\UserRepository;
+use App\Services\CompanyProfileManager;
+use App\Services\StaffProfileManager;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
