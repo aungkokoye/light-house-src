@@ -23,10 +23,13 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-medium text-gray-600 mb-1.5">Category <span class="text-red-400">*</span></label>
-                                <input v-model="form.category" type="text" placeholder="e.g. Services, Pricing, Contact"
+                                <select v-model.number="form.chat_knowledge_category_id"
                                     class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
-                                    :class="errors.category ? 'border-red-300' : 'border-gray-300'" />
-                                <p v-if="errors.category" class="mt-1 text-xs text-red-500">{{ errors.category[0] }}</p>
+                                    :class="errors.chat_knowledge_category_id ? 'border-red-300' : 'border-gray-300'">
+                                    <option value="">Select a category</option>
+                                    <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+                                </select>
+                                <p v-if="errors.chat_knowledge_category_id" class="mt-1 text-xs text-red-500">{{ errors.chat_knowledge_category_id[0] }}</p>
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-gray-600 mb-1.5">Sort Order</label>
@@ -93,7 +96,8 @@ const loading = ref(true)
 const submitting = ref(false)
 const errors = ref({})
 const generalError = ref('')
-const form = ref({ category: '', title: '', content: '', active: true, sort_order: 0 })
+const categories = ref([])
+const form = ref({ chat_knowledge_category_id: '', title: '', content: '', active: true, sort_order: 0 })
 
 async function submit() {
     errors.value = {}
@@ -114,6 +118,14 @@ async function submit() {
 onMounted(async () => {
     const me = await requireAdmin()
     if (!me) return
+    if (!me.permissions?.some(p => p.name === 'super')) {
+        router.replace('/403')
+        return
+    }
+    try {
+        const { data } = await axios.get('/api/admin/chat-knowledge-categories/all')
+        categories.value = data
+    } catch {}
     loading.value = false
 })
 </script>

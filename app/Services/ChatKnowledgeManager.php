@@ -66,15 +66,23 @@ class ChatKnowledgeManager
         $entries = $this->repo->allActive();
 
         if ($entries->isEmpty()) {
-            return "You are a helpful customer support assistant for LightHouse Printing, Myanmar.\nIf you don't know the answer, politely say so and provide contact details:\n- Phone: +95 9 782 275275\n- Email: info@lighthouse-print.com\n- Messenger: Lighthouse Printing - Myanmar";
+            $phone    = config('contact.phone');
+            $email    = config('contact.email');
+            $messenger = config('contact.messenger_name');
+
+            return "You are a helpful customer support assistant for LightHouse Printing, Myanmar.\nIf you don't know the answer, politely say so and provide contact details:\n- Phone: $phone\n- Email: $email\n- Messenger: $messenger";
         }
 
         $sections = $entries
-            ->groupBy('category')
+            ->groupBy(fn ($item) => $item->category?->name ?? 'General')
             ->map(fn ($items, $category) => "## {$category}\n" .
                 $items->map(fn ($item) => "### {$item->title}\n{$item->content}")->implode("\n\n")
             )
             ->implode("\n\n");
+
+        $phone     = config('contact.phone');
+        $email     = config('contact.email');
+        $messenger = config('contact.messenger_name');
 
         return <<<PROMPT
 You are a helpful customer support assistant for LightHouse Printing, Myanmar.
@@ -85,15 +93,15 @@ Respond in the same language the customer uses (English or Myanmar).
 
 If the answer is not in the knowledge base, respond politely with something like:
 "I'm sorry, I don't have that information. Please contact us directly and our team will be happy to help:
-- Phone: +95 9 782 275275
-- Email: info@lighthouse-print.com
-- Messenger: Lighthouse Printing - Myanmar"
+- Phone: $phone
+- Email: $email
+- Messenger: $messenger"
 
 Do NOT make up information. Only answer based on the knowledge base provided.
 
 ---
 
-{$sections}
+$sections
 PROMPT;
     }
 }

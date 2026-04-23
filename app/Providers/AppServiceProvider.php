@@ -10,6 +10,8 @@ use App\Models\Site;
 use App\Models\StaffPosition;
 use App\Models\StaffRole;
 use App\Models\ChatKnowledge;
+use App\Models\ChatKnowledgeCategory;
+use App\Policies\ChatKnowledgeCategoryPolicy;
 use App\Policies\ChatKnowledgePolicy;
 use App\Policies\ChatPolicy;
 use App\Policies\PermissionPolicy;
@@ -45,6 +47,7 @@ class AppServiceProvider extends ServiceProvider
 
         Gate::define('chat.stream', [ChatPolicy::class, 'stream']);
         Gate::policy(ChatKnowledge::class, ChatKnowledgePolicy::class);
+        Gate::policy(ChatKnowledgeCategory::class, ChatKnowledgeCategoryPolicy::class);
         Gate::policy(Role::class, RolePolicy::class);
         Gate::policy(Permission::class, PermissionPolicy::class);
         Gate::policy(Site::class, SitePolicy::class);

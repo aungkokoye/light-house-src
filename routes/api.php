@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminAuditLogController;
+use App\Http\Controllers\Admin\AdminChatKnowledgeCategoryController;
 use App\Http\Controllers\Admin\AdminChatKnowledgeController;
 use App\Http\Controllers\Ai\ChatController;
 use App\Http\Controllers\Admin\AdminPermissionController;
@@ -91,6 +92,13 @@ Route::middleware(['auth:sanctum', 'role:admin', 'throttle:60,1'])->prefix('admi
     Route::get('/chat-knowledge/{chatKnowledge}',     [AdminChatKnowledgeController::class, 'show']);
     Route::put('/chat-knowledge/{chatKnowledge}',     [AdminChatKnowledgeController::class, 'update']);
     Route::delete('/chat-knowledge/{chatKnowledge}',  [AdminChatKnowledgeController::class, 'destroy']);
+
+    Route::get('/chat-knowledge-categories/all',                              [AdminChatKnowledgeCategoryController::class, 'all']);
+    Route::get('/chat-knowledge-categories',                                  [AdminChatKnowledgeCategoryController::class, 'index']);
+    Route::post('/chat-knowledge-categories',                                 [AdminChatKnowledgeCategoryController::class, 'store']);
+    Route::get('/chat-knowledge-categories/{chatKnowledgeCategory}',          [AdminChatKnowledgeCategoryController::class, 'show']);
+    Route::put('/chat-knowledge-categories/{chatKnowledgeCategory}',          [AdminChatKnowledgeCategoryController::class, 'update']);
+    Route::delete('/chat-knowledge-categories/{chatKnowledgeCategory}',       [AdminChatKnowledgeCategoryController::class, 'destroy']);
 });
 
 // Example: restrict to permission

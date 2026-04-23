@@ -30,8 +30,8 @@
                         </div>
                     </RouterLink>
 
-                    <!-- Chat Knowledge — admin only -->
-                    <RouterLink v-if="isAdmin" to="/admin/chat-knowledge"
+                    <!-- Chat Knowledge — super admin only -->
+                    <RouterLink v-if="isSuper" to="/admin/chat-knowledge"
                         class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col items-center gap-4 hover:shadow-md hover:border-teal-100 transition-all">
                         <div class="w-14 h-14 rounded-2xl bg-teal-50 flex items-center justify-center group-hover:bg-teal-100 transition-colors">
                             <svg class="w-7 h-7 text-teal-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -41,6 +41,21 @@
                         <div class="text-center">
                             <p class="font-semibold text-gray-900">Chat Knowledge</p>
                             <p class="text-xs text-gray-400 mt-0.5">Manage AI chatbot content</p>
+                        </div>
+                    </RouterLink>
+
+                    <!-- Chat Knowledge Categories — super admin only -->
+                    <RouterLink v-if="isSuper" to="/admin/chat-knowledge-categories"
+                        class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col items-center gap-4 hover:shadow-md hover:border-teal-100 transition-all">
+                        <div class="w-14 h-14 rounded-2xl bg-teal-50 flex items-center justify-center group-hover:bg-teal-100 transition-colors">
+                            <svg class="w-7 h-7 text-teal-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z" />
+                            </svg>
+                        </div>
+                        <div class="text-center">
+                            <p class="font-semibold text-gray-900">Chat Knowledge Categories</p>
+                            <p class="text-xs text-gray-400 mt-0.5">Manage knowledge categories</p>
                         </div>
                     </RouterLink>
 
@@ -145,6 +160,7 @@ const loading = ref(true)
 const user = ref(null)
 
 const isAdmin = computed(() => user.value?.roles?.some(r => r.name === 'admin'))
+const isSuper = computed(() => isAdmin.value && user.value?.permissions?.some(p => p.name === 'super'))
 
 onMounted(async () => {
     await requireAuth(user, loading)

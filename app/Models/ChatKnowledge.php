@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\ChatKnowledgeCategory;
 
 class ChatKnowledge extends Model
 {
     protected $fillable = [
-        'category',
+        'chat_knowledge_category_id',
         'title',
         'content',
         'active',
@@ -19,6 +20,11 @@ class ChatKnowledge extends Model
     protected $casts = [
         'active' => 'boolean',
     ];
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(ChatKnowledgeCategory::class, 'chat_knowledge_category_id');
+    }
 
     public function createdBy(): BelongsTo
     {

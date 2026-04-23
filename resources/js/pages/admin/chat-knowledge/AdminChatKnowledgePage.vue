@@ -34,13 +34,13 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
                             </svg>
                             <input v-model="filters.search" @input="debouncedFetch" type="text"
-                                placeholder="Search title, category, content…"
+                                placeholder="Search title, content…"
                                 class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50" />
                         </div>
                         <select v-model="filters.category" @change="fetch(1)"
                             class="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-gray-600">
                             <option value="">All categories</option>
-                            <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
+                            <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
                         </select>
                         <select v-model="filters.active" @change="fetch(1)"
                             class="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-gray-600">
@@ -78,6 +78,7 @@
                         </svg>
                     </div>
 
+                    <div v-else-if="fetchError" class="px-6 py-12 text-center text-sm text-red-400">{{ fetchError }}</div>
                     <div v-else-if="rows.length === 0" class="px-6 py-12 text-center text-sm text-gray-400">No entries found.</div>
 
                     <div v-else class="overflow-x-auto">
@@ -107,10 +108,9 @@
                                 <tr v-for="row in rows" :key="row.id" class="hover:bg-gray-50/50 transition-colors">
                                     <td class="px-6 py-3.5 text-xs font-mono text-gray-400">{{ row.id }}</td>
                                     <td class="px-6 py-3.5">
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700">{{ row.category }}</span>
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700">{{ row.category?.name ?? '—' }}</span>
                                     </td>
                                     <td class="px-6 py-3.5 font-medium text-gray-900 max-w-xs truncate">{{ row.title }}</td>
-                                    <td class="px-6 py-3.5 text-gray-400 text-xs max-w-sm truncate">{{ row.content }}</td>
                                     <td class="px-6 py-3.5 text-xs text-gray-400">{{ row.sort_order }}</td>
                                     <td class="px-6 py-3.5">
                                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
@@ -167,6 +167,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import axios from 'axios'
 import AppHeader from '../../../components/AppHeader.vue'
 import LoadingSpinner from '../../../components/LoadingSpinner.vue'
@@ -174,10 +175,12 @@ import DeleteModal from '../../../components/DeleteModal.vue'
 import { useAdminGuard } from '../../../composables/useAdminGuard'
 import { useFormatDate } from '../../../composables/useFormatDate'
 
+const router = useRouter()
 const { requireAdmin } = useAdminGuard()
 const { formatDate } = useFormatDate()
 const loading = ref(true)
 const tableLoading = ref(false)
+const fetchError = ref('')
 const rows = ref([])
 const meta = ref({})
 const currentPage = ref(1)
@@ -188,13 +191,12 @@ const deleteTarget = ref(null)
 const categories = ref([])
 
 const filters = ref({ search: '', category: '', active: '' })
-const STORAGE_KEY = 'admin_chat_knowledge_state'
+const STORAGE_KEY = 'admin_chat_knowledge_state_v2'
 
 const columns = [
     { key: 'id',         label: 'ID',         sortable: true  },
     { key: 'category',   label: 'Category',   sortable: true  },
     { key: 'title',      label: 'Title',      sortable: true  },
-    { key: 'content',    label: 'Content',    sortable: false },
     { key: 'sort_order', label: 'Order',      sortable: true  },
     { key: 'active',     label: 'Status',     sortable: true  },
     { key: 'created_at', label: 'Created At', sortable: true  },
@@ -266,6 +268,7 @@ async function fetch(page = 1) {
     tableLoading.value = true
     currentPage.value = page
     saveState()
+    fetchError.value = ''
     try {
         const params = { page, per_page: perPage.value, sort_by: sortBy.value, sort_dir: sortDir.value, ...filters.value }
         Object.keys(params).forEach(k => (params[k] === '' || params[k] === null) && delete params[k])
@@ -273,9 +276,10 @@ async function fetch(page = 1) {
         rows.value = data.data
         meta.value = { total: data.total, from: data.from, to: data.to, last_page: data.last_page }
         currentPage.value = data.current_page
-        categories.value = [...new Set(data.data.map(r => r.category).filter(Boolean))]
     } catch (e) {
-        console.error(e?.response?.status)
+        fetchError.value = e?.response?.status === 403
+            ? 'You do not have permission to manage chat knowledge.'
+            : 'Failed to load entries. Please try again.'
     } finally {
         tableLoading.value = false
     }
@@ -284,6 +288,16 @@ async function fetch(page = 1) {
 onMounted(async () => {
     const me = await requireAdmin()
     if (!me) return
+    if (!me.permissions?.some(p => p.name === 'super')) {
+        router.replace('/403')
+        return
+    }
+    try {
+        const { data } = await axios.get('/api/admin/chat-knowledge-categories/all')
+        categories.value = data
+    } catch {
+        fetchError.value = 'Failed to load categories. Please refresh the page.'
+    }
     loading.value = false
     const restored = restoreState()
     fetch(restored ? currentPage.value : 1)

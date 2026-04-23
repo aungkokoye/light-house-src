@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ChatKnowledgeFilter
 {
-    private const array SORTABLE = ['id', 'category', 'title', 'sort_order', 'active', 'created_at'];
+    private const array SORTABLE = ['id', 'chat_knowledge_category_id', 'title', 'sort_order', 'active', 'created_at'];
 
     public function __construct(private Builder $query) {}
 
@@ -20,7 +20,6 @@ class ChatKnowledgeFilter
         if ($term) {
             $this->query->where(function (Builder $q) use ($term) {
                 $q->where('title', 'like', "%{$term}%")
-                    ->orWhere('category', 'like', "%{$term}%")
                     ->orWhere('content', 'like', "%{$term}%");
             });
         }
@@ -28,10 +27,10 @@ class ChatKnowledgeFilter
         return $this;
     }
 
-    public function category(?string $category): static
+    public function category(?string $categoryId): static
     {
-        if ($category) {
-            $this->query->where('category', $category);
+        if ($categoryId) {
+            $this->query->where('chat_knowledge_category_id', $categoryId);
         }
 
         return $this;

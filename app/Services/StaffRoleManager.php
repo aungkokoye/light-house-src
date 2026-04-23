@@ -74,6 +74,8 @@ class StaffRoleManager
 
     public function authorize(User $user, StaffRole $staffRole): void
     {
+        $staffRole->loadMissing('staffProfile');
+
         if ($staffRole->staffProfile->user_id !== $user->id) {
             abort(403);
         }

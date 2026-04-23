@@ -49,6 +49,11 @@ import AdminChatKnowledgePage from '../pages/admin/chat-knowledge/AdminChatKnowl
 import AdminCreateChatKnowledgePage from '../pages/admin/chat-knowledge/AdminCreateChatKnowledgePage.vue';
 import AdminEditChatKnowledgePage from '../pages/admin/chat-knowledge/AdminEditChatKnowledgePage.vue';
 
+// Admin — Chat Knowledge Categories
+import AdminChatKnowledgeCategoriesPage from '../pages/admin/chat-knowledge-categories/AdminChatKnowledgeCategoriesPage.vue';
+import AdminCreateChatKnowledgeCategoryPage from '../pages/admin/chat-knowledge-categories/AdminCreateChatKnowledgeCategoryPage.vue';
+import AdminEditChatKnowledgeCategoryPage from '../pages/admin/chat-knowledge-categories/AdminEditChatKnowledgeCategoryPage.vue';
+
 // Admin — Permissions
 import AdminPermissionsPage from '../pages/admin/permissions/AdminPermissionsPage.vue';
 import AdminCreatePermissionPage from '../pages/admin/permissions/AdminCreatePermissionPage.vue';
@@ -101,6 +106,9 @@ const routes = [
     { path: '/admin/chat-knowledge',             component: AdminChatKnowledgePage },
     { path: '/admin/chat-knowledge/create',      component: AdminCreateChatKnowledgePage },
     { path: '/admin/chat-knowledge/:id/edit',    component: AdminEditChatKnowledgePage },
+    { path: '/admin/chat-knowledge-categories',             component: AdminChatKnowledgeCategoriesPage },
+    { path: '/admin/chat-knowledge-categories/create',      component: AdminCreateChatKnowledgeCategoryPage },
+    { path: '/admin/chat-knowledge-categories/:id/edit',    component: AdminEditChatKnowledgeCategoryPage },
     { path: '/401', component: Error401Page },
     { path: '/403', component: Error403Page },
     { path: '/404', component: NotFoundPage },

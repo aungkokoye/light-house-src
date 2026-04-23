@@ -14,11 +14,11 @@ class StoreChatKnowledgeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'category'   => ['required', 'string', 'max:100'],
-            'title'      => ['required', 'string', 'max:255'],
-            'content'    => ['required', 'string', 'max:10000'],
-            'active'     => ['boolean'],
-            'sort_order' => ['integer', 'min:0'],
+            'chat_knowledge_category_id' => ['required', 'integer', 'exists:chat_knowledge_categories,id'],
+            'title'                      => ['required', 'string', 'max:255'],
+            'content'                    => ['required', 'string', 'max:10000'],
+            'active'                     => ['boolean'],
+            'sort_order'                 => ['integer', 'min:0'],
         ];
     }
 }
