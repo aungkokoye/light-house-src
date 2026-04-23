@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminAuditLogController;
+use App\Http\Controllers\Admin\AdminChatKnowledgeController;
+use App\Http\Controllers\Ai\ChatController;
 use App\Http\Controllers\Admin\AdminPermissionController;
 use App\Http\Controllers\Admin\AdminRoleController;
 use App\Http\Controllers\Admin\AdminSiteController;
@@ -30,6 +32,7 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::put('/password', [AuthController::class, 'updatePassword']);
     Route::post('/profile/company', [AuthController::class, 'completeCompanyProfile'])->middleware('web');
+    Route::post('/chat/stream', [ChatController::class, 'stream']);
 });
 
 Route::middleware(['auth:sanctum', 'role:admin', 'throttle:60,1'])->prefix('admin')->group(function () {
@@ -82,6 +85,12 @@ Route::middleware(['auth:sanctum', 'role:admin', 'throttle:60,1'])->prefix('admi
     Route::get('/audit-logs/events',      [AdminAuditLogController::class, 'events']);
     Route::get('/audit-logs',             [AdminAuditLogController::class, 'index']);
     Route::get('/audit-logs/{auditLog}',  [AdminAuditLogController::class, 'show']);
+
+    Route::get('/chat-knowledge',                     [AdminChatKnowledgeController::class, 'index']);
+    Route::post('/chat-knowledge',                    [AdminChatKnowledgeController::class, 'store']);
+    Route::get('/chat-knowledge/{chatKnowledge}',     [AdminChatKnowledgeController::class, 'show']);
+    Route::put('/chat-knowledge/{chatKnowledge}',     [AdminChatKnowledgeController::class, 'update']);
+    Route::delete('/chat-knowledge/{chatKnowledge}',  [AdminChatKnowledgeController::class, 'destroy']);
 });
 
 // Example: restrict to permission

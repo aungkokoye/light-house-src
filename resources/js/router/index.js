@@ -44,6 +44,11 @@ import AdminViewStaffPositionPage from '../pages/admin/staff-positions/AdminView
 import AdminAuditLogsPage from '../pages/admin/audit-logs/AdminAuditLogsPage.vue';
 import AdminViewAuditLogPage from '../pages/admin/audit-logs/AdminViewAuditLogPage.vue';
 
+// Admin — Chat Knowledge
+import AdminChatKnowledgePage from '../pages/admin/chat-knowledge/AdminChatKnowledgePage.vue';
+import AdminCreateChatKnowledgePage from '../pages/admin/chat-knowledge/AdminCreateChatKnowledgePage.vue';
+import AdminEditChatKnowledgePage from '../pages/admin/chat-knowledge/AdminEditChatKnowledgePage.vue';
+
 // Admin — Permissions
 import AdminPermissionsPage from '../pages/admin/permissions/AdminPermissionsPage.vue';
 import AdminCreatePermissionPage from '../pages/admin/permissions/AdminCreatePermissionPage.vue';
@@ -93,6 +98,9 @@ const routes = [
     { path: '/admin/users/:id/staff-roles/:roleId/edit',       component: AdminUserEditStaffRolePage },
     { path: '/admin/audit-logs',      component: AdminAuditLogsPage },
     { path: '/admin/audit-logs/:id',  component: AdminViewAuditLogPage },
+    { path: '/admin/chat-knowledge',             component: AdminChatKnowledgePage },
+    { path: '/admin/chat-knowledge/create',      component: AdminCreateChatKnowledgePage },
+    { path: '/admin/chat-knowledge/:id/edit',    component: AdminEditChatKnowledgePage },
     { path: '/401', component: Error401Page },
     { path: '/403', component: Error403Page },
     { path: '/404', component: NotFoundPage },

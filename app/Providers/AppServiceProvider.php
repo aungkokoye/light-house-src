@@ -9,6 +9,9 @@ use App\Listeners\DispatchAuditLog;
 use App\Models\Site;
 use App\Models\StaffPosition;
 use App\Models\StaffRole;
+use App\Models\ChatKnowledge;
+use App\Policies\ChatKnowledgePolicy;
+use App\Policies\ChatPolicy;
 use App\Policies\PermissionPolicy;
 use App\Policies\RolePolicy;
 use App\Policies\SitePolicy;
@@ -40,6 +43,8 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(UserLoggedOut::class, DispatchAuditLog::class);
         Event::listen(AuditableActionPerformed::class, DispatchAuditLog::class);
 
+        Gate::define('chat.stream', [ChatPolicy::class, 'stream']);
+        Gate::policy(ChatKnowledge::class, ChatKnowledgePolicy::class);
         Gate::policy(Role::class, RolePolicy::class);
         Gate::policy(Permission::class, PermissionPolicy::class);
         Gate::policy(Site::class, SitePolicy::class);

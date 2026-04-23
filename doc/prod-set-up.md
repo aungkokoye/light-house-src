@@ -368,6 +368,11 @@ sudo chmod -R 775 "$APP_DIR/storage" "$APP_DIR/bootstrap/cache"
 echo "==> Reloading Apache..."
 sudo systemctl reload apache2
 
+echo "==> Clear cache"
+sudo -u www-data php /var/www/light-house-src/artisan config:clear                                                                                                                                                                                                                                                                                                                                                                        
+sudo -u www-data php /var/www/light-house-src/artisan cache:clear                                                                                                                                                                                                                                                                                                                                                                         
+sudo -u www-data php /var/www/light-house-src/artisan optimize  
+
 echo "==> Deploy complete."
 ```
 

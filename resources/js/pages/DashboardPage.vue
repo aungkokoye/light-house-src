@@ -30,6 +30,20 @@
                         </div>
                     </RouterLink>
 
+                    <!-- Chat Knowledge — admin only -->
+                    <RouterLink v-if="isAdmin" to="/admin/chat-knowledge"
+                        class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col items-center gap-4 hover:shadow-md hover:border-teal-100 transition-all">
+                        <div class="w-14 h-14 rounded-2xl bg-teal-50 flex items-center justify-center group-hover:bg-teal-100 transition-colors">
+                            <svg class="w-7 h-7 text-teal-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3z" />
+                            </svg>
+                        </div>
+                        <div class="text-center">
+                            <p class="font-semibold text-gray-900">Chat Knowledge</p>
+                            <p class="text-xs text-gray-400 mt-0.5">Manage AI chatbot content</p>
+                        </div>
+                    </RouterLink>
+
                     <!-- Permissions — admin only -->
                     <RouterLink v-if="isAdmin" to="/admin/permissions"
                         class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col items-center gap-4 hover:shadow-md hover:border-rose-100 transition-all">
