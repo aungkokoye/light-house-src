@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ChatKnowledgeFilter
 {
-    private const array SORTABLE = ['id', 'chat_knowledge_category_id', 'title', 'sort_order', 'active', 'created_at'];
+    private const array SORTABLE = ['id', 'category', 'title', 'sort_order', 'active', 'created_at'];
 
     public function __construct(private Builder $query) {}
 
@@ -50,7 +50,11 @@ class ChatKnowledgeFilter
         $by  = in_array($by, self::SORTABLE) ? $by : 'sort_order';
         $dir = $dir === 'desc' ? 'desc' : 'asc';
 
-        $this->query->orderBy($by, $dir);
+        if ($by === 'category') {
+            $this->query->orderBy('chat_knowledge_categories.name', $dir);
+        } else {
+            $this->query->orderBy('chat_knowledge.' . $by, $dir);
+        }
 
         return $this;
     }

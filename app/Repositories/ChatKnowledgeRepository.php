@@ -11,7 +11,10 @@ class ChatKnowledgeRepository
 {
     public function query(): Builder
     {
-        return ChatKnowledge::query()->with('category:id,name');
+        return ChatKnowledge::query()
+            ->select('chat_knowledge.*')
+            ->leftJoin('chat_knowledge_categories', 'chat_knowledge_categories.id', '=', 'chat_knowledge.chat_knowledge_category_id')
+            ->with('category:id,name');
     }
 
     public function paginate(Builder $query, int $perPage): LengthAwarePaginator
