@@ -4,9 +4,14 @@
 
 <div class="bg-white rounded-2xl shadow-xl shadow-gray-100 border border-gray-300 p-8">
                 <!-- Icon -->
-                <div class="flex flex-col items-center justify-center mx-auto mb-4">
-                    <img :src="'/images/logo.png'" alt="Light House" class="h-14 w-auto" />
-                    <span class="mt-2 text-sm font-medium text-gray-500 tracking-wide">Light House Printing</span>
+                <div class="flex items-center justify-center mx-auto mb-4">
+                    <RouterLink to="/" class="flex items-center gap-2.5">
+                        <img :src="'/images/logo.png'" alt="Lighthouse Printing Solutions" class="h-14 w-auto" />
+                        <div class="flex flex-col leading-tight text-left">
+                            <span class="text-base font-bold text-red-600 tracking-tight">LightHouse</span>
+                            <span class="text-sm font-medium text-gray-400 tracking-wide">Printing Solutions</span>
+                        </div>
+                    </RouterLink>
                 </div>
 
                 <h1 class="text-2xl font-bold text-gray-900 mb-2">Check your email</h1>

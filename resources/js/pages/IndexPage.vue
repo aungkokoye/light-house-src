@@ -2,8 +2,12 @@
     <!-- Nav -->
     <header class="fixed top-0 inset-x-0 z-50 bg-white/90 backdrop-blur border-b border-gray-100">
         <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-            <div class="flex items-center">
+            <div class="flex items-center gap-2.5">
                 <img :src="'/images/logo.png'" alt="Lighthouse Printing Solutions" class="h-12 w-auto" />
+                <div class="flex flex-col leading-tight">
+                    <span class="text-sm font-bold text-red-600 tracking-tight">LightHouse</span>
+                    <span class="text-xs font-medium text-gray-400 tracking-wide">Printing Solutions</span>
+                </div>
             </div>
 
             <nav class="hidden md:flex items-center gap-8 text-sm text-gray-500">

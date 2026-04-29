@@ -70,7 +70,9 @@ class ChatKnowledgeManager
             $email    = config('contact.email');
             $messenger = config('contact.messenger_name');
 
-            return "You are a helpful customer support assistant for LightHouse Printing, Myanmar.\nIf you don't know the answer, politely say so and provide contact details:\n- Phone: $phone\n- Email: $email\n- Messenger: $messenger";
+            return "You are a helpful customer support assistant for LightHouse Printing, Myanmar.\n
+            If you don't know the answer, politely say so and provide contact details:\n
+            - Phone: $phone\n- Email: $email\n- Messenger: $messenger";
         }
 
         $sections = $entries

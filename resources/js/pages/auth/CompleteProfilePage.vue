@@ -4,7 +4,13 @@
 
             <!-- Logo -->
             <div class="flex items-center justify-center mb-8">
-                <img :src="'/images/logo.png'" alt="Light House" class="h-16 w-auto" />
+                <RouterLink to="/" class="flex items-center gap-2.5">
+                    <img :src="'/images/logo.png'" alt="Lighthouse Printing Solutions" class="h-16 w-auto" />
+                    <div class="flex flex-col leading-tight">
+                        <span class="text-base font-bold text-red-600 tracking-tight">LightHouse</span>
+                        <span class="text-sm font-medium text-gray-400 tracking-wide">Printing Solutions</span>
+                    </div>
+                </RouterLink>
             </div>
 
             <div class="bg-white rounded-2xl shadow-xl shadow-gray-100 border border-gray-400 p-8">
