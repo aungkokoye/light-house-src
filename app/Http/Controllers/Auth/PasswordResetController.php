@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Services\RecaptchaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -11,9 +13,22 @@ use Illuminate\Validation\ValidationException;
 
 class PasswordResetController extends Controller
 {
-    public function sendResetLink(Request $request): JsonResponse
+    public function sendResetLink(Request $request, RecaptchaService $recaptcha): JsonResponse
     {
-        $request->validate(['email' => ['required', 'email']]);
+        $request->validate([
+            'email'           => ['required', 'email'],
+            'recaptcha_token' => ['required', 'string'],
+        ]);
+
+        $recaptcha->verify($request->recaptcha_token, $request->ip());
+
+        $user = User::where('email', $request->email)->first();
+
+        if ($user && ! $user->activated) {
+            throw ValidationException::withMessages([
+                'email' => ['Your account has been deactivated. Please contact an administrator.'],
+            ]);
+        }
 
         $status = Password::sendResetLink($request->only('email'));
 

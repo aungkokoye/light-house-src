@@ -17,6 +17,16 @@ class EmailManager
             ->notify(new ContactInquiryNotification($name, $contact, $service, $message));
     }
 
+    public function sendAccountActivatedEmail(User $user): void
+    {
+        $user->notify(new \App\Notifications\AccountActivatedNotification());
+    }
+
+    public function sendAccountDeactivatedEmail(User $user): void
+    {
+        $user->notify(new \App\Notifications\AccountDeactivatedNotification());
+    }
+
     public function sendVerificationEmail(User $user): void
     {
         if ($user->hasVerifiedEmail()) {

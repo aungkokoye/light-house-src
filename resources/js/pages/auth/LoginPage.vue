@@ -15,6 +15,22 @@
 
             <!-- Card -->
             <div class="bg-white rounded-2xl shadow-xl shadow-gray-100 border border-gray-400 p-8">
+                <!-- Account pending activation (new registration) -->
+                <div v-if="accountPending" class="flex items-center gap-2 text-sm text-blue-700 bg-blue-50 rounded-xl px-4 py-2.5 mb-6">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0zm-9 3.75h.008v.008H12v-.008z" />
+                    </svg>
+                    Your account has been created and is awaiting admin approval. You'll be able to sign in once activated.
+                </div>
+
+                <!-- Account deactivated notice -->
+                <div v-if="accountDeactivated" class="flex items-center gap-2 text-sm text-orange-700 bg-orange-50 rounded-xl px-4 py-2.5 mb-6">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0zm-9 3.75h.008v.008H12v-.008z" />
+                    </svg>
+                    Your account is pending activation. Please contact an administrator.
+                </div>
+
                 <!-- Google error notice -->
                 <div v-if="googleFailed" class="flex items-center gap-2 text-sm text-red-700 bg-red-50 rounded-xl px-4 py-2.5 mb-6">
                     <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -95,35 +111,9 @@
                         </div>
                     </div>
 
-                    <!-- Captcha -->
+                    <!-- reCAPTCHA -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Security code</label>
-                        <div class="flex items-center gap-2 mb-2">
-                            <img
-                                :src="captchaUrl"
-                                alt="captcha"
-                                class="rounded-lg border border-gray-400 h-12"
-                            />
-                            <button
-                                type="button"
-                                @click="refreshCaptcha"
-                                class="p-2 rounded-lg border border-gray-400 text-gray-500 hover:text-indigo-600 hover:border-indigo-300 transition-colors"
-                                title="Refresh captcha"
-                            >
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                </svg>
-                            </button>
-                        </div>
-                        <input
-                            v-model="form.captcha"
-                            type="text"
-                            placeholder="Type the code above"
-                            autocomplete="off"
-                            required
-                            class="w-full px-4 py-2.5 rounded-xl border border-gray-400 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                            :class="{ 'border-red-400 focus:ring-red-400': captchaError }"
-                        />
+                        <div id="recaptcha-login"></div>
                         <p v-if="captchaError" class="text-xs text-red-500 mt-1">{{ captchaError }}</p>
                     </div>
 
@@ -181,6 +171,7 @@
 import { ref, reactive } from 'vue'
 import { useRoute } from 'vue-router'
 import axios from 'axios'
+import { useRecaptcha } from '../../composables/useRecaptcha'
 
 const route = useRoute()
 const verified = route.query.verified === '1'
@@ -188,41 +179,35 @@ const verificationExpired = route.query.verification === 'expired'
 const verificationInvalid = route.query.verification === 'invalid'
 const verificationEmail = route.query.email ?? ''
 const googleFailed = route.query.error === 'google_failed'
+const accountDeactivated = route.query.error === 'account_deactivated'
+const accountPending = route.query.pending === '1'
 
-const form = reactive({ email: '', password: '', captcha: '' })
+const { getToken, reset, captchaError } = useRecaptcha('recaptcha-login')
+
+const form = reactive({ email: '', password: '' })
 const showPassword = ref(false)
 const loading = ref(false)
 const error = ref('')
-const captchaError = ref('')
-
-function buildCaptchaUrl() {
-    return `/captcha?t=${Date.now()}`
-}
-const captchaUrl = ref(buildCaptchaUrl())
-
-function refreshCaptcha() {
-    form.captcha = ''
-    captchaError.value = ''
-    captchaUrl.value = buildCaptchaUrl()
-}
 
 async function handleSubmit() {
     loading.value = true
     error.value = ''
     captchaError.value = ''
     try {
-        const { data } = await axios.post('/api/login', form)
+        const { data } = await axios.post('/api/login', { ...form, recaptcha_token: getToken() })
         localStorage.setItem('token', data.token)
         window.location.href = '/'
     } catch (e) {
         if (e.response?.status === 429) {
             error.value = 'Too many login attempts. Please wait a minute and try again.'
+            reset()
         } else {
             const errors = e.response?.data?.errors
-            if (errors?.captcha) {
-                refreshCaptcha()
-                captchaError.value = errors.captcha[0]
+            if (errors?.recaptcha_token) {
+                reset()
+                captchaError.value = errors.recaptcha_token[0]
             } else {
+                reset()
                 error.value = e.response?.data?.message ?? 'Invalid email or password.'
             }
         }

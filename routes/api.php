@@ -20,10 +20,10 @@ use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
-Route::post('/contact', [ContactController::class, 'send'])->middleware(['web', 'throttle:5,1']);
+Route::post('/contact', [ContactController::class, 'send'])->middleware('throttle:5,1');
 
-Route::post('/register', [AuthController::class, 'register'])->middleware(['web', 'throttle:10,1']);
-Route::post('/login', [AuthController::class, 'login'])->middleware(['web', 'throttle:5,1']);
+Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 Route::post('/email/resend', [AuthController::class, 'resendVerification'])->middleware('throttle:5,1');
 Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])->middleware('throttle:5,1');
 Route::post('/reset-password', [PasswordResetController::class, 'reset'])->middleware('throttle:5,1');
@@ -32,7 +32,7 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
     Route::put('/password', [AuthController::class, 'updatePassword']);
-    Route::post('/profile/company', [AuthController::class, 'completeCompanyProfile'])->middleware('web');
+    Route::post('/profile/company', [AuthController::class, 'completeCompanyProfile']);
     Route::post('/chat/stream', [ChatController::class, 'stream']);
 });
 

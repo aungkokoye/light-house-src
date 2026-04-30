@@ -26,14 +26,19 @@ class SocialAuthController extends Controller
             ->orWhere('email', $googleUser->getEmail())
             ->first();
 
+        $isNew = false;
+
         if ($user) {
             if (! $user->google_id) {
                 $user->forceFill(['google_id' => $googleUser->getId()])->save();
             }
+
+            if (! $user->activated) {
+                return redirect('/login?error=account_deactivated');
+            }
         } else {
             $name = $googleUser->getName();
 
-            // Ensure name is unique
             if (User::where('name', $name)->exists()) {
                 $name = $name . '_' . substr($googleUser->getId(), -4);
             }
@@ -45,15 +50,13 @@ class SocialAuthController extends Controller
                     'google_id'         => $googleUser->getId(),
                     'email_verified_at' => now(),
                     'password'          => null,
+                    'activated'         => false,
                 ]);
                 $user->assignRole('customer');
+                $isNew = true;
             } catch (\Throwable $e) {
                 return redirect('/login?error=google_failed');
             }
-        }
-
-        if (! $user->activated) {
-            return redirect('/login?error=account_deactivated');
         }
 
         $token = $user->createToken('api-token')->plainTextToken;
@@ -69,6 +72,9 @@ class SocialAuthController extends Controller
         $url = '/auth/callback?token=' . urlencode($token);
         if ($needsProfile) {
             $url .= '&needs_profile=1';
+        }
+        if ($isNew) {
+            $url .= '&pending=1';
         }
 
         return redirect($url);

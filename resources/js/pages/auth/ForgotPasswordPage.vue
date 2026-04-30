@@ -38,6 +38,11 @@
                             <p v-if="error" class="text-xs text-red-500 mt-1">{{ error }}</p>
                         </div>
 
+                        <div>
+                            <div id="recaptcha-forgot"></div>
+                            <p v-if="captchaError" class="text-xs text-red-500 mt-1">{{ captchaError }}</p>
+                        </div>
+
                         <button
                             type="submit"
                             :disabled="loading"
@@ -76,23 +81,32 @@
 <script setup>
 import { ref } from 'vue'
 import axios from 'axios'
+import { useRecaptcha } from '../../composables/useRecaptcha'
 
 const email = ref('')
 const loading = ref(false)
 const error = ref('')
 const sent = ref(false)
+const { getToken, reset, captchaError } = useRecaptcha('recaptcha-forgot')
 
 async function submit() {
     loading.value = true
     error.value = ''
+    captchaError.value = ''
     try {
-        await axios.post('/api/forgot-password', { email: email.value })
+        await axios.post('/api/forgot-password', { email: email.value, recaptcha_token: getToken() })
         sent.value = true
     } catch (e) {
         if (e.response?.status === 429) {
             error.value = 'Too many attempts. Please wait a minute and try again.'
         } else {
-            error.value = e.response?.data?.errors?.email?.[0] ?? 'Something went wrong.'
+            const errors = e.response?.data?.errors ?? {}
+            if (errors.recaptcha_token) {
+                reset()
+                captchaError.value = errors.recaptcha_token[0]
+            } else {
+                error.value = errors.email?.[0] ?? 'Something went wrong.'
+            }
         }
     } finally {
         loading.value = false

@@ -62,35 +62,10 @@
                             class="w-full px-4 py-2.5 rounded-xl border border-gray-400 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition resize-none"></textarea>
                     </div>
 
-                    <!-- Captcha -->
+                    <!-- reCAPTCHA -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Security code</label>
-                        <div class="flex items-center gap-2 mb-2">
-                            <img
-                                :src="captchaUrl"
-                                alt="captcha"
-                                class="rounded-lg border border-gray-400 h-12"
-                            />
-                            <button
-                                type="button"
-                                @click="refreshCaptcha"
-                                class="p-2 rounded-lg border border-gray-400 text-gray-500 hover:text-indigo-600 hover:border-indigo-300 transition-colors"
-                                title="Refresh captcha"
-                            >
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                </svg>
-                            </button>
-                        </div>
-                        <input
-                            v-model="form.captcha"
-                            type="text"
-                            placeholder="Type the code above"
-                            autocomplete="off"
-                            class="w-full px-4 py-2.5 rounded-xl border text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                            :class="errors.captcha ? 'border-red-400 focus:ring-red-400' : 'border-gray-400'"
-                        />
-                        <p v-if="errors.captcha" class="text-xs text-red-500 mt-1">{{ errors.captcha[0] }}</p>
+                        <div id="recaptcha-complete-profile"></div>
+                        <p v-if="errors.recaptcha_token" class="text-xs text-red-500 mt-1">{{ errors.recaptcha_token[0] }}</p>
                     </div>
 
                     <p v-if="generalError" class="text-sm text-red-500">{{ generalError }}</p>
@@ -115,10 +90,14 @@
 
 <script setup>
 import { reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
+import { useRecaptcha } from '../../composables/useRecaptcha'
 
 const router = useRouter()
+const route = useRoute()
+const isPending = route.query.pending === '1'
+const { getToken, reset } = useRecaptcha('recaptcha-complete-profile')
 const loading = ref(false)
 const errors = ref({})
 const generalError = ref('')
@@ -129,38 +108,23 @@ const form = reactive({
     phone: '',
     address: '',
     description: '',
-    captcha: '',
 })
-
-function buildCaptchaUrl() {
-    return `/captcha?t=${Date.now()}`
-}
-const captchaUrl = ref(buildCaptchaUrl())
-
-function refreshCaptcha() {
-    form.captcha = ''
-    delete errors.value.captcha
-    captchaUrl.value = buildCaptchaUrl()
-}
 
 async function handleSubmit() {
     loading.value = true
     errors.value = {}
     generalError.value = ''
     try {
-        await axios.post('/api/profile/company', form)
-        router.replace('/')
+        await axios.post('/api/profile/company', { ...form, recaptcha_token: getToken() })
+        localStorage.removeItem('token')
+        router.replace(isPending ? '/login?pending=1' : '/')
     } catch (e) {
         if (e.response?.status === 422) {
             errors.value = e.response.data.errors ?? {}
-            if (errors.value.captcha) {
-                // Reload the image and clear the input, but keep the error message visible
-                form.captcha = ''
-                captchaUrl.value = buildCaptchaUrl()
-            }
         } else {
             generalError.value = 'Something went wrong. Please try again.'
         }
+        reset()
     } finally {
         loading.value = false
     }

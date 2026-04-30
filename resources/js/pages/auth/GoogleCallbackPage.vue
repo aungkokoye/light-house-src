@@ -22,7 +22,14 @@ onMounted(() => {
         clearAuth()
         localStorage.setItem('token', token)
         const needsProfile = params.get('needs_profile') === '1'
-        window.location.replace(needsProfile ? '/complete-profile' : '/')
+        const pending = params.get('pending') === '1'
+        if (needsProfile) {
+            window.location.replace('/complete-profile?pending=1')
+        } else if (pending) {
+            window.location.replace('/login?pending=1')
+        } else {
+            window.location.replace('/')
+        }
     } else {
         window.location.replace('/login?error=google_failed')
     }

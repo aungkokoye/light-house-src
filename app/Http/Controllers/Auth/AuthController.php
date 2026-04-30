@@ -10,25 +10,25 @@ use App\Models\AuditLog;
 use App\Models\User;
 use App\Services\CompanyProfileManager;
 use App\Services\EmailManager;
+use App\Services\RecaptchaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\PersonalAccessToken;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    public function register(Request $request, EmailManager $emailManager, CompanyProfileManager $companyProfileManager): JsonResponse
+    public function register(Request $request, EmailManager $emailManager, CompanyProfileManager $companyProfileManager, RecaptchaService $recaptcha): JsonResponse
     {
         $validated = $request->validate([
-            'name'     => ['required', 'string', 'max:255', 'unique:users'],
-            'email'    => ['required', 'email', 'unique:users'],
-            'password' => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()],
-            'captcha'  => ['required', 'string'],
+            'name'            => ['required', 'string', 'max:255', 'unique:users'],
+            'email'           => ['required', 'email', 'unique:users'],
+            'password'        => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()],
+            'recaptcha_token' => ['required', 'string'],
 
             'company_profile'             => ['required', 'array'],
             'company_profile.name'        => ['required', 'string', 'max:255'],
@@ -44,23 +44,15 @@ class AuthController extends Controller
             'company_profile.phone'       => 'phone',
         ]);
 
-        $expected = Session::get('captcha');
-
-        if (! $expected || strtolower($request->captcha) !== $expected) {
-            Session::forget('captcha');
-            throw ValidationException::withMessages([
-                'captcha' => ['The captcha code is incorrect. Please try again.'],
-            ]);
-        }
-
-        Session::forget('captcha');
+        $recaptcha->verify($request->recaptcha_token, $request->ip());
 
         try {
             $user = DB::transaction(function () use ($validated, $companyProfileManager) {
                 $user = User::create([
-                    'name'     => $validated['name'],
-                    'email'    => $validated['email'],
-                    'password' => $validated['password'],
+                    'name'      => $validated['name'],
+                    'email'     => $validated['email'],
+                    'password'  => $validated['password'],
+                    'activated' => false,
                 ]);
 
                 $user->assignRole('customer');
@@ -82,24 +74,15 @@ class AuthController extends Controller
         ], 201);
     }
 
-    public function login(Request $request): JsonResponse
+    public function login(Request $request, RecaptchaService $recaptcha): JsonResponse
     {
         $request->validate([
-            'email'    => ['required', 'email'],
-            'password' => ['required'],
-            'captcha'  => ['required', 'string'],
+            'email'           => ['required', 'email'],
+            'password'        => ['required'],
+            'recaptcha_token' => ['required', 'string'],
         ]);
 
-        $expected = Session::get('captcha');
-
-        if (! $expected || strtolower($request->captcha) !== $expected) {
-            Session::forget('captcha');
-            throw ValidationException::withMessages([
-                'captcha' => ['The captcha code is incorrect. Please try again.'],
-            ]);
-        }
-
-        Session::forget('captcha');
+        $recaptcha->verify($request->recaptcha_token, $request->ip());
 
         if (! Auth::attempt($request->only('email', 'password'))) {
             throw ValidationException::withMessages([
@@ -198,7 +181,7 @@ class AuthController extends Controller
         return response()->json(['message' => 'Password updated successfully.']);
     }
 
-    public function completeCompanyProfile(Request $request, CompanyProfileManager $companyProfileManager): JsonResponse
+    public function completeCompanyProfile(Request $request, CompanyProfileManager $companyProfileManager, RecaptchaService $recaptcha): JsonResponse
     {
         $user = $request->user()->load('roles');
 
@@ -211,12 +194,12 @@ class AuthController extends Controller
         }
 
         $data = $request->validate([
-            'name'        => ['required', 'string', 'max:255'],
-            'role'        => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string', 'max:10000'],
-            'address'     => ['required', 'string', 'max:2000'],
-            'phone'       => ['required', 'string', 'max:50'],
-            'captcha'     => ['required', 'string'],
+            'name'            => ['required', 'string', 'max:255'],
+            'role'            => ['required', 'string', 'max:255'],
+            'description'     => ['nullable', 'string', 'max:10000'],
+            'address'         => ['required', 'string', 'max:2000'],
+            'phone'           => ['required', 'string', 'max:50'],
+            'recaptcha_token' => ['required', 'string'],
         ], [], [
             'name'    => 'company name',
             'role'    => 'role / title',
@@ -224,16 +207,7 @@ class AuthController extends Controller
             'phone'   => 'phone',
         ]);
 
-        $expected = Session::get('captcha');
-
-        if (! $expected || strtolower($request->captcha) !== $expected) {
-            Session::forget('captcha');
-            throw ValidationException::withMessages([
-                'captcha' => ['The captcha code is incorrect. Please try again.'],
-            ]);
-        }
-
-        Session::forget('captcha');
+        $recaptcha->verify($request->recaptcha_token, $request->ip());
 
         $companyProfileManager->create($user, $data);
 

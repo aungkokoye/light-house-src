@@ -236,23 +236,10 @@
                             <p v-if="formErrors.message" class="mt-1 text-xs text-red-500">{{ formErrors.message }}</p>
                         </div>
 
-                        <!-- Image captcha -->
+                        <!-- reCAPTCHA -->
                         <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Security check <span class="text-red-500">*</span></label>
-                            <div class="flex items-center gap-2 mb-1.5">
-                                <img :src="captchaUrl" alt="captcha" class="rounded-lg border border-gray-300 h-12" />
-                                <button type="button" @click="refreshCaptcha"
-                                    class="p-2 rounded-lg border border-gray-300 text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors"
-                                    title="Refresh captcha">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                    </svg>
-                                </button>
-                            </div>
-                            <input v-model="contactForm.captcha" type="text" placeholder="Enter the code above"
-                                class="w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200 bg-gray-50"
-                                :class="formErrors.captcha ? 'border-red-400' : 'border-gray-200'" />
-                            <p v-if="formErrors.captcha" class="mt-1 text-xs text-red-500">{{ formErrors.captcha }}</p>
+                            <div id="recaptcha-contact"></div>
+                            <p v-if="formErrors.recaptcha_token" class="mt-1 text-xs text-red-500">{{ formErrors.recaptcha_token[0] ?? formErrors.recaptcha_token }}</p>
                         </div>
 
                         <button type="submit" :disabled="sendingMessage"
@@ -318,22 +305,15 @@ import { h, ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import { useLogout } from '../composables/useLogout'
 import { clearAuth } from '../bootstrap'
+import { useRecaptcha } from '../composables/useRecaptcha'
 
 const { logout } = useLogout()
+const { getToken, reset: resetCaptcha } = useRecaptcha('recaptcha-contact')
 const isLoggedIn = ref(!!localStorage.getItem('token'))
 const userName = ref('')
 const messageSent = ref(false)
-const contactForm = ref({ name: '', contact: '', service: '', message: '', captcha: '' })
+const contactForm = ref({ name: '', contact: '', service: '', message: '' })
 const formErrors = ref({})
-
-function buildCaptchaUrl() { return `/captcha?t=${Date.now()}` }
-const captchaUrl = ref(buildCaptchaUrl())
-
-function refreshCaptcha() {
-    contactForm.value.captcha = ''
-    formErrors.value.captcha = ''
-    captchaUrl.value = buildCaptchaUrl()
-}
 
 const userInitials = computed(() =>
     userName.value.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase() || '?'
@@ -360,7 +340,6 @@ function validateForm() {
     if (!contactForm.value.contact.trim()) errs.contact = 'Phone or email is required.'
     if (!contactForm.value.service)        errs.service = 'Please select a service.'
     if (!contactForm.value.message.trim()) errs.message = 'Message is required.'
-    if (!contactForm.value.captcha.trim()) errs.captcha = 'Please enter the captcha code.'
     return errs
 }
 
@@ -372,10 +351,10 @@ async function sendMessage() {
 
     sendingMessage.value = true
     try {
-        await axios.post('/api/contact', contactForm.value)
+        await axios.post('/api/contact', { ...contactForm.value, recaptcha_token: getToken() })
         messageSent.value = true
-        contactForm.value = { name: '', contact: '', service: '', message: '', captcha: '' }
-        refreshCaptcha()
+        contactForm.value = { name: '', contact: '', service: '', message: '' }
+        resetCaptcha()
         setTimeout(() => messageSent.value = false, 6000)
     } catch (e) {
         if (e?.response?.status === 429) {
@@ -383,10 +362,10 @@ async function sendMessage() {
         } else if (e?.response?.status === 422) {
             const errs = e.response.data.errors ?? {}
             formErrors.value = { ...formErrors.value, ...errs }
-            if (errs.captcha) refreshCaptcha()
         } else {
             sendError.value = 'Failed to send email. Please try again or call us directly.'
         }
+        resetCaptcha()
     } finally {
         sendingMessage.value = false
     }

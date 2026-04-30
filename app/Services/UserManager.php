@@ -22,6 +22,7 @@ class UserManager
         private UserRepository $repo,
         private CompanyProfileManager $companyProfileManager,
         private StaffProfileManager $staffProfileManager,
+        private EmailManager $emailManager,
     ) {}
 
     public function list(Request $request, int $perPage): LengthAwarePaginator
@@ -95,6 +96,9 @@ class UserManager
         $oldValues = $this->buildSnapshot($user);
         $hasSuper  = Auth::user()?->hasPermissionTo('super') ?? false;
 
+        $wasActivated   = ! $user->activated && $activated;
+        $wasDeactivated = $user->activated && ! $activated;
+
         $data = [
             'name'              => $name,
             'email'             => $email,
@@ -124,6 +128,14 @@ class UserManager
 
         $user = $user->fresh(['roles', 'permissions', 'staffProfile.staffRoles', 'companyProfile']);
         $this->auditUpdated($user, $oldValues, $this->buildSnapshot($user));
+
+        if ($wasActivated) {
+            $this->emailManager->sendAccountActivatedEmail($user);
+        }
+
+        if ($wasDeactivated) {
+            $this->emailManager->sendAccountDeactivatedEmail($user);
+        }
 
         return $user;
     }
