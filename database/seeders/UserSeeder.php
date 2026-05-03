@@ -48,6 +48,7 @@ class UserSeeder extends Seeder
             positions:   $positions,
             sites:       $sites,
             positionId:  $operatorManagerId,
+            isActivated: true,
             now:         $now,
         );
 
@@ -58,42 +59,73 @@ class UserSeeder extends Seeder
             positions:   $positions,
             sites:       $sites,
             positionId:  $operatorManagerId,
-            createdBy:   $admin->id,
+            isActivated: true,
+            createdBy:   $admin,
             now:         $now,
         );
 
+        $this->createAdmin(
+            name:        'Unverified Admin User',
+            email:       'unverified.admin@lighthouse.com',
+            permissions: ['view', 'create', 'edit'],
+            positions:   $positions,
+            sites:       $sites,
+            positionId:  $operatorManagerId,
+            createdBy:   $admin,
+        );
+
         // --- Customer users ---
-        User::factory(10)->create(['email_verified_at' => $now])
+        User::factory(10)->create()
             ->each(function (User $user) use ($admin) {
                 $user->assignRole('customer');
-
-                CompanyProfile::create([
-                    'user_id'     => $user->id,
-                    'name'        => fake()->company(),
-                    'role'        => fake()->jobTitle(),
-                    'description' => fake()->sentence(),
-                    'address'     => fake()->address(),
-                    'phone'       => fake()->phoneNumber(),
-                    'created_by'  => $admin->id,
-                ]);
+                $this->createCompanyProfile($user, $admin);
             });
 
+        User::factory(2)->unverified()->create()
+            ->each(function (User $user) use ($admin) {
+                $user->assignRole('customer');
+                $this->createCompanyProfile($user, $admin);
+            });
+
+        User::factory(2)->deactivated()->create()
+            ->each(function (User $user) use ($admin) {
+                $user->assignRole('customer');
+                $this->createCompanyProfile($user, $admin);
+            });
+
+        User::factory(1)->deactivated()->unverified()->create()
+            ->each(function (User $user) use ($admin) {
+                $user->assignRole('customer');
+                $this->createCompanyProfile($user, $admin);
+            });
+
+
         // --- Staff users (role = user) ---
-        User::factory(30)->create(['email_verified_at' => $now])
+        User::factory(25)->create()
+                ->each(function (User $user) use ($admin, $positions, $sites) {
+                $user->assignRole('user');
+                $staffProfile = $this->createStaffProfile($user, $admin);
+                $this->seedStaffRoles($staffProfile, $positions, $sites, $admin->id);
+            });
+
+        User::factory(2)->unverified()->create()
             ->each(function (User $user) use ($admin, $positions, $sites) {
                 $user->assignRole('user');
+                $staffProfile = $this->createStaffProfile($user, $admin);
+                $this->seedStaffRoles($staffProfile, $positions, $sites, $admin->id);
+            });
 
-                $staffProfile = StaffProfile::create([
-                    'user_id'    => $user->id,
-                    'full_name'  => $user->name,
-                    'nrc_no'     => fake()->numerify('##/######(N)######'),
-                    'dob'        => fake()->dateTimeBetween('-50 years', '-20 years')->format('Y-m-d'),
-                    'address'    => fake()->address(),
-                    'phone'      => fake()->phoneNumber(),
-                    'created_by' => $admin->id,
-                    'start_date' => fake()->dateTimeBetween('-5 years', '-6 months')->format('Y-m-d'),
-                ]);
+        User::factory(2)->deactivated()->create()
+            ->each(function (User $user) use ($admin, $positions, $sites) {
+                $user->assignRole('user');
+                $staffProfile = $this->createStaffProfile($user, $admin);
+                $this->seedStaffRoles($staffProfile, $positions, $sites, $admin->id);
+            });
 
+        User::factory(1)->deactivated()->unverified()->create()
+            ->each(function (User $user) use ($admin, $positions, $sites) {
+                $user->assignRole('user');
+                $staffProfile = $this->createStaffProfile($user, $admin);
                 $this->seedStaffRoles($staffProfile, $positions, $sites, $admin->id);
             });
     }
@@ -105,29 +137,22 @@ class UserSeeder extends Seeder
         $positions,
         $sites,
         int $positionId,
-        ?int $createdBy = null,
-        Carbon $now = new Carbon,
+        bool $isActivated = false,
+        ?User $createdBy = null,
+        ?Carbon $now = null,
     ): User {
         $user = User::factory()->create([
             'name'              => $name,
             'email'             => $email,
             'email_verified_at' => $now,
+            'activated'         => $isActivated,
             'password'          => Hash::make('Passw0rd!'),
         ]);
 
         $user->assignRole('admin');
         $user->syncPermissions($permissions);
 
-        $profile = StaffProfile::create([
-            'user_id'    => $user->id,
-            'full_name'  => $user->name,
-            'nrc_no'     => fake()->numerify('##/######(N)######'),
-            'dob'        => fake()->dateTimeBetween('-50 years', '-25 years')->format('Y-m-d'),
-            'address'    => fake()->address(),
-            'phone'      => fake()->phoneNumber(),
-            'created_by' => $createdBy ?? $user->id,
-            'start_date' => fake()->dateTimeBetween('-5 years', '-1 year')->format('Y-m-d'),
-        ]);
+        $profile = $this->createStaffProfile($user, $createdBy ?? $user);
 
         $this->seedStaffRoles($profile, $positions, $sites, $user->id, $positionId);
 
@@ -157,5 +182,32 @@ class UserSeeder extends Seeder
                 $roleStart = $roleEnd->copy()->addDay();
             }
         }
+    }
+
+    private function createCompanyProfile(User $user, User $admin): void
+    {
+        CompanyProfile::create([
+            'user_id'     => $user->id,
+            'name'        => fake()->company(),
+            'role'        => fake()->jobTitle(),
+            'description' => fake()->sentence(),
+            'address'     => fake()->address(),
+            'phone'       => fake()->phoneNumber(),
+            'created_by'  => $admin->id,
+        ]);
+    }
+
+    private function createStaffProfile(User $user, User $admin): StaffProfile
+    {
+        return StaffProfile::create([
+            'user_id'    => $user->id,
+            'full_name'  => $user->name,
+            'nrc_no'     => fake()->numerify('##/######(N)######'),
+            'dob'        => fake()->dateTimeBetween('-50 years', '-25 years')->format('Y-m-d'),
+            'address'    => fake()->address(),
+            'phone'      => fake()->phoneNumber(),
+            'created_by' => $admin->id,
+            'start_date' => fake()->dateTimeBetween('-5 years', '-1 year')->format('Y-m-d'),
+        ]);
     }
 }

@@ -43,4 +43,11 @@ class UserFactory extends Factory
             'email_verified_at' => null,
         ]);
     }
+
+    public function deactivated(): UserFactory
+    {
+        return $this->state(fn (array $attributes) => [
+            'activated' => false,
+        ]);
+    }
 }
