@@ -30,6 +30,20 @@
                         </div>
                     </RouterLink>
 
+                    <!-- Banks — admin or sale -->
+                    <RouterLink v-if="isAdminOrSale" to="/admin/banks"
+                        class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col items-center gap-4 hover:shadow-md hover:border-amber-100 transition-all">
+                        <div class="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center group-hover:bg-amber-100 transition-colors">
+                            <svg class="w-7 h-7 text-amber-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" />
+                            </svg>
+                        </div>
+                        <div class="text-center">
+                            <p class="font-semibold text-gray-900">Banks</p>
+                            <p class="text-xs text-gray-400 mt-0.5">Manage payment banks</p>
+                        </div>
+                    </RouterLink>
+
                     <!-- Chat Knowledge — super admin only -->
                     <RouterLink v-if="isSuper" to="/admin/chat-knowledge"
                         class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col items-center gap-4 hover:shadow-md hover:border-teal-100 transition-all">
@@ -161,6 +175,7 @@ const user = ref(null)
 
 const isAdmin = computed(() => user.value?.roles?.some(r => r.name === 'admin'))
 const isSuper = computed(() => isAdmin.value && user.value?.permissions?.some(p => p.name === 'super'))
+const isAdminOrSale = computed(() => user.value?.roles?.some(r => r.name === 'admin' || r.name === 'sale'))
 
 onMounted(async () => {
     await requireAuth(user, loading)

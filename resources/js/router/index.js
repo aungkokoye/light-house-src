@@ -54,6 +54,12 @@ import AdminChatKnowledgeCategoriesPage from '../pages/admin/chat-knowledge-cate
 import AdminCreateChatKnowledgeCategoryPage from '../pages/admin/chat-knowledge-categories/AdminCreateChatKnowledgeCategoryPage.vue';
 import AdminEditChatKnowledgeCategoryPage from '../pages/admin/chat-knowledge-categories/AdminEditChatKnowledgeCategoryPage.vue';
 
+// Admin — Banks
+import AdminBanksPage from '../pages/admin/banks/AdminBanksPage.vue';
+import AdminCreateBankPage from '../pages/admin/banks/AdminCreateBankPage.vue';
+import AdminEditBankPage from '../pages/admin/banks/AdminEditBankPage.vue';
+import AdminViewBankPage from '../pages/admin/banks/AdminViewBankPage.vue';
+
 // Admin — Permissions
 import AdminPermissionsPage from '../pages/admin/permissions/AdminPermissionsPage.vue';
 import AdminCreatePermissionPage from '../pages/admin/permissions/AdminCreatePermissionPage.vue';
@@ -101,7 +107,11 @@ const routes = [
     { path: '/admin/users/:id/staff-roles/create',             component: AdminUserCreateStaffRolePage },
     { path: '/admin/users/:id/staff-roles/:roleId',            component: AdminUserViewStaffRolePage },
     { path: '/admin/users/:id/staff-roles/:roleId/edit',       component: AdminUserEditStaffRolePage },
-    { path: '/admin/audit-logs',      component: AdminAuditLogsPage },
+    { path: '/admin/banks',            component: AdminBanksPage },
+    { path: '/admin/banks/create',     component: AdminCreateBankPage },
+    { path: '/admin/banks/:id',        component: AdminViewBankPage },
+    { path: '/admin/banks/:id/edit',   component: AdminEditBankPage },
+    { path: '/admin/audit-logs',       component: AdminAuditLogsPage },
     { path: '/admin/audit-logs/:id',  component: AdminViewAuditLogPage },
     { path: '/admin/chat-knowledge',             component: AdminChatKnowledgePage },
     { path: '/admin/chat-knowledge/create',      component: AdminCreateChatKnowledgePage },
