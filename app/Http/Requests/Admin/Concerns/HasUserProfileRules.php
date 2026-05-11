@@ -38,6 +38,7 @@ trait HasUserProfileRules
             'staff_role.staff_position_id' => 'position',
             'staff_role.site_id'           => 'site',
             'staff_role.salary'            => 'salary',
+            'staff_role.overtime_hourly_rate'       => 'overtime hourly rate',
             'staff_role.start_date'        => 'start date',
         ];
     }
@@ -95,6 +96,7 @@ trait HasUserProfileRules
             'staff_role.staff_position_id' => ['required', 'exists:staff_positions,id'],
             'staff_role.site_id'           => ['required', 'exists:sites,id'],
             'staff_role.salary'            => ['required', 'integer', 'min:0'],
+            'staff_role.overtime_hourly_rate'       => ['required', 'integer', 'min:0'],
             'staff_role.start_date'        => ['required', 'date'],
         ];
     }

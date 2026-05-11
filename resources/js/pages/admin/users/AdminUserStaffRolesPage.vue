@@ -86,6 +86,7 @@
                                     <td class="px-6 py-3.5 font-medium text-gray-900">{{ role.position?.name ?? '—' }}</td>
                                     <td class="px-6 py-3.5 text-gray-600">{{ role.site?.name ?? '—' }}</td>
                                     <td class="px-6 py-3.5 text-gray-600">{{ role.salary?.toLocaleString() ?? '—' }}</td>
+                                    <td class="px-6 py-3.5 text-gray-600">{{ role.overtime_hourly_rate?.toLocaleString() ?? '—' }}</td>
                                     <td class="px-6 py-3.5 text-gray-600">{{ role.start_date ? formatDate(role.start_date) : '—' }}</td>
                                     <td class="px-6 py-3.5">
                                         <span v-if="!role.end_date"
@@ -192,8 +193,9 @@ const columns = [
     { key: 'id',            label: 'ID',         sortable: true },
     { key: 'position_name', label: 'Position',    sortable: true },
     { key: null,            label: 'Site',        sortable: false },
-    { key: null,            label: 'Salary',      sortable: false },
-    { key: 'start_date',    label: 'Start Date',  sortable: true },
+    { key: null,            label: 'Salary',           sortable: false },
+    { key: null,            label: 'OT Hourly Rate',   sortable: false },
+    { key: 'start_date',    label: 'Start Date',       sortable: true },
     { key: 'end_date',      label: 'End Date',    sortable: true },
 ]
 

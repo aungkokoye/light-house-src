@@ -31,8 +31,9 @@
 
                 <!-- Avatar + name -->
                 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-4 flex items-center gap-4">
-                    <div class="w-14 h-14 rounded-2xl bg-indigo-100 flex items-center justify-center text-indigo-600 text-2xl font-bold shrink-0">
-                        {{ user.name.charAt(0).toUpperCase() }}
+                    <div class="w-[100px] h-[100px] rounded-full overflow-hidden bg-indigo-100 border-2 border-indigo-200 flex items-center justify-center shrink-0">
+                        <img v-if="user.staff_profile?.photo_url" :src="user.staff_profile.photo_url" class="w-full h-full object-cover" alt="Staff photo" />
+                        <span v-else class="text-2xl font-bold text-indigo-600">{{ userInitials }}</span>
                     </div>
                     <div>
                         <p class="font-semibold text-gray-900 text-lg">{{ user.name }}</p>
@@ -252,6 +253,7 @@
                                     <th class="px-6 py-3 font-medium">Position</th>
                                     <th class="px-6 py-3 font-medium">Site</th>
                                     <th class="px-6 py-3 font-medium">Salary</th>
+                                    <th class="px-6 py-3 font-medium">Overtime Hourly Rate</th>
                                     <th class="px-6 py-3 font-medium">Start Date</th>
                                     <th class="px-6 py-3 font-medium">End Date</th>
                                 </tr>
@@ -263,7 +265,8 @@
                                         <span v-if="!role.end_date" class="ml-2 inline-flex items-center text-xs font-medium px-1.5 py-0.5 rounded-full bg-green-50 text-green-700">Current</span>
                                     </td>
                                     <td class="px-6 py-3.5 text-gray-600">{{ role.site?.name ?? '—' }}</td>
-                                    <td class="px-6 py-3.5 text-gray-600">{{ role.salary?.toLocaleString() }}</td>
+                                    <td class="px-6 py-3.5 text-gray-600">{{ role.salary?.toLocaleString() ?? '—' }}</td>
+                                    <td class="px-6 py-3.5 text-gray-600">{{ role.overtime_hourly_rate?.toLocaleString() ?? '—' }}</td>
                                     <td class="px-6 py-3.5 text-gray-600">{{ formatDate(role.start_date) }}</td>
                                     <td class="px-6 py-3.5 text-gray-400">{{ role.end_date ? formatDate(role.end_date) : '—' }}</td>
                                 </tr>
@@ -277,7 +280,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
 import AppHeader from '../../../components/AppHeader.vue'
@@ -291,6 +294,11 @@ const { requireAdmin } = useAdminGuard()
 const { formatDate } = useFormatDate()
 const loading = ref(true)
 const user = ref(null)
+const userInitials = computed(() =>
+    user.value?.name
+        ? user.value.name.split(' ').map(w => w[0]).slice(0, 3).join('').toUpperCase()
+        : '?'
+)
 const resending = ref(false)
 const myPermissions = ref([])
 

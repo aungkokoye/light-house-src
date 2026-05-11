@@ -125,6 +125,30 @@
                         <template v-if="form.role && form.role !== 'customer'">
                             <div class="border-t border-gray-100 pt-4">
                                 <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Staff Profile</p>
+
+                                <!-- Photo upload -->
+                                <div class="flex items-center gap-4 mb-4">
+                                    <div class="relative w-[100px] h-[100px] shrink-0 group cursor-pointer" @click="photoInput?.click()">
+                                        <div class="w-full h-full rounded-full overflow-hidden bg-gray-100 border-2 border-gray-200 flex items-center justify-center">
+                                            <img v-if="photoPreview" :src="photoPreview" class="w-full h-full object-cover" alt="Staff photo" />
+                                            <svg v-else class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0zM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                                            </svg>
+                                        </div>
+                                        <div class="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0zM18.75 10.5h.008v.008h-.008V10.5z" />
+                                            </svg>
+                                        </div>
+                                        <input ref="photoInput" type="file" accept="image/jpeg,image/jpg,image/png,image/webp" class="hidden" @change="handlePhotoSelect" />
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-500">Click photo to select</p>
+                                        <p class="text-xs text-gray-400 mt-0.5">JPG, PNG, WEBP · max 20MB · uploaded after save</p>
+                                    </div>
+                                </div>
+
                                 <div class="space-y-4">
                                     <div class="grid grid-cols-2 gap-4">
                                         <div>
@@ -295,12 +319,19 @@
                                             <p v-if="errors['staff_role.salary']" class="mt-1 text-xs text-red-500">{{ errors['staff_role.salary'][0] }}</p>
                                         </div>
                                         <div>
-                                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Start Date <span class="text-red-400">*</span></label>
-                                            <input v-model="form.staff_role.start_date" type="date"
+                                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Overtime Hourly Rate <span class="text-red-400">*</span></label>
+                                            <input v-model.number="form.staff_role.overtime_hourly_rate" type="number" min="0"
                                                 class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
-                                                :class="errors['staff_role.start_date'] ? 'border-red-300' : 'border-gray-300'" />
-                                            <p v-if="errors['staff_role.start_date']" class="mt-1 text-xs text-red-500">{{ errors['staff_role.start_date'][0] }}</p>
+                                                :class="errors['staff_role.overtime_hourly_rate'] ? 'border-red-300' : 'border-gray-300'" />
+                                            <p v-if="errors['staff_role.overtime_hourly_rate']" class="mt-1 text-xs text-red-500">{{ errors['staff_role.overtime_hourly_rate'][0] }}</p>
                                         </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1.5">Start Date <span class="text-red-400">*</span></label>
+                                        <input v-model="form.staff_role.start_date" type="date"
+                                            class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
+                                            :class="errors['staff_role.start_date'] ? 'border-red-300' : 'border-gray-300'" />
+                                        <p v-if="errors['staff_role.start_date']" class="mt-1 text-xs text-red-500">{{ errors['staff_role.start_date'][0] }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -370,6 +401,16 @@ const allPermissions = ref([])
 const allRoles = ref([])
 const allPositions = ref([])
 const allSites = ref([])
+const photoInput = ref(null)
+const photoFile = ref(null)
+const photoPreview = ref(null)
+
+function handlePhotoSelect(event) {
+    const file = event.target.files?.[0]
+    if (!file) return
+    photoFile.value = file
+    photoPreview.value = URL.createObjectURL(file)
+}
 
 const form = ref({
     name: '',
@@ -406,6 +447,7 @@ const form = ref({
         start_date: '',
     },
     staff_role: {
+        overtime_hourly_rate: null,
         staff_position_id: null,
         site_id: null,
         salary: null,
@@ -445,6 +487,11 @@ async function submit() {
     submitting.value = true
     try {
         const { data } = await axios.post('/api/admin/users', buildPayload())
+        if (photoFile.value && form.value.role !== 'customer') {
+            const formData = new FormData()
+            formData.append('photo', photoFile.value)
+            await axios.post(`/api/admin/users/${data.id}/photo`, formData)
+        }
         router.push(`/admin/users/${data.id}`)
     } catch (e) {
         if (e?.response?.status === 422) {

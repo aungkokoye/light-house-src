@@ -172,6 +172,7 @@ class UserSeeder extends Seeder
                 'staff_profile_id'  => $profile->id,
                 'staff_position_id' => $fixedPositionId ?? $positions->random()->id,
                 'salary'            => fake()->numberBetween(200_000, 1_500_000),
+                'overtime_hourly_rate'       => fake()->numberBetween(1_000, 10_000),
                 'site_id'           => $sites->random()->id,
                 'start_date'        => $roleStart->format('Y-m-d'),
                 'end_date'          => $roleEnd?->format('Y-m-d'),

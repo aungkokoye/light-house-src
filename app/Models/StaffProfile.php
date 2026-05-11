@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Storage;
 
 class StaffProfile extends Model
 {
@@ -28,7 +30,10 @@ class StaffProfile extends Model
         'phone',
         'created_by',
         'start_date',
+        'photo',
     ];
+
+    protected $appends = ['photo_url'];
 
     protected function casts(): array
     {
@@ -36,6 +41,13 @@ class StaffProfile extends Model
             'dob'        => 'date',
             'start_date' => 'date',
         ];
+    }
+
+    protected function photoUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => $this->photo ? Storage::disk('public')->url($this->photo) : null,
+        );
     }
 
     public function user(): BelongsTo

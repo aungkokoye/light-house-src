@@ -6,6 +6,9 @@ use App\Models\StaffProfile;
 use App\Models\StaffRole;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class StaffProfileManager
 {
@@ -36,7 +39,8 @@ class StaffProfileManager
             'staff_profile_id'  => $profile->id,
             'staff_position_id' => $roleData['staff_position_id'] ?? null,
             'site_id'           => $roleData['site_id'] ?? null,
-            'salary'            => isset($roleData['salary']) ? (int) $roleData['salary'] : null,
+            'salary'            => isset($roleData['salary'])      ? (int) $roleData['salary']      : null,
+            'overtime_hourly_rate'       => isset($roleData['overtime_hourly_rate']) ? (int) $roleData['overtime_hourly_rate'] : null,
             'start_date'        => $roleData['start_date'] ?? null,
             'created_by'        => $createdBy,
         ]);
@@ -75,7 +79,8 @@ class StaffProfileManager
                 [
                     'staff_position_id' => $roleData['staff_position_id'] ?? null,
                     'site_id'           => $roleData['site_id'] ?? null,
-                    'salary'            => isset($roleData['salary']) ? (int) $roleData['salary'] : null,
+                    'salary'            => isset($roleData['salary'])      ? (int) $roleData['salary']      : null,
+                    'overtime_hourly_rate'       => isset($roleData['overtime_hourly_rate']) ? (int) $roleData['overtime_hourly_rate'] : null,
                     'start_date'        => $roleData['start_date'] ?? null,
                     'created_by'        => $createdBy,
                 ]
@@ -83,5 +88,50 @@ class StaffProfileManager
         }
 
         return $profile;
+    }
+
+    public function uploadPhoto(StaffProfile $profile, UploadedFile $file): string
+    {
+        if ($profile->photo) {
+            Storage::disk('public')->delete($profile->photo);
+        }
+
+        $mime = $file->getMimeType();
+        $src  = match (true) {
+            str_contains($mime, 'png')  => imagecreatefrompng($file->getRealPath()),
+            str_contains($mime, 'webp') => imagecreatefromwebp($file->getRealPath()),
+            default                     => imagecreatefromjpeg($file->getRealPath()),
+        };
+
+        $origW = imagesx($src);
+        $origH = imagesy($src);
+
+        if ($origW > 1920) {
+            $newW = 1920;
+            $newH = (int) round($origH * (1920 / $origW));
+            $dst  = imagecreatetruecolor($newW, $newH);
+            imagecopyresampled($dst, $src, 0, 0, 0, 0, $newW, $newH, $origW, $origH);
+            imagedestroy($src);
+            $src = $dst;
+        }
+
+        $maxBytes = 10 * 1024 * 1024;
+        $jpeg     = '';
+        foreach ([85, 60, 40] as $quality) {
+            ob_start();
+            imagejpeg($src, null, $quality);
+            $jpeg = ob_get_clean();
+            if (strlen($jpeg) <= $maxBytes) {
+                break;
+            }
+        }
+
+        imagedestroy($src);
+
+        $path = 'staff-photos/' . Str::uuid() . '.jpg';
+        Storage::disk('public')->put($path, $jpeg);
+        $profile->update(['photo' => $path]);
+
+        return $path;
     }
 }

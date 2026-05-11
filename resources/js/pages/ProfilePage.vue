@@ -10,9 +10,19 @@
             <template v-else-if="user">
                 <!-- Avatar + Name -->
                 <div class="flex items-center gap-5 mb-8">
-                    <div class="w-16 h-16 rounded-2xl bg-indigo-600 flex items-center justify-center text-white text-2xl font-bold shrink-0">
-                        {{ initials }}
-                    </div>
+                    <!-- Staff: photo circle -->
+                    <template v-if="isStaff">
+                        <div class="w-[100px] h-[100px] rounded-full overflow-hidden bg-indigo-100 border-2 border-indigo-200 flex items-center justify-center shrink-0">
+                            <img v-if="user.staff_profile?.photo_url" :src="user.staff_profile.photo_url" class="w-full h-full object-cover" alt="Profile photo" />
+                            <span v-else class="text-2xl font-bold text-indigo-600">{{ initials }}</span>
+                        </div>
+                    </template>
+                    <!-- Customer: initials -->
+                    <template v-else>
+                        <div class="w-16 h-16 rounded-2xl bg-indigo-600 flex items-center justify-center text-white text-2xl font-bold shrink-0">
+                            {{ initials }}
+                        </div>
+                    </template>
                     <div>
                         <h1 class="text-2xl font-bold text-gray-900">{{ user.name }}</h1>
                         <p class="text-sm text-gray-500">{{ user.email }}</p>
@@ -243,6 +253,10 @@
                                 <span class="text-sm text-gray-700">{{ currentRole.salary?.toLocaleString() ?? '—' }}</span>
                             </div>
                             <div class="px-6 py-4 flex items-center justify-between">
+                                <span class="text-sm text-gray-500">Overtime Hourly Rate</span>
+                                <span class="text-sm text-gray-700">{{ currentRole.overtime_hourly_rate?.toLocaleString() ?? '—' }}</span>
+                            </div>
+                            <div class="px-6 py-4 flex items-center justify-between">
                                 <span class="text-sm text-gray-500">Since</span>
                                 <span class="text-sm text-gray-700">{{ currentRole.start_date ? formatDate(currentRole.start_date) : '—' }}</span>
                             </div>
@@ -377,7 +391,7 @@ const initials = computed(() => {
     return user.value.name
         .split(' ')
         .map(w => w[0])
-        .slice(0, 2)
+        .slice(0, 3)
         .join('')
         .toUpperCase()
 })
