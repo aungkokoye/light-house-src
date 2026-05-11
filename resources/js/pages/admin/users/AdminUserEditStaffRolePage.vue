@@ -124,8 +124,8 @@ const allSites = ref([])
 const form = ref({
     staff_position_id: null,
     site_id: null,
-    salary: null,
-    overtime_hourly_rate: null,
+    salary: 0,
+    overtime_hourly_rate: 0,
     start_date: '',
     end_date: '',
 })
@@ -166,8 +166,8 @@ onMounted(async () => {
         form.value = {
             staff_position_id: staffRole.staff_position_id,
             site_id:           staffRole.site_id    ?? null,
-            salary:            staffRole.salary,
-            overtime_hourly_rate:       staffRole.overtime_hourly_rate ?? null,
+            salary:               staffRole.salary ?? 0,
+            overtime_hourly_rate: staffRole.overtime_hourly_rate ?? 0,
             start_date:        staffRole.start_date ? staffRole.start_date.substring(0, 10) : '',
             end_date:          staffRole.end_date   ? staffRole.end_date.substring(0, 10)   : '',
         }

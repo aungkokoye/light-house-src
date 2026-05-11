@@ -28,7 +28,8 @@ class AdminStaffRoleController extends Controller
     public function store(StoreStaffRoleRequest $request, User $user): JsonResponse
     {
         $staffRole = $this->staffRoleManager->create($user, $request->validated());
-        $this->auditCreated($staffRole);
+        $staffRole->load(['staffProfile.user:id,name', 'position:id,name', 'site:id,name', 'createdBy:id,name']);
+        $this->auditCreated($staffRole, $this->snapshot($staffRole));
 
         return response()->json($staffRole, 201);
     }
@@ -43,9 +44,12 @@ class AdminStaffRoleController extends Controller
     public function update(UpdateStaffRoleRequest $request, User $user, StaffRole $staffRole): JsonResponse
     {
         $this->staffRoleManager->authorize($user, $staffRole);
-        $oldValues = $this->filterAuditValues($staffRole->getAttributes());
-        $updated   = $this->staffRoleManager->update($staffRole, $request->validated());
-        $this->auditUpdated($updated, $oldValues);
+        $staffRole->load(['staffProfile.user:id,name', 'position:id,name', 'site:id,name', 'createdBy:id,name']);
+        $oldValues = $this->snapshot($staffRole);
+
+        $updated = $this->staffRoleManager->update($staffRole, $request->validated());
+        $updated->load(['staffProfile.user:id,name', 'position:id,name', 'site:id,name', 'createdBy:id,name']);
+        $this->auditUpdated($updated, $oldValues, $this->snapshot($updated));
 
         return response()->json($updated);
     }
@@ -53,9 +57,25 @@ class AdminStaffRoleController extends Controller
     public function destroy(User $user, StaffRole $staffRole): JsonResponse
     {
         $this->staffRoleManager->authorize($user, $staffRole);
-        $this->auditDeleted($staffRole);
+        $staffRole->load(['staffProfile.user:id,name', 'position:id,name', 'site:id,name', 'createdBy:id,name']);
+        $this->auditDeleted($staffRole, $this->snapshot($staffRole));
         $this->staffRoleManager->delete($staffRole);
 
         return response()->json(['message' => 'Staff role deleted successfully.']);
+    }
+
+    private function snapshot(StaffRole $staffRole): array
+    {
+        $attrs = $this->filterAuditValues($staffRole->getAttributes());
+
+        unset($attrs['staff_profile_id'], $attrs['staff_position_id'], $attrs['site_id'], $attrs['created_by']);
+
+        return array_merge($attrs, [
+            'staff_profile'  => ['id' => $staffRole->staffProfile?->id, 'full_name' => $staffRole->staffProfile?->full_name],
+            'user'           => ['id' => $staffRole->staffProfile?->user?->id,  'name' => $staffRole->staffProfile?->user?->name],
+            'staff_position' => ['id' => $staffRole->position?->id,             'name' => $staffRole->position?->name],
+            'site'           => ['id' => $staffRole->site?->id,                 'name' => $staffRole->site?->name],
+            'created_by'     => ['id' => $staffRole->createdBy?->id,            'name' => $staffRole->createdBy?->name],
+        ]);
     }
 }

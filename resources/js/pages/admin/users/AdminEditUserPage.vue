@@ -482,8 +482,8 @@ const form = ref({
     staff_role: {
         staff_position_id: null,
         site_id: null,
-        salary: null,
-        overtime_hourly_rate: null,
+        salary: 0,
+        overtime_hourly_rate: 0,
         start_date: '',
     },
 })
@@ -607,8 +607,8 @@ onMounted(async () => {
                 form.value.staff_role = {
                     staff_position_id:    activeRole.staff_position_id    ?? null,
                     site_id:             activeRole.site_id             ?? null,
-                    salary:              activeRole.salary              ?? null,
-                    overtime_hourly_rate: activeRole.overtime_hourly_rate ?? null,
+                    salary:               activeRole.salary               ?? 0,
+                    overtime_hourly_rate: activeRole.overtime_hourly_rate ?? 0,
                     start_date:          activeRole.start_date ? activeRole.start_date.substring(0, 10) : '',
                 }
             }
