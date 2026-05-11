@@ -22,7 +22,7 @@
                 <form @submit.prevent="handleSubmit" class="space-y-4">
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Company Name</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Company Name <span class="text-red-400">*</span></label>
                         <input v-model="form.name" type="text" placeholder="Your company name"
                             class="w-full px-4 py-2.5 rounded-xl border text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                             :class="errors.name ? 'border-red-400' : 'border-gray-400'" />
@@ -30,7 +30,7 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Role / Title</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Role / Title <span class="text-red-400">*</span></label>
                         <input v-model="form.role" type="text" placeholder="Your role or title"
                             class="w-full px-4 py-2.5 rounded-xl border text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                             :class="errors.role ? 'border-red-400' : 'border-gray-400'" />
@@ -38,7 +38,7 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Phone</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Phone <span class="text-red-400">*</span></label>
                         <input v-model="form.phone" type="text" placeholder="+95 9 xxx xxx xxx"
                             class="w-full px-4 py-2.5 rounded-xl border text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                             :class="errors.phone ? 'border-red-400' : 'border-gray-400'" />
@@ -46,7 +46,7 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Address</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Address <span class="text-red-400">*</span></label>
                         <input v-model="form.address" type="text" placeholder="Company address"
                             class="w-full px-4 py-2.5 rounded-xl border text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                             :class="errors.address ? 'border-red-400' : 'border-gray-400'" />

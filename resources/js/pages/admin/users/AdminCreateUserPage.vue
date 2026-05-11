@@ -26,7 +26,7 @@
 
                         <!-- Name -->
                         <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Name</label>
+                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Name <span class="text-red-400">*</span></label>
                             <input v-model="form.name" type="text" placeholder="Full name"
                                 class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
                                 :class="errors.name ? 'border-red-300' : 'border-gray-300'" />
@@ -35,7 +35,7 @@
 
                         <!-- Email -->
                         <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Email</label>
+                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Email <span class="text-red-400">*</span></label>
                             <input v-model="form.email" type="email" placeholder="email@example.com"
                                 class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
                                 :class="errors.email ? 'border-red-300' : 'border-gray-300'" />
@@ -44,7 +44,7 @@
 
                         <!-- Password -->
                         <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Password</label>
+                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Password <span class="text-red-400">*</span></label>
                             <input v-model="form.password" type="password" placeholder="Min. 8 chars, A-z & 0-9"
                                 class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
                                 :class="errors.password ? 'border-red-300' : 'border-gray-300'" />
@@ -60,7 +60,7 @@
 
                         <!-- Role -->
                         <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Role</label>
+                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Role <span class="text-red-400">*</span></label>
                             <select v-model="form.role"
                                 class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
                                 :class="errors.role ? 'border-red-300' : 'border-gray-300'">
@@ -126,12 +126,61 @@
                             <div class="border-t border-gray-100 pt-4">
                                 <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Staff Profile</p>
                                 <div class="space-y-4">
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-600 mb-1.5">Full Name <span class="text-red-400">*</span></label>
-                                        <input v-model="form.staff_profile.full_name" type="text"
-                                            class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
-                                            :class="errors['staff_profile.full_name'] ? 'border-red-300' : 'border-gray-300'" />
-                                        <p v-if="errors['staff_profile.full_name']" class="mt-1 text-xs text-red-500">{{ errors['staff_profile.full_name'][0] }}</p>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Full Name <span class="text-red-400">*</span></label>
+                                            <input v-model="form.staff_profile.full_name" type="text"
+                                                class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
+                                                :class="errors['staff_profile.full_name'] ? 'border-red-300' : 'border-gray-300'" />
+                                            <p v-if="errors['staff_profile.full_name']" class="mt-1 text-xs text-red-500">{{ errors['staff_profile.full_name'][0] }}</p>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Father Name <span class="text-red-400">*</span></label>
+                                            <input v-model="form.staff_profile.father_name" type="text"
+                                                class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
+                                                :class="errors['staff_profile.father_name'] ? 'border-red-300' : 'border-gray-300'" />
+                                            <p v-if="errors['staff_profile.father_name']" class="mt-1 text-xs text-red-500">{{ errors['staff_profile.father_name'][0] }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Gender <span class="text-red-400">*</span></label>
+                                            <select v-model.number="form.staff_profile.gender"
+                                                class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
+                                                :class="errors['staff_profile.gender'] ? 'border-red-300' : 'border-gray-300'">
+                                                <option :value="null">— Select —</option>
+                                                <option :value="1">Male</option>
+                                                <option :value="2">Female</option>
+                                            </select>
+                                            <p v-if="errors['staff_profile.gender']" class="mt-1 text-xs text-red-500">{{ errors['staff_profile.gender'][0] }}</p>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Marital Status <span class="text-red-400">*</span></label>
+                                            <select v-model.number="form.staff_profile.marital_status"
+                                                class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
+                                                :class="errors['staff_profile.marital_status'] ? 'border-red-300' : 'border-gray-300'">
+                                                <option :value="null">— Select —</option>
+                                                <option :value="1">Single</option>
+                                                <option :value="2">Married</option>
+                                            </select>
+                                            <p v-if="errors['staff_profile.marital_status']" class="mt-1 text-xs text-red-500">{{ errors['staff_profile.marital_status'][0] }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Religion <span class="text-red-400">*</span></label>
+                                            <input v-model="form.staff_profile.religion" type="text"
+                                                class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
+                                                :class="errors['staff_profile.religion'] ? 'border-red-300' : 'border-gray-300'" />
+                                            <p v-if="errors['staff_profile.religion']" class="mt-1 text-xs text-red-500">{{ errors['staff_profile.religion'][0] }}</p>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Ethnic Group <span class="text-red-400">*</span></label>
+                                            <input v-model="form.staff_profile.ethnic_group" type="text"
+                                                class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
+                                                :class="errors['staff_profile.ethnic_group'] ? 'border-red-300' : 'border-gray-300'" />
+                                            <p v-if="errors['staff_profile.ethnic_group']" class="mt-1 text-xs text-red-500">{{ errors['staff_profile.ethnic_group'][0] }}</p>
+                                        </div>
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1.5">NRC No. <span class="text-red-400">*</span></label>
@@ -157,18 +206,58 @@
                                         </div>
                                     </div>
                                     <div>
-                                        <label class="block text-xs font-medium text-gray-600 mb-1.5">Address <span class="text-red-400">*</span></label>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1.5">Phone <span class="text-red-400">*</span></label>
+                                        <input v-model="form.staff_profile.phone" type="text" placeholder="+95 9 xxx xxx xxx"
+                                            class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
+                                            :class="errors['staff_profile.phone'] ? 'border-red-300' : 'border-gray-300'" />
+                                        <p v-if="errors['staff_profile.phone']" class="mt-1 text-xs text-red-500">{{ errors['staff_profile.phone'][0] }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1.5">Current Address <span class="text-red-400">*</span></label>
                                         <input v-model="form.staff_profile.address" type="text"
                                             class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
                                             :class="errors['staff_profile.address'] ? 'border-red-300' : 'border-gray-300'" />
                                         <p v-if="errors['staff_profile.address']" class="mt-1 text-xs text-red-500">{{ errors['staff_profile.address'][0] }}</p>
                                     </div>
                                     <div>
-                                        <label class="block text-xs font-medium text-gray-600 mb-1.5">Phone <span class="text-red-400">*</span></label>
-                                        <input v-model="form.staff_profile.phone" type="text" placeholder="+95 9 xxx xxx xxx"
+                                        <label class="block text-xs font-medium text-gray-600 mb-1.5">Home Address</label>
+                                        <textarea v-model="form.staff_profile.home_address" rows="2"
+                                            class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50 resize-none"
+                                            :class="errors['staff_profile.home_address'] ? 'border-red-300' : 'border-gray-300'"></textarea>
+                                        <p v-if="errors['staff_profile.home_address']" class="mt-1 text-xs text-red-500">{{ errors['staff_profile.home_address'][0] }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1.5">Uniform Size <span class="text-red-400">*</span></label>
+                                        <select v-model="form.staff_profile.uniform_size"
                                             class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
-                                            :class="errors['staff_profile.phone'] ? 'border-red-300' : 'border-gray-300'" />
-                                        <p v-if="errors['staff_profile.phone']" class="mt-1 text-xs text-red-500">{{ errors['staff_profile.phone'][0] }}</p>
+                                            :class="errors['staff_profile.uniform_size'] ? 'border-red-300' : 'border-gray-300'">
+                                            <option value="">— Select —</option>
+                                            <option value="S">S</option>
+                                            <option value="M">M</option>
+                                            <option value="L">L</option>
+                                            <option value="XL">XL</option>
+                                            <option value="XXL">XXL</option>
+                                        </select>
+                                        <p v-if="errors['staff_profile.uniform_size']" class="mt-1 text-xs text-red-500">{{ errors['staff_profile.uniform_size'][0] }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1.5">Education Qualification <span class="text-red-400">*</span></label>
+                                        <textarea v-model="form.staff_profile.education_qualification" rows="3"
+                                            class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50 resize-none"
+                                            :class="errors['staff_profile.education_qualification'] ? 'border-red-300' : 'border-gray-300'"></textarea>
+                                        <p v-if="errors['staff_profile.education_qualification']" class="mt-1 text-xs text-red-500">{{ errors['staff_profile.education_qualification'][0] }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1.5">Work Experience <span class="text-red-400">*</span></label>
+                                        <textarea v-model="form.staff_profile.work_experience" rows="3"
+                                            class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50 resize-none"
+                                            :class="errors['staff_profile.work_experience'] ? 'border-red-300' : 'border-gray-300'"></textarea>
+                                        <p v-if="errors['staff_profile.work_experience']" class="mt-1 text-xs text-red-500">{{ errors['staff_profile.work_experience'][0] }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1.5">Note</label>
+                                        <textarea v-model="form.staff_profile.note" rows="2"
+                                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50 resize-none"></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -300,10 +389,20 @@ const form = ref({
     },
     staff_profile: {
         full_name: '',
+        father_name: '',
+        gender: null,
+        marital_status: null,
+        religion: '',
+        ethnic_group: '',
         nrc_no: '',
         dob: '',
         address: '',
+        home_address: '',
         phone: '',
+        uniform_size: '',
+        education_qualification: '',
+        work_experience: '',
+        note: '',
         start_date: '',
     },
     staff_role: {

@@ -12,14 +12,24 @@ class StaffProfileManager
     public function create(User $user, array $profileData, array $roleData, ?int $createdBy = null): StaffProfile
     {
         $profile = StaffProfile::create([
-            'user_id'    => $user->id,
-            'full_name'  => $profileData['full_name'] ?? null,
-            'nrc_no'     => $profileData['nrc_no'] ?? null,
-            'dob'        => $profileData['dob'] ?? null,
-            'address'    => $profileData['address'] ?? null,
-            'phone'      => $profileData['phone'] ?? null,
-            'start_date' => $profileData['start_date'] ?? null,
-            'created_by' => $createdBy,
+            'user_id'                  => $user->id,
+            'full_name'                => $profileData['full_name'] ?? null,
+            'father_name'              => $profileData['father_name'] ?? null,
+            'gender'                   => $profileData['gender'] ?? null,
+            'marital_status'           => $profileData['marital_status'] ?? null,
+            'religion'                 => $profileData['religion'] ?? null,
+            'ethnic_group'             => $profileData['ethnic_group'] ?? null,
+            'uniform_size'             => $profileData['uniform_size'] ?? null,
+            'education_qualification'  => $profileData['education_qualification'] ?? null,
+            'work_experience'          => $profileData['work_experience'] ?? null,
+            'home_address'             => $profileData['home_address'] ?? null,
+            'note'                     => $profileData['note'] ?? null,
+            'nrc_no'                   => $profileData['nrc_no'] ?? null,
+            'dob'                      => $profileData['dob'] ?? null,
+            'address'                  => $profileData['address'] ?? null,
+            'phone'                    => $profileData['phone'] ?? null,
+            'start_date'               => $profileData['start_date'] ?? null,
+            'created_by'               => $createdBy,
         ]);
 
         StaffRole::create([
@@ -39,13 +49,23 @@ class StaffProfileManager
         $profile = $user->staffProfile()->updateOrCreate(
             ['user_id' => $user->id],
             [
-                'full_name'  => $profileData['full_name'] ?? null,
-                'nrc_no'     => $profileData['nrc_no'] ?? null,
-                'dob'        => $profileData['dob'] ?? null,
-                'address'    => $profileData['address'] ?? null,
-                'phone'      => $profileData['phone'] ?? null,
-                'start_date' => $profileData['start_date'] ?? null,
-                'created_by' => $createdBy,
+                'full_name'               => $profileData['full_name'] ?? null,
+                'father_name'             => $profileData['father_name'] ?? null,
+                'gender'                  => $profileData['gender'] ?? null,
+                'marital_status'          => $profileData['marital_status'] ?? null,
+                'religion'                => $profileData['religion'] ?? null,
+                'ethnic_group'            => $profileData['ethnic_group'] ?? null,
+                'uniform_size'            => $profileData['uniform_size'] ?? null,
+                'education_qualification' => $profileData['education_qualification'] ?? null,
+                'work_experience'         => $profileData['work_experience'] ?? null,
+                'home_address'            => $profileData['home_address'] ?? null,
+                'note'                    => $profileData['note'] ?? null,
+                'nrc_no'                  => $profileData['nrc_no'] ?? null,
+                'dob'                     => $profileData['dob'] ?? null,
+                'address'                 => $profileData['address'] ?? null,
+                'phone'                   => $profileData['phone'] ?? null,
+                'start_date'              => $profileData['start_date'] ?? null,
+                'created_by'              => $createdBy,
             ]
         );
 

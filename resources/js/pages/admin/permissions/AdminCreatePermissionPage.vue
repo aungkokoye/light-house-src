@@ -21,7 +21,7 @@
                 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
                     <form @submit.prevent="submit" class="space-y-5">
                         <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Permission Name</label>
+                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Permission Name <span class="text-red-400">*</span></label>
                             <input v-model="form.name" type="text" placeholder="e.g. view reports"
                                 class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
                                 :class="errors.name ? 'border-red-300' : 'border-gray-400'" />

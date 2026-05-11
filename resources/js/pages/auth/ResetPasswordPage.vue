@@ -29,7 +29,7 @@
 
                     <form @submit.prevent="submit" class="space-y-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1.5">New password</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">New password <span class="text-red-400">*</span></label>
                             <input
                                 v-model="form.password"
                                 type="password"
@@ -41,7 +41,7 @@
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Confirm new password</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Confirm new password <span class="text-red-400">*</span></label>
                             <input
                                 v-model="form.password_confirmation"
                                 type="password"

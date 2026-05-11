@@ -163,6 +163,26 @@
                                 <span class="text-sm font-medium text-gray-900">{{ user.staff_profile.full_name ?? '—' }}</span>
                             </div>
                             <div class="px-6 py-4 flex items-center justify-between">
+                                <span class="text-sm text-gray-500">Father Name</span>
+                                <span class="text-sm text-gray-700">{{ user.staff_profile.father_name ?? '—' }}</span>
+                            </div>
+                            <div class="px-6 py-4 flex items-center justify-between">
+                                <span class="text-sm text-gray-500">Gender</span>
+                                <span class="text-sm text-gray-700">{{ user.staff_profile.gender === 1 ? 'Male' : user.staff_profile.gender === 2 ? 'Female' : '—' }}</span>
+                            </div>
+                            <div class="px-6 py-4 flex items-center justify-between">
+                                <span class="text-sm text-gray-500">Marital Status</span>
+                                <span class="text-sm text-gray-700">{{ user.staff_profile.marital_status === 1 ? 'Single' : user.staff_profile.marital_status === 2 ? 'Married' : '—' }}</span>
+                            </div>
+                            <div class="px-6 py-4 flex items-center justify-between">
+                                <span class="text-sm text-gray-500">Religion</span>
+                                <span class="text-sm text-gray-700">{{ user.staff_profile.religion ?? '—' }}</span>
+                            </div>
+                            <div class="px-6 py-4 flex items-center justify-between">
+                                <span class="text-sm text-gray-500">Ethnic Group</span>
+                                <span class="text-sm text-gray-700">{{ user.staff_profile.ethnic_group ?? '—' }}</span>
+                            </div>
+                            <div class="px-6 py-4 flex items-center justify-between">
                                 <span class="text-sm text-gray-500">NRC No.</span>
                                 <span class="text-sm text-gray-700">{{ user.staff_profile.nrc_no ?? '—' }}</span>
                             </div>
@@ -175,8 +195,28 @@
                                 <span class="text-sm text-gray-700">{{ user.staff_profile.phone ?? '—' }}</span>
                             </div>
                             <div class="px-6 py-4 flex items-start justify-between gap-4">
-                                <span class="text-sm text-gray-500 shrink-0">Address</span>
+                                <span class="text-sm text-gray-500 shrink-0">Current Address</span>
                                 <span class="text-sm text-gray-700 text-right">{{ user.staff_profile.address ?? '—' }}</span>
+                            </div>
+                            <div v-if="user.staff_profile.home_address" class="px-6 py-4 flex items-start justify-between gap-4">
+                                <span class="text-sm text-gray-500 shrink-0">Home Address</span>
+                                <span class="text-sm text-gray-700 text-right">{{ user.staff_profile.home_address }}</span>
+                            </div>
+                            <div class="px-6 py-4 flex items-center justify-between">
+                                <span class="text-sm text-gray-500">Uniform Size</span>
+                                <span class="text-sm text-gray-700">{{ user.staff_profile.uniform_size ?? '—' }}</span>
+                            </div>
+                            <div class="px-6 py-4 flex items-start justify-between gap-4">
+                                <span class="text-sm text-gray-500 shrink-0">Education</span>
+                                <span class="text-sm text-gray-700 text-right">{{ user.staff_profile.education_qualification ?? '—' }}</span>
+                            </div>
+                            <div class="px-6 py-4 flex items-start justify-between gap-4">
+                                <span class="text-sm text-gray-500 shrink-0">Work Experience</span>
+                                <span class="text-sm text-gray-700 text-right">{{ user.staff_profile.work_experience ?? '—' }}</span>
+                            </div>
+                            <div v-if="user.staff_profile.note" class="px-6 py-4 flex items-start justify-between gap-4">
+                                <span class="text-sm text-gray-500 shrink-0">Note</span>
+                                <span class="text-sm text-gray-700 text-right">{{ user.staff_profile.note }}</span>
                             </div>
                             <div class="px-6 py-4 flex items-center justify-between">
                                 <span class="text-sm text-gray-500">Start Date</span>

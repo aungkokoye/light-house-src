@@ -200,14 +200,24 @@ class UserSeeder extends Seeder
     private function createStaffProfile(User $user, User $admin): StaffProfile
     {
         return StaffProfile::create([
-            'user_id'    => $user->id,
-            'full_name'  => $user->name,
-            'nrc_no'     => fake()->numerify('##/######(N)######'),
-            'dob'        => fake()->dateTimeBetween('-50 years', '-25 years')->format('Y-m-d'),
-            'address'    => fake()->address(),
-            'phone'      => fake()->phoneNumber(),
-            'created_by' => $admin->id,
-            'start_date' => fake()->dateTimeBetween('-5 years', '-1 year')->format('Y-m-d'),
+            'user_id'                 => $user->id,
+            'full_name'               => $user->name,
+            'father_name'             => fake()->name('male'),
+            'gender'                  => fake()->randomElement([1, 2]),
+            'marital_status'          => fake()->randomElement([1, 2]),
+            'religion'                => fake()->randomElement(['Buddhism', 'Christianity', 'Islam', 'Hinduism', 'Other']),
+            'ethnic_group'            => fake()->randomElement(['Bamar', 'Shan', 'Karen', 'Rakhine', 'Mon', 'Chin', 'Kachin', 'Kayah']),
+            'uniform_size'            => fake()->randomElement(['S', 'M', 'L', 'XL', 'XXL']),
+            'education_qualification' => fake()->sentence(10),
+            'work_experience'         => fake()->paragraph(2),
+            'home_address'            => fake()->address(),
+            'note'                    => fake()->optional(0.3)->sentence(),
+            'nrc_no'                  => fake()->numerify('##/######(N)######'),
+            'dob'                     => fake()->dateTimeBetween('-50 years', '-25 years')->format('Y-m-d'),
+            'address'                 => fake()->address(),
+            'phone'                   => fake()->phoneNumber(),
+            'created_by'              => $admin->id,
+            'start_date'              => fake()->dateTimeBetween('-5 years', '-1 year')->format('Y-m-d'),
         ]);
     }
 }
