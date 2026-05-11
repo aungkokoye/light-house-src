@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminAuditLogController;
+use App\Http\Controllers\StaffPhotoController;
 use App\Http\Controllers\Admin\AdminChatKnowledgeCategoryController;
 use App\Http\Controllers\Admin\AdminChatKnowledgeController;
 use App\Http\Controllers\Ai\ChatController;
@@ -82,6 +83,8 @@ Route::middleware(['auth:sanctum', 'role:admin', 'throttle:60,1'])->prefix('admi
         ->can('delete',  'user');
     Route::post('/users/{user}/resend-verification', [AdminUserController::class, 'resendVerification'])
         ->can('view', 'user');
+    Route::post('/users/{user}/photo', [StaffPhotoController::class, 'uploadForUser'])
+        ->can('update', 'user');
 
     Route::get('/audit-logs/events',      [AdminAuditLogController::class, 'events']);
     Route::get('/audit-logs',             [AdminAuditLogController::class, 'index']);

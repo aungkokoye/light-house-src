@@ -11,6 +11,7 @@ class StaffRole extends Model
         'staff_profile_id',
         'staff_position_id',
         'salary',
+        'overtime_hourly_rate',
         'site_id',
         'start_date',
         'end_date',
@@ -20,7 +21,8 @@ class StaffRole extends Model
     protected function casts(): array
     {
         return [
-            'salary'     => 'integer',
+            'salary'      => 'integer',
+            'overtime_hourly_rate' => 'integer',
             'start_date' => 'date',
             'end_date'   => 'date',
         ];

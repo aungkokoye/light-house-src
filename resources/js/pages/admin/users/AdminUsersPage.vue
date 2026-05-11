@@ -149,7 +149,7 @@
                                             </span>
                                         </span>
                                     </th>
-                                    <th class="px-6 py-3"></th>
+                                    <th class="px-3 py-3 w-px"></th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-50">
@@ -190,11 +190,11 @@
                                     </td>
                                     <td class="px-6 py-3.5 text-xs text-gray-400">
                                         <span>{{ formatDate(u.created_at) }}</span>
-                                        <span v-if="u.updated_at !== u.created_at" class="block text-gray-300">
+                                        <span v-if="u.updated_at !== u.created_at" class="block text-gray-500">
                                             {{ formatDate(u.updated_at) }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-3.5">
+                                    <td class="px-3 py-3.5 w-px whitespace-nowrap">
                                         <div class="flex items-center gap-1">
                                             <RouterLink v-if="can('view')" :to="{ path: `/admin/users/${u.id}`, query: { back: route.fullPath } }"
                                                 class="p-1.5 text-indigo-600 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">

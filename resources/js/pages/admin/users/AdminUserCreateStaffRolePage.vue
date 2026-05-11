@@ -25,7 +25,7 @@
                     <form @submit.prevent="submit" class="space-y-5">
 
                         <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Position</label>
+                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Position <span class="text-red-400">*</span></label>
                             <select v-model="form.staff_position_id"
                                 class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
                                 :class="errors.staff_position_id ? 'border-red-300' : 'border-gray-300'">
@@ -36,26 +36,35 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Site</label>
+                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Site <span class="text-red-400">*</span></label>
                             <select v-model="form.site_id"
                                 class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
                                 :class="errors.site_id ? 'border-red-300' : 'border-gray-300'">
-                                <option :value="null">— None —</option>
+                                <option :value="null">— Select site —</option>
                                 <option v-for="site in allSites" :key="site.id" :value="site.id">{{ site.name }}</option>
                             </select>
                             <p v-if="errors.site_id" class="mt-1 text-xs text-red-500">{{ errors.site_id[0] }}</p>
                         </div>
 
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Salary</label>
-                            <input v-model.number="form.salary" type="number" min="0"
-                                class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
-                                :class="errors.salary ? 'border-red-300' : 'border-gray-300'" />
-                            <p v-if="errors.salary" class="mt-1 text-xs text-red-500">{{ errors.salary[0] }}</p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1.5">Salary <span class="text-red-400">*</span></label>
+                                <input v-model.number="form.salary" type="number" min="0"
+                                    class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
+                                    :class="errors.salary ? 'border-red-300' : 'border-gray-300'" />
+                                <p v-if="errors.salary" class="mt-1 text-xs text-red-500">{{ errors.salary[0] }}</p>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1.5">Overtime Hourly Rate <span class="text-red-400">*</span></label>
+                                <input v-model.number="form.overtime_hourly_rate" type="number" min="0"
+                                    class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
+                                    :class="errors.overtime_hourly_rate ? 'border-red-300' : 'border-gray-300'" />
+                                <p v-if="errors.overtime_hourly_rate" class="mt-1 text-xs text-red-500">{{ errors.overtime_hourly_rate[0] }}</p>
+                            </div>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Start Date</label>
+                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Start Date <span class="text-red-400">*</span></label>
                             <input v-model="form.start_date" type="date"
                                 class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
                                 :class="errors.start_date ? 'border-red-300' : 'border-gray-300'" />
@@ -105,6 +114,7 @@ const form = ref({
     staff_position_id: null,
     site_id: null,
     salary: null,
+    overtime_hourly_rate: null,
     start_date: '',
 })
 

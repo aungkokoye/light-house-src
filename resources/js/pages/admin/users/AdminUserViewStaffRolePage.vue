@@ -43,6 +43,10 @@
                         <span class="text-sm text-gray-700">{{ staffRole.salary?.toLocaleString() ?? '—' }}</span>
                     </div>
                     <div class="px-6 py-4 flex items-center justify-between">
+                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Overtime Hourly Rate</span>
+                        <span class="text-sm text-gray-700">{{ staffRole.overtime_hourly_rate?.toLocaleString() ?? '—' }}</span>
+                    </div>
+                    <div class="px-6 py-4 flex items-center justify-between">
                         <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Start Date</span>
                         <span class="text-sm text-gray-700">{{ staffRole.start_date ? formatDate(staffRole.start_date) : '—' }}</span>
                     </div>

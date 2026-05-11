@@ -71,7 +71,7 @@
                 <form @submit.prevent="handleSubmit" class="space-y-4">
                     <!-- Email -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Email <span class="text-red-400">*</span></label>
                         <input
                             v-model="form.email"
                             type="email"
@@ -84,7 +84,7 @@
                     <!-- Password -->
                     <div>
                         <div class="flex items-center justify-between mb-1.5">
-                            <label class="block text-sm font-medium text-gray-700">Password</label>
+                            <label class="block text-sm font-medium text-gray-700">Password <span class="text-red-400">*</span></label>
                             <RouterLink to="/forgot-password" class="text-xs text-indigo-600 hover:text-indigo-700">Forgot password?</RouterLink>
                         </div>
                         <div class="relative">

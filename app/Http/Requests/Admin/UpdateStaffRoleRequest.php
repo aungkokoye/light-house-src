@@ -15,8 +15,9 @@ class UpdateStaffRoleRequest extends FormRequest
     {
         return [
             'staff_position_id' => ['required', 'exists:staff_positions,id'],
-            'site_id'           => ['nullable', 'exists:sites,id'],
+            'site_id'           => ['required', 'exists:sites,id'],
             'salary'            => ['required', 'integer', 'min:0'],
+            'overtime_hourly_rate'       => ['required', 'integer', 'min:0'],
             'start_date'        => ['required', 'date'],
             'end_date'          => ['nullable', 'date', 'after_or_equal:start_date'],
         ];

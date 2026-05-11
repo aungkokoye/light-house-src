@@ -23,7 +23,7 @@
                 <form @submit.prevent="handleSubmit" class="space-y-4">
                     <!-- Name -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Name</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Name <span class="text-red-400">*</span></label>
                         <input
                             v-model="form.name"
                             type="text"
@@ -36,7 +36,7 @@
 
                     <!-- Email -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Email <span class="text-red-400">*</span></label>
                         <input
                             v-model="form.email"
                             type="email"
@@ -49,7 +49,7 @@
 
                     <!-- Password -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Password <span class="text-red-400">*</span></label>
                         <input
                             v-model="form.password"
                             type="password"
@@ -62,7 +62,7 @@
 
                     <!-- Confirm Password -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Confirm password</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Confirm password <span class="text-red-400">*</span></label>
                         <input
                             v-model="form.password_confirmation"
                             type="password"
@@ -77,28 +77,28 @@
                         <p class="text-sm font-semibold text-gray-700 mb-3">Company Profile</p>
                         <div class="space-y-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Company Name</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Company Name <span class="text-red-400">*</span></label>
                                 <input v-model="form.company_profile.name" type="text" placeholder="Your company name"
                                     class="w-full px-4 py-2.5 rounded-xl border text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                                     :class="errors['company_profile.name'] ? 'border-red-400' : 'border-gray-400'" />
                                 <p v-if="errors['company_profile.name']" class="text-xs text-red-500 mt-1">{{ errors['company_profile.name'][0] }}</p>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Role / Title</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Role / Title <span class="text-red-400">*</span></label>
                                 <input v-model="form.company_profile.role" type="text" placeholder="Your role or title"
                                     class="w-full px-4 py-2.5 rounded-xl border text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                                     :class="errors['company_profile.role'] ? 'border-red-400' : 'border-gray-400'" />
                                 <p v-if="errors['company_profile.role']" class="text-xs text-red-500 mt-1">{{ errors['company_profile.role'][0] }}</p>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Phone</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Phone <span class="text-red-400">*</span></label>
                                 <input v-model="form.company_profile.phone" type="text" placeholder="+95 9 xxx xxx xxx"
                                     class="w-full px-4 py-2.5 rounded-xl border text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                                     :class="errors['company_profile.phone'] ? 'border-red-400' : 'border-gray-400'" />
                                 <p v-if="errors['company_profile.phone']" class="text-xs text-red-500 mt-1">{{ errors['company_profile.phone'][0] }}</p>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Address</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Address <span class="text-red-400">*</span></label>
                                 <input v-model="form.company_profile.address" type="text" placeholder="Company address"
                                     class="w-full px-4 py-2.5 rounded-xl border text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                                     :class="errors['company_profile.address'] ? 'border-red-400' : 'border-gray-400'" />
