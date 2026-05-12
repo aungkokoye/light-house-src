@@ -52,9 +52,7 @@
 
                     <div v-if="hasActiveFilters" class="mt-3 flex items-center justify-between">
                         <p class="text-xs text-gray-400">Filters applied</p>
-                        <button @click="resetFilters" class="text-xs text-indigo-600 hover:text-indigo-700 font-medium transition-colors">
-                            Clear all
-                        </button>
+                        <a href="#" @click.prevent="resetFilters" class="text-xs text-indigo-600 hover:text-indigo-700 font-medium transition-colors">Clear all</a>
                     </div>
                 </div>
 
@@ -173,6 +171,15 @@
 
     <DeleteModal :show="!!deleteTarget" @confirm="deletePosition" @cancel="deleteTarget = null"
         title="Delete Staff Position" message="Are you sure you want to delete this staff position?" />
+
+    <div v-if="deleteError" class="fixed bottom-4 right-4 z-50 max-w-sm bg-red-50 border border-red-100 rounded-xl px-4 py-3 shadow-lg">
+        <div class="flex items-start gap-3">
+            <p class="text-sm text-red-600 flex-1">{{ deleteError }}</p>
+            <button @click="deleteError = ''" class="text-red-300 hover:text-red-500 transition-colors shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+    </div>
 </template>
 
 <script setup>
@@ -234,7 +241,9 @@ const columns = [
     { key: 'created_at', label: 'Created At',  sortable: true },
 ]
 
-const hasActiveFilters = computed(() => Object.values(filters.value).some(v => v !== ''))
+const hasActiveFilters = computed(() =>
+    Object.values(filters.value).some(v => v !== '') || sortBy.value !== 'name' || sortDir.value !== 'asc'
+)
 
 const visiblePages = computed(() => {
     const total = meta.value.last_page ?? 1
@@ -254,6 +263,8 @@ const visiblePages = computed(() => {
 
 function resetFilters() {
     filters.value = { search: '', created_from: '', created_to: '' }
+    sortBy.value = 'name'
+    sortDir.value = 'asc'
     sessionStorage.removeItem(STORAGE_KEY)
     fetchPositions(1)
 }
@@ -278,14 +289,18 @@ function confirmDelete(position) {
     deleteTarget.value = position
 }
 
+const deleteError = ref('')
+
 async function deletePosition() {
     deleting.value = true
+    deleteError.value = ''
     try {
         await axios.delete(`/api/admin/staff-positions/${deleteTarget.value.id}`)
         deleteTarget.value = null
         fetchPositions(currentPage.value)
     } catch (e) {
-        console.error('delete error', e?.response?.status)
+        deleteTarget.value = null
+        deleteError.value = e?.response?.data?.message ?? 'Failed to delete staff position.'
     } finally {
         deleting.value = false
     }

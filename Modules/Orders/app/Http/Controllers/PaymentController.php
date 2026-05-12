@@ -16,6 +16,16 @@ class PaymentController extends Controller
 
     public function __construct(private readonly PaymentManager $paymentManager) {}
 
+    public function meta(): JsonResponse
+    {
+        return response()->json([
+            'types'       => Payment::typeOptions(),
+            'stages'      => Payment::stageOptions(),
+            'type_bank'   => Payment::TYPE_BANK,
+            'stage_final' => Payment::STAGE_FINAL,
+        ]);
+    }
+
     public function store(StorePaymentRequest $request): JsonResponse
     {
         $payment = $this->paymentManager->create($request->validated());

@@ -46,11 +46,9 @@
                             class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50" />
                     </div>
 
-                    <div v-if="search" class="mt-3 flex items-center justify-between">
+                    <div v-if="hasActiveFilters" class="mt-3 flex items-center justify-between">
                         <p class="text-xs text-gray-400">Filters applied</p>
-                        <button @click="resetFilters" class="text-xs text-indigo-600 hover:text-indigo-700 font-medium transition-colors">
-                            Clear all
-                        </button>
+                        <a href="#" @click.prevent="resetFilters" class="text-xs text-indigo-600 hover:text-indigo-700 font-medium transition-colors">Clear all</a>
                     </div>
                 </div>
 
@@ -250,8 +248,14 @@ const visiblePages = computed(() => {
     return pages
 })
 
+const hasActiveFilters = computed(() =>
+    search.value !== '' || sortBy.value !== 'updated_at' || sortDir.value !== 'desc'
+)
+
 function resetFilters() {
     search.value = ''
+    sortBy.value = 'updated_at'
+    sortDir.value = 'desc'
     sessionStorage.removeItem(STORAGE_KEY)
     fetchRoles(1)
 }

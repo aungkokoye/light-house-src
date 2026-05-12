@@ -32,14 +32,11 @@ class Invoice extends Model
         return $no;
     }
 
-    protected $guarded = ['invoice_no'];
-
     protected $fillable = [
         'customer_id',
         'discount',
         'total',
         'note',
-        'created_by',
     ];
 
     protected function casts(): array
@@ -69,4 +66,5 @@ class Invoice extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
 }

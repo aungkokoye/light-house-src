@@ -34,6 +34,11 @@
                         <input v-model="search" @input="debouncedFetch" type="text" placeholder="Search product name…"
                             class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50" />
                     </div>
+
+                    <div v-if="hasActiveFilters" class="mt-3 flex items-center justify-between">
+                        <p class="text-xs text-gray-400">Filters applied</p>
+                        <a href="#" @click.prevent="resetFilters" class="text-xs text-indigo-600 hover:text-indigo-700 font-medium transition-colors">Clear all</a>
+                    </div>
                 </div>
 
                 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -189,6 +194,42 @@ const deleteTarget = ref(null)
 const myPermissions = ref([])
 const myRole = ref('')
 
+const STORAGE_KEY = 'admin_products_state'
+
+function saveState() {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
+        search: search.value,
+        page: currentPage.value,
+        perPage: perPage.value,
+        sortBy: sortBy.value,
+        sortDir: sortDir.value,
+    }))
+}
+
+function restoreState() {
+    const saved = sessionStorage.getItem(STORAGE_KEY)
+    if (!saved) return false
+    const state = JSON.parse(saved)
+    search.value      = state.search  ?? ''
+    currentPage.value = state.page    ?? 1
+    perPage.value     = state.perPage ?? 15
+    sortBy.value      = state.sortBy  ?? 'name'
+    sortDir.value     = state.sortDir ?? 'asc'
+    return true
+}
+
+const hasActiveFilters = computed(() =>
+    search.value !== '' || sortBy.value !== 'name' || sortDir.value !== 'asc'
+)
+
+function resetFilters() {
+    search.value = ''
+    sortBy.value = 'name'
+    sortDir.value = 'asc'
+    sessionStorage.removeItem(STORAGE_KEY)
+    fetchProducts(1)
+}
+
 function can(action) {
     if (myPermissions.value.includes('super')) return true
     const isAdmin = myRole.value === 'admin'
@@ -222,6 +263,8 @@ function debouncedFetch() {
 
 async function fetchProducts(page = 1) {
     productsLoading.value = true
+    currentPage.value = page
+    saveState()
     try {
         const params = { page, per_page: perPage.value, sort_by: sortBy.value, sort_dir: sortDir.value }
         if (search.value.trim()) params.search = search.value.trim()
@@ -251,7 +294,8 @@ onMounted(async () => {
         if (!roles.includes('admin') && !roles.includes('sale')) { router.replace('/403'); return }
         myRole.value = roles.includes('admin') ? 'admin' : 'sale'
         myPermissions.value = me.permissions?.map(p => p.name) ?? []
-        await fetchProducts(1)
+        const restored = restoreState()
+        await fetchProducts(restored ? currentPage.value : 1)
     } catch { router.push('/login') }
     finally { loading.value = false }
 })

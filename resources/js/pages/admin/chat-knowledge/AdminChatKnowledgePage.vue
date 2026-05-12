@@ -51,7 +51,7 @@
                     </div>
                     <div v-if="hasActiveFilters" class="mt-3 flex items-center justify-between">
                         <p class="text-xs text-gray-400">Filters applied</p>
-                        <button @click="resetFilters" class="text-xs text-indigo-600 hover:text-indigo-700 font-medium">Clear all</button>
+                        <a href="#" @click.prevent="resetFilters" class="text-xs text-indigo-600 hover:text-indigo-700 font-medium transition-colors">Clear all</a>
                     </div>
                 </div>
 
@@ -202,7 +202,9 @@ const columns = [
     { key: 'created_at', label: 'Created At', sortable: true  },
 ]
 
-const hasActiveFilters = computed(() => Object.values(filters.value).some(v => v !== ''))
+const hasActiveFilters = computed(() =>
+    Object.values(filters.value).some(v => v !== '') || sortBy.value !== 'sort_order' || sortDir.value !== 'asc'
+)
 
 const visiblePages = computed(() => {
     const total = meta.value.last_page ?? 1
@@ -234,6 +236,8 @@ function restoreState() {
 
 function resetFilters() {
     filters.value = { search: '', category: '', active: '' }
+    sortBy.value = 'sort_order'
+    sortDir.value = 'asc'
     sessionStorage.removeItem(STORAGE_KEY)
     fetch(1)
 }

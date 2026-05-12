@@ -13,7 +13,9 @@ class OrdersDatabaseSeeder extends Seeder
     {
         $this->call([
             BankSeeder::class,
+            JobServiceSeeder::class,
             ProductSeeder::class,
+            InvoiceSeeder::class,
         ]);
     }
 }

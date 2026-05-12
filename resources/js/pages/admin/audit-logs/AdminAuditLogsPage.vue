@@ -38,7 +38,7 @@
                     </div>
                     <div v-if="hasActiveFilters" class="mt-3 flex items-center justify-between">
                         <p class="text-xs text-gray-400">Filters applied</p>
-                        <button @click="resetFilter" class="text-xs text-indigo-600 hover:text-indigo-700 font-medium transition-colors">Clear all</button>
+                        <a href="#" @click.prevent="resetFilters" class="text-xs text-indigo-600 hover:text-indigo-700 font-medium transition-colors">Clear all</a>
                     </div>
                 </div>
 
@@ -172,7 +172,9 @@ const availableEvents = ref([])
 
 const STORAGE_KEY = 'admin_audit_logs_state'
 
-const hasActiveFilters = computed(() => search.value !== '' || eventFilter.value !== '')
+const hasActiveFilters = computed(() =>
+    search.value !== '' || eventFilter.value !== '' || sortBy.value !== 'created_at' || sortDir.value !== 'desc'
+)
 
 function saveState() {
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
@@ -240,6 +242,8 @@ function shortType(type) {
 function resetFilter() {
     search.value = ''
     eventFilter.value = ''
+    sortBy.value = 'created_at'
+    sortDir.value = 'desc'
     sessionStorage.removeItem(STORAGE_KEY)
     fetchLogs(1)
 }

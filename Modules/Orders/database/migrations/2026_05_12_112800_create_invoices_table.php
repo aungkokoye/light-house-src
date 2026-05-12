@@ -15,11 +15,12 @@ return new class extends Migration
             $table->id();
             $table->string('invoice_no', 8)->unique();
             $table->foreignId('customer_id')->constrained('users'); // user with customer role + company profile
-            $table->unsignedInteger('discount')->default(0);
-            $table->unsignedInteger('total');
+            $table->unsignedBigInteger('discount')->default(0);
+            $table->unsignedBigInteger('total');
             $table->text('note')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
+            $table->index('created_at');
         });
     }
 

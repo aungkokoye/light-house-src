@@ -7,11 +7,11 @@
 
             <template v-else>
                 <div class="mb-8 flex items-center gap-3">
-                    <button @click="router.back()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <RouterLink to="/admin/banks" @click.prevent="goBack('/admin/banks', 'bank-list-back')" class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                         </svg>
-                    </button>
+                    </RouterLink>
                     <div>
                         <h1 class="text-3xl font-bold text-gray-900">Edit Bank</h1>
                         <p class="text-sm text-gray-500 mt-0.5">Update bank details.</p>
@@ -31,7 +31,7 @@
                         <p v-if="generalError" class="text-xs text-red-500">{{ generalError }}</p>
 
                         <div class="flex items-center justify-end gap-3 pt-2">
-                            <button type="button" @click="router.back()" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors">Cancel</button>
+                            <button type="button" @click="goBack('/admin/banks', 'bank-list-back')" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors">Cancel</button>
                             <button type="submit" :disabled="submitting"
                                 class="px-5 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors">
                                 {{ submitting ? 'Saving…' : 'Save Changes' }}
@@ -51,10 +51,12 @@ import axios from 'axios'
 import AppHeader from '../../../components/AppHeader.vue'
 import LoadingSpinner from '../../../components/LoadingSpinner.vue'
 import { useAdminGuard } from '../../../composables/useAdminGuard'
+import { useGoBack } from '../../../composables/useGoBack'
 
 const router = useRouter()
 const route = useRoute()
 const { requireAdmin } = useAdminGuard()
+const { goBack } = useGoBack()
 const loading = ref(true)
 const submitting = ref(false)
 const errors = ref({})

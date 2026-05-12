@@ -60,6 +60,18 @@ import AdminCreateBankPage from '../pages/admin/banks/AdminCreateBankPage.vue';
 import AdminEditBankPage from '../pages/admin/banks/AdminEditBankPage.vue';
 import AdminViewBankPage from '../pages/admin/banks/AdminViewBankPage.vue';
 
+// Admin — Services
+import AdminServicesPage from '../pages/admin/services/AdminServicesPage.vue';
+import AdminCreateServicePage from '../pages/admin/services/AdminCreateServicePage.vue';
+import AdminEditServicePage from '../pages/admin/services/AdminEditServicePage.vue';
+import AdminViewServicePage from '../pages/admin/services/AdminViewServicePage.vue';
+
+// Admin — Invoices
+import AdminInvoicesPage from '../pages/admin/invoices/AdminInvoicesPage.vue';
+import AdminCreateInvoicePage from '../pages/admin/invoices/AdminCreateInvoicePage.vue';
+import AdminEditInvoicePage from '../pages/admin/invoices/AdminEditInvoicePage.vue';
+import AdminViewInvoicePage from '../pages/admin/invoices/AdminViewInvoicePage.vue';
+
 // Admin — Products
 import AdminProductsPage from '../pages/admin/products/AdminProductsPage.vue';
 import AdminCreateProductPage from '../pages/admin/products/AdminCreateProductPage.vue';
@@ -114,10 +126,18 @@ const routes = [
     { path: '/admin/users/:id/staff-roles/create',             component: AdminUserCreateStaffRolePage },
     { path: '/admin/users/:id/staff-roles/:roleId',            component: AdminUserViewStaffRolePage },
     { path: '/admin/users/:id/staff-roles/:roleId/edit',       component: AdminUserEditStaffRolePage },
+    { path: '/admin/invoices',             component: AdminInvoicesPage },
+    { path: '/admin/invoices/create',      component: AdminCreateInvoicePage },
+    { path: '/admin/invoices/:id',         component: AdminViewInvoicePage },
+    { path: '/admin/invoices/:id/edit',    component: AdminEditInvoicePage },
     { path: '/admin/banks',            component: AdminBanksPage },
     { path: '/admin/banks/create',     component: AdminCreateBankPage },
     { path: '/admin/banks/:id',        component: AdminViewBankPage },
     { path: '/admin/banks/:id/edit',   component: AdminEditBankPage },
+    { path: '/admin/services',             component: AdminServicesPage },
+    { path: '/admin/services/create',      component: AdminCreateServicePage },
+    { path: '/admin/services/:id',         component: AdminViewServicePage },
+    { path: '/admin/services/:id/edit',    component: AdminEditServicePage },
     { path: '/admin/products',                  component: AdminProductsPage },
     { path: '/admin/products/create',           component: AdminCreateProductPage },
     { path: '/admin/products/:id',              component: AdminViewProductPage },

@@ -32,8 +32,13 @@
                         <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
                         </svg>
-                        <input v-model="search" type="text" placeholder="Search bank name…"
+                        <input v-model="search" @input="debouncedFetch" type="text" placeholder="Search bank name…"
                             class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50" />
+                    </div>
+
+                    <div v-if="hasActiveFilters" class="mt-3 flex items-center justify-between">
+                        <p class="text-xs text-gray-400">Filters applied</p>
+                        <a href="#" @click.prevent="resetFilters" class="text-xs text-indigo-600 hover:text-indigo-700 font-medium transition-colors">Clear all</a>
                     </div>
                 </div>
 
@@ -41,10 +46,25 @@
                 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                     <div class="px-6 py-4 border-b border-gray-50 flex items-center justify-between">
                         <h2 class="font-semibold text-gray-900">All Banks</h2>
-                        <span class="text-xs text-gray-400">{{ filtered.length }} total</span>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs text-gray-400">{{ meta.total ?? 0 }} total</span>
+                            <select v-model="perPage" @change="fetchBanks(1)"
+                                class="text-xs border border-gray-300 rounded-lg px-2 py-1 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-gray-600">
+                                <option :value="10">10 / page</option>
+                                <option :value="20">20 / page</option>
+                                <option :value="50">50 / page</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <div v-if="filtered.length === 0" class="px-6 py-12 text-center text-sm text-gray-400">
+                    <div v-if="banksLoading" class="flex items-center justify-center py-12">
+                        <svg class="w-5 h-5 animate-spin text-indigo-400" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v8H4z" />
+                        </svg>
+                    </div>
+
+                    <div v-else-if="banks.length === 0" class="px-6 py-12 text-center text-sm text-gray-400">
                         No banks found.
                     </div>
 
@@ -83,7 +103,7 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-50">
-                                <tr v-for="bank in filtered" :key="bank.id" class="hover:bg-gray-50/50 transition-colors">
+                                <tr v-for="bank in banks" :key="bank.id" class="hover:bg-gray-50/50 transition-colors">
                                     <td class="px-6 py-3.5 text-xs font-mono text-gray-400">{{ bank.id }}</td>
                                     <td class="px-6 py-3.5 font-medium text-gray-900">{{ bank.name }}</td>
                                     <td class="px-6 py-3.5 text-xs text-gray-400">{{ formatDate(bank.created_at) }}</td>
@@ -114,6 +134,31 @@
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- Pagination -->
+                    <div v-if="meta.last_page > 1" class="px-6 py-4 border-t border-gray-50 flex items-center justify-between">
+                        <p class="text-xs text-gray-400">
+                            Showing {{ meta.from }}–{{ meta.to }} of {{ meta.total }}
+                        </p>
+                        <div class="flex items-center gap-1">
+                            <button @click="fetchBanks(currentPage - 1)" :disabled="currentPage === 1"
+                                class="px-3 py-1.5 text-xs rounded-lg border border-gray-100 text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+                                Prev
+                            </button>
+                            <template v-for="page in visiblePages" :key="page">
+                                <span v-if="page === '...'" class="px-2 text-xs text-gray-300">…</span>
+                                <button v-else @click="fetchBanks(page)"
+                                    class="px-3 py-1.5 text-xs rounded-lg border transition-colors"
+                                    :class="page === currentPage ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-gray-100 text-gray-500 hover:bg-gray-50'">
+                                    {{ page }}
+                                </button>
+                            </template>
+                            <button @click="fetchBanks(currentPage + 1)" :disabled="currentPage === meta.last_page"
+                                class="px-3 py-1.5 text-xs rounded-lg border border-gray-100 text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+                                Next
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </template>
         </div>
@@ -125,7 +170,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
 import AppHeader from '../../../components/AppHeader.vue'
 import LoadingSpinner from '../../../components/LoadingSpinner.vue'
@@ -133,16 +178,37 @@ import DeleteModal from '../../../components/DeleteModal.vue'
 import { useFormatDate } from '../../../composables/useFormatDate'
 
 const router = useRouter()
+const route = useRoute()
 const { formatDate } = useFormatDate()
 
 const loading = ref(true)
+const banksLoading = ref(false)
 const banks = ref([])
 const search = ref('')
 const sortBy = ref('name')
 const sortDir = ref('asc')
+const currentPage = ref(1)
+const perPage = ref(20)
+const meta = ref({})
 const deleteTarget = ref(null)
 const myPermissions = ref([])
 const myRole = ref('')
+
+const visiblePages = computed(() => {
+    const total = meta.value.last_page ?? 1
+    const current = currentPage.value
+    const pages = []
+    if (total <= 7) {
+        for (let i = 1; i <= total; i++) pages.push(i)
+        return pages
+    }
+    pages.push(1)
+    if (current > 3) pages.push('...')
+    for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) pages.push(i)
+    if (current < total - 2) pages.push('...')
+    pages.push(total)
+    return pages
+})
 
 function can(action) {
     if (myPermissions.value.includes('super')) return true
@@ -154,6 +220,18 @@ function can(action) {
     return false
 }
 
+const hasActiveFilters = computed(() =>
+    search.value !== '' || sortBy.value !== 'name' || sortDir.value !== 'asc'
+)
+
+function resetFilters() {
+    search.value = ''
+    sortBy.value = 'name'
+    sortDir.value = 'asc'
+    router.replace({ query: {} })
+    fetchBanks(1)
+}
+
 function toggleSort(col) {
     if (sortBy.value === col) {
         sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc'
@@ -161,21 +239,14 @@ function toggleSort(col) {
         sortBy.value = col
         sortDir.value = 'asc'
     }
+    fetchBanks(1)
 }
 
-const filtered = computed(() => {
-    let list = banks.value
-    if (search.value.trim()) {
-        const q = search.value.trim().toLowerCase()
-        list = list.filter(b => b.name.toLowerCase().includes(q))
-    }
-    return [...list].sort((a, b) => {
-        const av = a[sortBy.value] ?? ''
-        const bv = b[sortBy.value] ?? ''
-        const cmp = String(av).localeCompare(String(bv), undefined, { numeric: true })
-        return sortDir.value === 'asc' ? cmp : -cmp
-    })
-})
+let searchTimer = null
+function debouncedFetch() {
+    clearTimeout(searchTimer)
+    searchTimer = setTimeout(() => fetchBanks(1), 350)
+}
 
 function confirmDelete(bank) {
     deleteTarget.value = bank
@@ -184,14 +255,37 @@ function confirmDelete(bank) {
 async function deleteBank() {
     try {
         await axios.delete(`/api/order/banks/${deleteTarget.value.id}`)
-        banks.value = banks.value.filter(b => b.id !== deleteTarget.value.id)
         deleteTarget.value = null
+        fetchBanks(currentPage.value)
     } catch (e) {
         console.error('delete error', e?.response?.status)
     }
 }
 
+async function fetchBanks(page = 1) {
+    banksLoading.value = true
+    try {
+        const params = { page, per_page: perPage.value, sort_by: sortBy.value, sort_dir: sortDir.value }
+        if (search.value) params.search = search.value
+        const { data } = await axios.get('/api/order/banks', { params })
+        banks.value = data.data
+        meta.value = { total: data.total, from: data.from, to: data.to, last_page: data.last_page }
+        currentPage.value = data.current_page
+        const finalParams = { ...params, page: data.current_page }
+        router.replace({ query: finalParams })
+        sessionStorage.setItem('bank-list-back', '/admin/banks?' + new URLSearchParams(finalParams).toString())
+    } catch (e) {
+        console.error('fetchBanks error', e?.response?.status)
+    } finally {
+        banksLoading.value = false
+    }
+}
+
 onMounted(async () => {
+    if (route.query.search)   search.value  = route.query.search
+    if (route.query.sort_by)  sortBy.value  = route.query.sort_by
+    if (route.query.sort_dir) sortDir.value = route.query.sort_dir
+    if (route.query.per_page) perPage.value = Number(route.query.per_page)
     if (!localStorage.getItem('token')) { router.push('/login'); return }
     try {
         const { data: me } = await axios.get('/api/me')
@@ -201,12 +295,12 @@ onMounted(async () => {
         }
         myRole.value = roles.includes('admin') ? 'admin' : 'sale'
         myPermissions.value = me.permissions?.map(p => p.name) ?? []
-        const { data } = await axios.get('/api/order/banks')
-        banks.value = data
     } catch {
         router.push('/login')
+        return
     } finally {
         loading.value = false
     }
+    fetchBanks(Number(route.query.page) || 1)
 })
 </script>

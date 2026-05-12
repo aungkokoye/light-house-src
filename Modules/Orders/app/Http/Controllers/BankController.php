@@ -4,6 +4,7 @@ namespace Modules\Orders\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Modules\Orders\Http\Requests\StoreBankRequest;
 use Modules\Orders\Http\Requests\UpdateBankRequest;
 use Modules\Orders\Models\Bank;
@@ -13,9 +14,11 @@ class BankController extends Controller
 {
     public function __construct(private readonly BankManager $bankManager) {}
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        return response()->json($this->bankManager->all());
+        $perPage = (int) $request->input('per_page', 20);
+
+        return response()->json($this->bankManager->list($request, $perPage));
     }
 
     public function store(StoreBankRequest $request): JsonResponse

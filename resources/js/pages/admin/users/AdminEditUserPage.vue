@@ -9,7 +9,7 @@
             <template v-else>
                 <!-- Header -->
                 <div class="mb-8 flex items-center gap-3">
-                    <RouterLink :to="route.query.back || '/admin/users'" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <RouterLink to="/admin/users" @click.prevent="goBack('/admin/users', 'user-list-back')" class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                         </svg>
@@ -383,10 +383,10 @@
 
                         <!-- Actions -->
                         <div class="flex items-center justify-end gap-3 pt-2">
-                            <RouterLink :to="route.query.back || '/admin/users'"
+                            <button type="button" @click="goBack('/admin/users', 'user-list-back')"
                                 class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors">
                                 Cancel
-                            </RouterLink>
+                            </button>
                             <button type="submit" :disabled="submitting"
                                 class="px-5 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                                 {{ submitting ? 'Saving…' : 'Save Changes' }}
@@ -407,9 +407,11 @@ import axios from 'axios'
 import AppHeader from '../../../components/AppHeader.vue'
 import LoadingSpinner from '../../../components/LoadingSpinner.vue'
 import { useAdminGuard } from '../../../composables/useAdminGuard'
+import { useGoBack } from '../../../composables/useGoBack'
 
 const router = useRouter()
 const route = useRoute()
+const { goBack } = useGoBack()
 const { requireAdmin } = useAdminGuard()
 const loading = ref(true)
 const submitting = ref(false)

@@ -19,7 +19,9 @@ class AdminPermissionController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        return response()->json($this->permissionManager->list($request));
+        $perPage = (int) $request->input('per_page', 20);
+
+        return response()->json($this->permissionManager->list($request, $perPage));
     }
 
     public function store(StorePermissionRequest $request): JsonResponse

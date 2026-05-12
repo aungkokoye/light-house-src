@@ -53,8 +53,18 @@ class AdminStaffPositionController extends Controller
 
     public function destroy(StaffPosition $staffPosition): JsonResponse
     {
-        $this->auditDeleted($staffPosition);
-        $this->staffPositionManager->delete($staffPosition);
+        $snapshot = $this->filterAuditValues($staffPosition->getAttributes());
+
+        try {
+            $this->staffPositionManager->delete($staffPosition);
+        } catch (\Illuminate\Database\QueryException $e) {
+            if ($e->getCode() === '23000') {
+                return response()->json(['message' => 'Cannot delete this position because it is assigned to one or more staff members.'], 422);
+            }
+            throw $e;
+        }
+
+        $this->auditDeleted($staffPosition, $snapshot);
 
         return response()->json(['message' => 'Staff position deleted successfully.']);
     }

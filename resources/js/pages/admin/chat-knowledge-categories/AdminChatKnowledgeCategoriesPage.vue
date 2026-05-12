@@ -35,13 +35,26 @@
                         <input v-model="search" @input="debouncedFetch" type="text" placeholder="Search categories…"
                             class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50" />
                     </div>
+
+                    <div v-if="hasActiveFilters" class="mt-3 flex items-center justify-between">
+                        <p class="text-xs text-gray-400">Filters applied</p>
+                        <a href="#" @click.prevent="resetFilters" class="text-xs text-indigo-600 hover:text-indigo-700 font-medium transition-colors">Clear all</a>
+                    </div>
                 </div>
 
                 <!-- Table -->
                 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                     <div class="px-6 py-4 border-b border-gray-50 flex items-center justify-between">
                         <h2 class="font-semibold text-gray-900">All Categories</h2>
-                        <span class="text-xs text-gray-400">{{ meta.total ?? 0 }} total</span>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs text-gray-400">{{ meta.total ?? 0 }} total</span>
+                            <select v-model="perPage" @change="fetch(1)"
+                                class="text-xs border border-gray-300 rounded-lg px-2 py-1 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-gray-600">
+                                <option :value="10">10 / page</option>
+                                <option :value="20">20 / page</option>
+                                <option :value="50">50 / page</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div v-if="tableLoading" class="flex items-center justify-center py-12">
@@ -127,6 +140,14 @@
                         <div class="flex items-center gap-1">
                             <button @click="fetch(currentPage - 1)" :disabled="currentPage === 1"
                                 class="px-3 py-1.5 text-xs rounded-lg border border-gray-100 text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">Prev</button>
+                            <template v-for="page in visiblePages" :key="page">
+                                <span v-if="page === '...'" class="px-2 text-xs text-gray-300">…</span>
+                                <button v-else @click="fetch(page)"
+                                    class="px-3 py-1.5 text-xs rounded-lg border transition-colors"
+                                    :class="page === currentPage ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-gray-100 text-gray-500 hover:bg-gray-50'">
+                                    {{ page }}
+                                </button>
+                            </template>
                             <button @click="fetch(currentPage + 1)" :disabled="currentPage === meta.last_page"
                                 class="px-3 py-1.5 text-xs rounded-lg border border-gray-100 text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">Next</button>
                         </div>
@@ -141,8 +162,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
 import AppHeader from '../../../components/AppHeader.vue'
 import LoadingSpinner from '../../../components/LoadingSpinner.vue'
@@ -151,6 +172,7 @@ import { useAdminGuard } from '../../../composables/useAdminGuard'
 import { useFormatDate } from '../../../composables/useFormatDate'
 
 const router = useRouter()
+const route = useRoute()
 const { requireAdmin } = useAdminGuard()
 const { formatDate } = useFormatDate()
 const loading = ref(true)
@@ -159,10 +181,39 @@ const fetchError = ref('')
 const rows = ref([])
 const meta = ref({})
 const currentPage = ref(1)
+const perPage = ref(20)
 const sortBy = ref('name')
 const sortDir = ref('asc')
 const search = ref('')
 const deleteTarget = ref(null)
+
+const visiblePages = computed(() => {
+    const total = meta.value.last_page ?? 1
+    const current = currentPage.value
+    const pages = []
+    if (total <= 7) {
+        for (let i = 1; i <= total; i++) pages.push(i)
+        return pages
+    }
+    pages.push(1)
+    if (current > 3) pages.push('...')
+    for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) pages.push(i)
+    if (current < total - 2) pages.push('...')
+    pages.push(total)
+    return pages
+})
+
+const hasActiveFilters = computed(() =>
+    search.value !== '' || sortBy.value !== 'name' || sortDir.value !== 'asc'
+)
+
+function resetFilters() {
+    search.value = ''
+    sortBy.value = 'name'
+    sortDir.value = 'asc'
+    router.replace({ query: {} })
+    fetch(1)
+}
 
 let searchTimer = null
 function debouncedFetch() {
@@ -192,15 +243,17 @@ async function deleteRow() {
 
 async function fetch(page = 1) {
     tableLoading.value = true
-    currentPage.value = page
     fetchError.value = ''
     try {
-        const params = { page, sort_by: sortBy.value, sort_dir: sortDir.value }
+        const params = { page, per_page: perPage.value, sort_by: sortBy.value, sort_dir: sortDir.value }
         if (search.value) params.search = search.value
         const { data } = await axios.get('/api/admin/chat-knowledge-categories', { params })
         rows.value = data.data ?? []
         meta.value = { total: data.total ?? 0, from: data.from ?? 0, to: data.to ?? 0, last_page: data.last_page ?? 1 }
         currentPage.value = data.current_page ?? 1
+        const finalParams = { ...params, page: data.current_page ?? 1 }
+        router.replace({ query: finalParams })
+        sessionStorage.setItem('chat-knowledge-categories-back', '/admin/chat-knowledge-categories?' + new URLSearchParams(finalParams).toString())
     } catch (e) {
         fetchError.value = e?.response?.status === 403
             ? 'You do not have permission to manage categories.'
@@ -217,7 +270,11 @@ onMounted(async () => {
         router.replace('/403')
         return
     }
+    if (route.query.search)   search.value  = route.query.search
+    if (route.query.sort_by)  sortBy.value  = route.query.sort_by
+    if (route.query.sort_dir) sortDir.value = route.query.sort_dir
+    if (route.query.per_page) perPage.value = Number(route.query.per_page)
     loading.value = false
-    fetch(1)
+    fetch(Number(route.query.page) || 1)
 })
 </script>

@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('invoice_jobs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('invoice_id')->nullable()->constrained('invoices')->cascadeOnDelete();
+            $table->foreignId('invoice_id')->constrained('invoices')->cascadeOnDelete();
             $table->foreignId('service_id')->constrained('job_services');
             $table->foreignId('product_id')->constrained('products');
             $table->unsignedInteger('quantity');
-            $table->unsignedInteger('unit_price');
-            $table->unsignedInteger('total');
+            $table->unsignedBigInteger('unit_price');
+            $table->unsignedBigInteger('total');
             $table->date('delivery_date');
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();

@@ -30,6 +30,20 @@
                         </div>
                     </RouterLink>
 
+                    <!-- Invoices — admin or sale -->
+                    <RouterLink v-if="isAdminOrSale" to="/admin/invoices"
+                        class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col items-center gap-4 hover:shadow-md hover:border-orange-100 transition-all">
+                        <div class="w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center group-hover:bg-orange-100 transition-colors">
+                            <svg class="w-7 h-7 text-orange-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9z" />
+                            </svg>
+                        </div>
+                        <div class="text-center">
+                            <p class="font-semibold text-gray-900">Invoices</p>
+                            <p class="text-xs text-gray-400 mt-0.5">Manage customer invoices</p>
+                        </div>
+                    </RouterLink>
+
                     <!-- Banks — admin or sale -->
                     <RouterLink v-if="isAdminOrSale" to="/admin/banks"
                         class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col items-center gap-4 hover:shadow-md hover:border-amber-100 transition-all">
@@ -126,6 +140,20 @@
                         <div class="text-center">
                             <p class="font-semibold text-gray-900">Roles</p>
                             <p class="text-xs text-gray-400 mt-0.5">View roles & permissions</p>
+                        </div>
+                    </RouterLink>
+
+                    <!-- Services — admin or sale -->
+                    <RouterLink v-if="isAdminOrSale" to="/admin/services"
+                        class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col items-center gap-4 hover:shadow-md hover:border-violet-100 transition-all">
+                        <div class="w-14 h-14 rounded-2xl bg-violet-50 flex items-center justify-center group-hover:bg-violet-100 transition-colors">
+                            <svg class="w-7 h-7 text-violet-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l5.653-4.655m5.8-5.8 1.875-1.875a2.625 2.625 0 0 1 3.712 3.712l-1.875 1.875M11.42 15.17 9.17 12.92" />
+                            </svg>
+                        </div>
+                        <div class="text-center">
+                            <p class="font-semibold text-gray-900">Services</p>
+                            <p class="text-xs text-gray-400 mt-0.5">Manage job services</p>
                         </div>
                     </RouterLink>
 

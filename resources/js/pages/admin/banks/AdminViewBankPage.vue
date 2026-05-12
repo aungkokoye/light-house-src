@@ -8,7 +8,7 @@
             <template v-else-if="bank">
                 <div class="mb-8 flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <RouterLink to="/admin/banks" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <RouterLink to="/admin/banks" @click.prevent="goBack('/admin/banks', 'bank-list-back')" class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                             </svg>
@@ -63,9 +63,11 @@ import axios from 'axios'
 import AppHeader from '../../../components/AppHeader.vue'
 import LoadingSpinner from '../../../components/LoadingSpinner.vue'
 import { useFormatDate } from '../../../composables/useFormatDate'
+import { useGoBack } from '../../../composables/useGoBack'
 
 const router = useRouter()
 const route = useRoute()
+const { goBack } = useGoBack()
 const { formatDate } = useFormatDate()
 
 const loading = ref(true)

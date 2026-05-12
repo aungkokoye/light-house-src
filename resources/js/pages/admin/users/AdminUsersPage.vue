@@ -18,7 +18,7 @@
                         <h1 class="text-3xl font-bold text-gray-900">Users</h1>
                         <p class="text-sm text-gray-500 mt-0.5">Manage all registered users.</p>
                     </div>
-                    <RouterLink v-if="can('create')" :to="{ path: '/admin/users/create', query: { back: route.fullPath } }"
+                    <RouterLink v-if="can('create')" to="/admin/users/create"
                         class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -90,9 +90,7 @@
                     <!-- Active filters / reset -->
                     <div v-if="hasActiveFilters" class="mt-3 flex items-center justify-between">
                         <p class="text-xs text-gray-400">Filters applied</p>
-                        <button @click="resetFilters" class="text-xs text-indigo-600 hover:text-indigo-700 font-medium transition-colors">
-                            Clear all
-                        </button>
+                        <a href="#" @click.prevent="resetFilters" class="text-xs text-indigo-600 hover:text-indigo-700 font-medium transition-colors">Clear all</a>
                     </div>
                 </div>
 
@@ -196,14 +194,14 @@
                                     </td>
                                     <td class="px-3 py-3.5 w-px whitespace-nowrap">
                                         <div class="flex items-center gap-1">
-                                            <RouterLink v-if="can('view')" :to="{ path: `/admin/users/${u.id}`, query: { back: route.fullPath } }"
+                                            <RouterLink v-if="can('view')" :to="`/admin/users/${u.id}`"
                                                 class="p-1.5 text-indigo-600 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
                                                 </svg>
                                             </RouterLink>
-                                            <RouterLink v-if="can('edit')" :to="{ path: `/admin/users/${u.id}/edit`, query: { back: route.fullPath } }"
+                                            <RouterLink v-if="can('edit')" :to="`/admin/users/${u.id}/edit`"
                                                 class="p-1.5 text-indigo-600 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
@@ -309,7 +307,7 @@ const filters = ref({
 })
 
 const hasActiveFilters = computed(() =>
-    Object.values(filters.value).some(v => v !== '')
+    Object.values(filters.value).some(v => v !== '') || sortBy.value !== 'id' || sortDir.value !== 'asc'
 )
 
 const visiblePages = computed(() => {
@@ -330,6 +328,8 @@ const visiblePages = computed(() => {
 
 function resetFilters() {
     filters.value = { search: '', position: '', role: '', activated: '', email_verified: '', updated_from: '', updated_to: '' }
+    sortBy.value = 'id'
+    sortDir.value = 'asc'
     router.replace({ query: {} })
     fetchUsers(1)
 }
@@ -378,8 +378,9 @@ async function fetchUsers(page = 1) {
         users.value = data.data
         meta.value = { total: data.total, from: data.from, to: data.to, last_page: data.last_page }
         currentPage.value = data.current_page
-        // sync state to URL so back-navigation restores it
-        router.replace({ query: { ...params, page: data.current_page } })
+        const finalParams = { ...params, page: data.current_page }
+        router.replace({ query: finalParams })
+        sessionStorage.setItem('user-list-back', '/admin/users?' + new URLSearchParams(finalParams).toString())
     } catch (e) {
         console.error('fetchUsers error', e?.response?.status, e?.response?.data)
     } finally {

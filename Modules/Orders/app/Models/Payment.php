@@ -23,7 +23,6 @@ class Payment extends Model
         'amount',
         'note',
         'payment_date',
-        'created_by',
     ];
 
     protected function casts(): array

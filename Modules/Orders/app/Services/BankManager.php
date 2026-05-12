@@ -3,7 +3,10 @@
 namespace Modules\Orders\Services;
 
 use App\Concerns\AuditableCrud;
+use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Modules\Orders\Filters\BankFilter;
 use Modules\Orders\Models\Bank;
 
 class BankManager
@@ -13,6 +16,16 @@ class BankManager
     public function all(): \Illuminate\Database\Eloquent\Collection
     {
         return Bank::with('createdBy:id,name')->orderBy('name')->get();
+    }
+
+    public function list(Request $request, int $perPage = 20): LengthAwarePaginator
+    {
+        $query = BankFilter::for(Bank::with('createdBy:id,name'))
+            ->search($request->input('search'))
+            ->sort($request->input('sort_by', 'name'), $request->input('sort_dir', 'asc'))
+            ->query();
+
+        return $query->paginate($perPage);
     }
 
     public function show(Bank $bank): Bank
