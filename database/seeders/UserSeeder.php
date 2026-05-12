@@ -74,6 +74,43 @@ class UserSeeder extends Seeder
             createdBy:   $admin,
         );
 
+        // --- Sale users ---
+        $this->createSale(
+            name:        'Sale User (All)',
+            email:       'sale.all@lighthouse.com',
+            permissions: ['view', 'create', 'edit', 'delete'],
+            positions:   $positions,
+            sites:       $sites,
+            positionId:  $operatorManagerId,
+            isActivated: true,
+            createdBy:   $admin,
+            now:         $now,
+        );
+
+        $this->createSale(
+            name:        'Sale User (View)',
+            email:       'sale.view@lighthouse.com',
+            permissions: ['view'],
+            positions:   $positions,
+            sites:       $sites,
+            positionId:  $operatorManagerId,
+            isActivated: true,
+            createdBy:   $admin,
+            now:         $now,
+        );
+
+        $this->createSale(
+            name:        'Sale User (View & Edit)',
+            email:       'sale.edit@lighthouse.com',
+            permissions: ['view', 'create', 'edit'],
+            positions:   $positions,
+            sites:       $sites,
+            positionId:  $operatorManagerId,
+            isActivated: true,
+            createdBy:   $admin,
+            now:         $now,
+        );
+
         // --- Customer users ---
         User::factory(10)->create()
             ->each(function (User $user) use ($admin) {
@@ -154,6 +191,34 @@ class UserSeeder extends Seeder
 
         $profile = $this->createStaffProfile($user, $createdBy ?? $user);
 
+        $this->seedStaffRoles($profile, $positions, $sites, $user->id, $positionId);
+
+        return $user;
+    }
+
+    private function createSale(
+        string $name,
+        string $email,
+        array $permissions,
+        $positions,
+        $sites,
+        int $positionId,
+        bool $isActivated = false,
+        ?User $createdBy = null,
+        ?Carbon $now = null,
+    ): User {
+        $user = User::factory()->create([
+            'name'              => $name,
+            'email'             => $email,
+            'email_verified_at' => $now,
+            'activated'         => $isActivated,
+            'password'          => Hash::make('Passw0rd!'),
+        ]);
+
+        $user->assignRole('sale');
+        $user->syncPermissions($permissions);
+
+        $profile = $this->createStaffProfile($user, $createdBy ?? $user);
         $this->seedStaffRoles($profile, $positions, $sites, $user->id, $positionId);
 
         return $user;

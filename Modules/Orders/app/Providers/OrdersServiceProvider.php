@@ -5,8 +5,12 @@ namespace Modules\Orders\Providers;
 use Illuminate\Support\Facades\Gate;
 use Modules\Orders\Models\Bank;
 use Modules\Orders\Models\Payment;
+use Modules\Orders\Models\PaymentPrice;
+use Modules\Orders\Models\Product;
 use Modules\Orders\Policies\BankPolicy;
 use Modules\Orders\Policies\PaymentPolicy;
+use Modules\Orders\Policies\ProductPolicy;
+use Modules\Orders\Policies\ProductPricePolicy;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 use Illuminate\Console\Scheduling\Schedule;
 
@@ -43,8 +47,10 @@ class OrdersServiceProvider extends ModuleServiceProvider
     {
         parent::boot();
 
-        Gate::policy(Bank::class,    BankPolicy::class);
-        Gate::policy(Payment::class, PaymentPolicy::class);
+        Gate::policy(Bank::class,         BankPolicy::class);
+        Gate::policy(Payment::class,      PaymentPolicy::class);
+        Gate::policy(Product::class,      ProductPolicy::class);
+        Gate::policy(PaymentPrice::class, ProductPricePolicy::class);
     }
 
     /**

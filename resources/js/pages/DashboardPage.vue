@@ -87,6 +87,20 @@
                         </div>
                     </RouterLink>
 
+                    <!-- Products — admin or sale -->
+                    <RouterLink v-if="isAdminOrSale" to="/admin/products"
+                        class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col items-center gap-4 hover:shadow-md hover:border-emerald-100 transition-all">
+                        <div class="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
+                            <svg class="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                            </svg>
+                        </div>
+                        <div class="text-center">
+                            <p class="font-semibold text-gray-900">Products</p>
+                            <p class="text-xs text-gray-400 mt-0.5">Manage products</p>
+                        </div>
+                    </RouterLink>
+
                     <!-- Profile — all users -->
                     <RouterLink to="/profile"
                         class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col items-center gap-4 hover:shadow-md hover:border-indigo-100 transition-all">

@@ -13,6 +13,7 @@ class OrdersDatabaseSeeder extends Seeder
     {
         $this->call([
             BankSeeder::class,
+            ProductSeeder::class,
         ]);
     }
 }
