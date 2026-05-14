@@ -34,6 +34,11 @@ class PermissionManager
         return $paginated;
     }
 
+    public function all(): \Illuminate\Database\Eloquent\Collection
+    {
+        return $this->repo->all();
+    }
+
     public function show(Permission $permission): Permission
     {
         $permission->users_count = $this->repo->userCount($permission->id);

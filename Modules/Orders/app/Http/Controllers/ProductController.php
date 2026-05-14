@@ -3,6 +3,7 @@
 namespace Modules\Orders\Http\Controllers;
 
 use App\Concerns\AuditableCrud;
+use App\Concerns\HasAbilities;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,7 +15,7 @@ use Modules\Orders\Services\ProductManager;
 
 class ProductController extends Controller
 {
-    use AuditableCrud;
+    use AuditableCrud, HasAbilities;
 
     const int DEFAULT_PER_PAGE = 15;
     const array PER_PAGE_LIST = [5, 10, 15, 25, 50];
@@ -23,11 +24,14 @@ class ProductController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $perPage = in_array((int) $request->input('per_page'), self::PER_PAGE_LIST)
+        $perPage   = in_array((int) $request->input('per_page'), self::PER_PAGE_LIST)
             ? (int) $request->input('per_page')
             : self::DEFAULT_PER_PAGE;
+        $paginated = $this->productManager->list($request, $perPage);
 
-        return response()->json($this->productManager->list($request, $perPage));
+        return response()->json(array_merge($paginated->toArray(), [
+            'can' => $this->listAbilities(Product::class),
+        ]));
     }
 
     public function store(StoreProductRequest $request): JsonResponse
@@ -40,7 +44,9 @@ class ProductController extends Controller
 
     public function show(Product $product): JsonResponse
     {
-        return response()->json($this->productManager->show($product));
+        return response()->json(array_merge($this->productManager->show($product)->toArray(), [
+            'can' => $this->resourceAbilities($product),
+        ]));
     }
 
     public function update(UpdateProductRequest $request, Product $product): JsonResponse

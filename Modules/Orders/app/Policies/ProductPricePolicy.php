@@ -3,22 +3,19 @@
 namespace Modules\Orders\Policies;
 
 use App\Models\User;
+use App\Policies\AppPolicy;
 use Modules\Orders\Models\PaymentPrice;
 
-class ProductPricePolicy
+class ProductPricePolicy extends OrderPolicy
 {
-    public function before(User $user, string $ability): ?bool
-    {
-        return $user->hasPermissionTo('super') ? true : null;
-    }
-
     public function viewAny(User $user): bool
     {
-        return $user->hasRole(['admin', 'sale']);
+        return $this->userPolicyCheck($user, OrderPolicy::LIST_ALLOW_PERMISSIONS)
+            || $this->adminPolicyCheck($user, AppPolicy::LIST_ALLOW_PERMISSIONS);
     }
 
-    public function delete(User $user, PaymentPrice $price): bool
+    public function delete(User $user, PaymentPrice $paymentPrice): bool
     {
-        return $user->hasRole('admin') && $user->hasPermissionTo('delete');
+        return $this->adminPolicyCheck($user, AppPolicy::DELETE_ALLOW_PERMISSIONS);
     }
 }

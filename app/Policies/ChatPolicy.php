@@ -4,12 +4,10 @@ namespace App\Policies;
 
 use App\Models\User;
 
-class ChatPolicy
+class ChatPolicy extends AppPolicy
 {
     public function stream(User $user): bool
     {
-        return config('ai.enabled')
-            && $user->hasRole('admin')
-            && $user->hasPermissionTo('super');
+        return config('ai.enabled') && $this->superUserPolicyCheck($user);
     }
 }

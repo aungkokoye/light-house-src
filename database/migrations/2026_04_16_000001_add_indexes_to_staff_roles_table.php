@@ -21,7 +21,11 @@ return new class extends Migration
     {
         Schema::table('staff_roles', function (Blueprint $table) {
             $table->dropIndex(['end_date']);
+            // Drop FK before dropping the composite index — MySQL uses it to back
+            // the staff_profile_id FK when no standalone index exists.
+            $table->dropForeign(['staff_profile_id']);
             $table->dropIndex(['staff_profile_id', 'end_date']);
+            $table->foreign('staff_profile_id')->references('id')->on('staff_profiles')->cascadeOnDelete();
         });
     }
 };

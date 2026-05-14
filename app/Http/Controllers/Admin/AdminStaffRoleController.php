@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Concerns\AuditableCrud;
+use App\Concerns\HasAbilities;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreStaffRoleRequest;
 use App\Http\Requests\Admin\UpdateStaffRoleRequest;
@@ -14,15 +15,18 @@ use Illuminate\Http\Request;
 
 class AdminStaffRoleController extends Controller
 {
-    use AuditableCrud;
+    use AuditableCrud, HasAbilities;
 
     public function __construct(private readonly StaffRoleManager $staffRoleManager) {}
 
     public function index(Request $request, User $user): JsonResponse
     {
         $perPage = (int) $request->input('per_page', 20);
+        $list    = $this->staffRoleManager->list($request, $user, $perPage);
 
-        return response()->json($this->staffRoleManager->list($request, $user, $perPage));
+        return response()->json(array_merge($list->toArray(), [
+            'can' => $this->listAbilities(StaffRole::class),
+        ]));
     }
 
     public function store(StoreStaffRoleRequest $request, User $user): JsonResponse
@@ -38,7 +42,9 @@ class AdminStaffRoleController extends Controller
     {
         $this->staffRoleManager->authorize($user, $staffRole);
 
-        return response()->json($this->staffRoleManager->show($staffRole));
+        return response()->json(array_merge($this->staffRoleManager->show($staffRole)->toArray(), [
+            'can' => $this->resourceAbilities($staffRole),
+        ]));
     }
 
     public function update(UpdateStaffRoleRequest $request, User $user, StaffRole $staffRole): JsonResponse

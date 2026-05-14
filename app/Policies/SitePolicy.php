@@ -5,41 +5,35 @@ namespace App\Policies;
 use App\Models\Site;
 use App\Models\User;
 
-class SitePolicy
+class SitePolicy extends AppPolicy
 {
-    /** Super permission bypasses all checks. */
-    public function before(User $authUser, string $ability): ?bool
-    {
-        return $authUser->hasPermissionTo('super') ? true : null;
-    }
-
     /** List — any admin. */
     public function viewAny(User $authUser): bool
     {
-        return $authUser->hasRole('admin');
+        return $this->basePolicyCheck($authUser, AppPolicy::LIST_ALLOW_PERMISSIONS);
     }
 
     /** View a single site — admin + view. */
     public function view(User $authUser, Site $site): bool
     {
-        return $authUser->hasRole('admin') && $authUser->hasPermissionTo('view');
+        return $this->basePolicyCheck($authUser, AppPolicy::VIEW_ALLOW_PERMISSIONS);
     }
 
     /** Create a site — admin + create. */
     public function create(User $authUser): bool
     {
-        return $authUser->hasRole('admin') && $authUser->hasPermissionTo('create');
+        return $this->basePolicyCheck($authUser, AppPolicy::CREATE_ALLOW_PERMISSIONS);
     }
 
     /** Update a site — admin + edit. */
     public function update(User $authUser, Site $site): bool
     {
-        return $authUser->hasRole('admin') && $authUser->hasPermissionTo('edit');
+        return $this->basePolicyCheck($authUser, AppPolicy::UPDATE_ALLOW_PERMISSIONS);
     }
 
     /** Delete a site — admin + delete. */
     public function delete(User $authUser, Site $site): bool
     {
-        return $authUser->hasRole('admin') && $authUser->hasPermissionTo('delete');
+        return $this->basePolicyCheck($authUser, AppPolicy::DELETE_ALLOW_PERMISSIONS);
     }
 }

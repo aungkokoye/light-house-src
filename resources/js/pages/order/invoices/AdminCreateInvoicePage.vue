@@ -7,7 +7,7 @@
 
             <template v-else>
                 <div class="mb-8 flex items-center gap-3">
-                    <RouterLink to="/admin/invoices" @click.prevent="goBack('/admin/invoices', 'invoice-list-back')" class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+                    <RouterLink to="/order/invoices" @click.prevent="goBack('/order/invoices', 'invoice-list-back')" class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                         </svg>
@@ -220,7 +220,7 @@
 
                             <div class="flex items-center gap-3">
                                 <p v-if="generalError" class="text-xs text-red-500">{{ generalError }}</p>
-                                <button type="button" @click="goBack('/admin/invoices', 'invoice-list-back')" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors">Cancel</button>
+                                <button type="button" @click="goBack('/order/invoices', 'invoice-list-back')" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors">Cancel</button>
                                 <button type="submit" :disabled="submitting"
                                     class="px-5 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors">
                                     {{ submitting ? 'Creating…' : 'Create Invoice' }}
@@ -307,7 +307,7 @@ async function submit() {
     submitting.value = true
     try {
         const { data } = await axios.post('/api/order/invoices', form.value)
-        router.push(`/admin/invoices/${data.id}`)
+        router.push(`/order/invoices/${data.id}`)
     } catch (e) {
         if (e?.response?.status === 422) errors.value = e.response.data.errors ?? {}
         else generalError.value = 'Something went wrong. Please try again.'
@@ -319,20 +319,15 @@ async function submit() {
 onMounted(async () => {
     if (!localStorage.getItem('token')) { router.push('/login'); return }
     try {
-        const { data: me } = await axios.get('/api/me')
-        const roles = me.roles?.map(r => r.name) ?? []
-        if (!roles.includes('admin') && !roles.includes('sale')) { router.replace('/403'); return }
-        const perms = me.permissions?.map(p => p.name) ?? []
-        if (!perms.includes('super') && !perms.includes('create')) { router.replace('/403'); return }
-    } catch { router.push('/login'); return }
-    try {
         const [bankRes, metaRes] = await Promise.all([
             axios.get('/api/order/banks'),
             axios.get('/api/order/payments/meta'),
         ])
-        banks.value = bankRes.data
+        banks.value   = bankRes.data.data ?? []
         paymentMeta.value = metaRes.data
-    } catch { generalError.value = 'Failed to load form data.' }
-    loading.value = false
+        loading.value = false
+    } catch {
+        generalError.value = 'Failed to load form data.'
+    }
 })
 </script>

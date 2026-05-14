@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminAbilitiesController;
 use App\Http\Controllers\Admin\AdminAuditLogController;
 use App\Http\Controllers\StaffPhotoController;
 use App\Http\Controllers\Admin\AdminChatKnowledgeCategoryController;
@@ -11,11 +12,15 @@ use App\Http\Controllers\Admin\AdminSiteController;
 use App\Http\Controllers\Admin\AdminStaffPositionController;
 use App\Http\Controllers\Admin\AdminStaffRoleController;
 use App\Http\Controllers\Admin\AdminUserController;
+use App\Models\AuditLog;
+use App\Models\ChatKnowledge;
+use App\Models\ChatKnowledgeCategory;
 use App\Models\StaffPosition;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\ContactController;
 use App\Models\Site;
+use App\Models\StaffRole;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Models\Permission;
@@ -35,9 +40,11 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::put('/password', [AuthController::class, 'updatePassword']);
     Route::post('/profile/company', [AuthController::class, 'completeCompanyProfile']);
     Route::post('/chat/stream', [ChatController::class, 'stream']);
+    Route::get('/admin/abilities', [AdminAbilitiesController::class, 'index']);
 });
 
 Route::middleware(['auth:sanctum', 'role:admin', 'throttle:60,1'])->prefix('admin')->group(function () {
+
     Route::get('/roles/all',      [AdminRoleController::class, 'all']);
     Route::get('/roles',         [AdminRoleController::class, 'index'])  ->can('viewAny', Role::class);
     Route::post('/roles',        [AdminRoleController::class, 'store'])  ->can('create',  Role::class);
@@ -45,6 +52,7 @@ Route::middleware(['auth:sanctum', 'role:admin', 'throttle:60,1'])->prefix('admi
     Route::put('/roles/{role}',  [AdminRoleController::class, 'update']) ->can('update',  'role');
     Route::delete('/roles/{role}',[AdminRoleController::class, 'destroy'])->can('delete',  'role');
 
+    Route::get('/permissions/all',           [AdminPermissionController::class, 'all']);
     Route::get('/permissions',              [AdminPermissionController::class, 'index'])  ->can('viewAny', Permission::class);
     Route::post('/permissions',             [AdminPermissionController::class, 'store'])  ->can('create',  Permission::class);
     Route::get('/permissions/{permission}', [AdminPermissionController::class, 'show'])   ->can('view',    'permission');
@@ -65,8 +73,8 @@ Route::middleware(['auth:sanctum', 'role:admin', 'throttle:60,1'])->prefix('admi
     Route::put('/sites/{site}',   [AdminSiteController::class, 'update']) ->can('update',  'site');
     Route::delete('/sites/{site}',[AdminSiteController::class, 'destroy'])->can('delete',  'site');
 
-    Route::get('/users/{user}/staff-roles',              [AdminStaffRoleController::class, 'index'])  ->can('viewAny', \App\Models\StaffRole::class);
-    Route::post('/users/{user}/staff-roles',             [AdminStaffRoleController::class, 'store'])  ->can('create',  \App\Models\StaffRole::class);
+    Route::get('/users/{user}/staff-roles',              [AdminStaffRoleController::class, 'index'])  ->can('viewAny', StaffRole::class);
+    Route::post('/users/{user}/staff-roles',             [AdminStaffRoleController::class, 'store'])  ->can('create',  StaffRole::class);
     Route::get('/users/{user}/staff-roles/{staffRole}',  [AdminStaffRoleController::class, 'show'])   ->can('view',    'staffRole');
     Route::put('/users/{user}/staff-roles/{staffRole}',  [AdminStaffRoleController::class, 'update']) ->can('update',  'staffRole');
     Route::delete('/users/{user}/staff-roles/{staffRole}',[AdminStaffRoleController::class, 'destroy'])->can('delete',  'staffRole');
@@ -84,24 +92,24 @@ Route::middleware(['auth:sanctum', 'role:admin', 'throttle:60,1'])->prefix('admi
     Route::post('/users/{user}/resend-verification', [AdminUserController::class, 'resendVerification'])
         ->can('view', 'user');
     Route::post('/users/{user}/photo', [StaffPhotoController::class, 'uploadForUser'])
-        ->can('update', 'user');
+        ->can('uploadPhoto', 'user');
 
     Route::get('/audit-logs/events',      [AdminAuditLogController::class, 'events']);
-    Route::get('/audit-logs',             [AdminAuditLogController::class, 'index']);
-    Route::get('/audit-logs/{auditLog}',  [AdminAuditLogController::class, 'show']);
+    Route::get('/audit-logs',             [AdminAuditLogController::class, 'index'])  ->can('viewAny', AuditLog::class);
+    Route::get('/audit-logs/{auditLog}',  [AdminAuditLogController::class, 'show'])   ->can('view',    'auditLog');
 
-    Route::get('/chat-knowledge',                     [AdminChatKnowledgeController::class, 'index']);
-    Route::post('/chat-knowledge',                    [AdminChatKnowledgeController::class, 'store']);
-    Route::get('/chat-knowledge/{chatKnowledge}',     [AdminChatKnowledgeController::class, 'show']);
-    Route::put('/chat-knowledge/{chatKnowledge}',     [AdminChatKnowledgeController::class, 'update']);
-    Route::delete('/chat-knowledge/{chatKnowledge}',  [AdminChatKnowledgeController::class, 'destroy']);
+    Route::get('/chat-knowledge',                     [AdminChatKnowledgeController::class, 'index'])  ->can('viewAny', ChatKnowledge::class);
+    Route::post('/chat-knowledge',                    [AdminChatKnowledgeController::class, 'store'])  ->can('create',  ChatKnowledge::class);
+    Route::get('/chat-knowledge/{chatKnowledge}',     [AdminChatKnowledgeController::class, 'show'])   ->can('view',    'chatKnowledge');
+    Route::put('/chat-knowledge/{chatKnowledge}',     [AdminChatKnowledgeController::class, 'update']) ->can('update',  'chatKnowledge');
+    Route::delete('/chat-knowledge/{chatKnowledge}',  [AdminChatKnowledgeController::class, 'destroy'])->can('delete',  'chatKnowledge');
 
     Route::get('/chat-knowledge-categories/all',                              [AdminChatKnowledgeCategoryController::class, 'all']);
-    Route::get('/chat-knowledge-categories',                                  [AdminChatKnowledgeCategoryController::class, 'index']);
-    Route::post('/chat-knowledge-categories',                                 [AdminChatKnowledgeCategoryController::class, 'store']);
-    Route::get('/chat-knowledge-categories/{chatKnowledgeCategory}',          [AdminChatKnowledgeCategoryController::class, 'show']);
-    Route::put('/chat-knowledge-categories/{chatKnowledgeCategory}',          [AdminChatKnowledgeCategoryController::class, 'update']);
-    Route::delete('/chat-knowledge-categories/{chatKnowledgeCategory}',       [AdminChatKnowledgeCategoryController::class, 'destroy']);
+    Route::get('/chat-knowledge-categories',                                  [AdminChatKnowledgeCategoryController::class, 'index'])  ->can('viewAny', ChatKnowledgeCategory::class);
+    Route::post('/chat-knowledge-categories',                                 [AdminChatKnowledgeCategoryController::class, 'store'])  ->can('create',  ChatKnowledgeCategory::class);
+    Route::get('/chat-knowledge-categories/{chatKnowledgeCategory}',          [AdminChatKnowledgeCategoryController::class, 'show'])   ->can('view',    'chatKnowledgeCategory');
+    Route::put('/chat-knowledge-categories/{chatKnowledgeCategory}',          [AdminChatKnowledgeCategoryController::class, 'update']) ->can('update',  'chatKnowledgeCategory');
+    Route::delete('/chat-knowledge-categories/{chatKnowledgeCategory}',       [AdminChatKnowledgeCategoryController::class, 'destroy'])->can('delete',  'chatKnowledgeCategory');
 });
 
 // Example: restrict to permission

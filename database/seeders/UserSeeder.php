@@ -44,7 +44,7 @@ class UserSeeder extends Seeder
         $admin = $this->createAdmin(
             name:        'Admin User',
             email:       'admin@lighthouse.com',
-            permissions: Permission::all(),
+            permissions: ['super'],
             positions:   $positions,
             sites:       $sites,
             positionId:  $operatorManagerId,
@@ -55,7 +55,7 @@ class UserSeeder extends Seeder
         $this->createAdmin(
             name:        'Second Admin User',
             email:       'admin2@lighthouse.com',
-            permissions: ['view', 'create', 'edit'],
+            permissions: ['delete'],
             positions:   $positions,
             sites:       $sites,
             positionId:  $operatorManagerId,
@@ -67,7 +67,7 @@ class UserSeeder extends Seeder
         $this->createAdmin(
             name:        'Unverified Admin User',
             email:       'unverified.admin@lighthouse.com',
-            permissions: ['view', 'create', 'edit'],
+            permissions: ['delete'],
             positions:   $positions,
             sites:       $sites,
             positionId:  $operatorManagerId,
@@ -78,7 +78,7 @@ class UserSeeder extends Seeder
         $this->createSale(
             name:        'Sale User (All)',
             email:       'sale.all@lighthouse.com',
-            permissions: ['view', 'create', 'edit', 'delete'],
+            permissions: ['order_delete'],
             positions:   $positions,
             sites:       $sites,
             positionId:  $operatorManagerId,
@@ -90,7 +90,7 @@ class UserSeeder extends Seeder
         $this->createSale(
             name:        'Sale User (View)',
             email:       'sale.view@lighthouse.com',
-            permissions: ['view'],
+            permissions: ['order_view'],
             positions:   $positions,
             sites:       $sites,
             positionId:  $operatorManagerId,
@@ -100,9 +100,21 @@ class UserSeeder extends Seeder
         );
 
         $this->createSale(
-            name:        'Sale User (View & Edit)',
+            name:        'Sale User (Create)',
+            email:       'sale.create@lighthouse.com',
+            permissions: ['order_create'],
+            positions:   $positions,
+            sites:       $sites,
+            positionId:  $operatorManagerId,
+            isActivated: true,
+            createdBy:   $admin,
+            now:         $now,
+        );
+
+        $this->createSale(
+            name:        'Sale User (Edit)',
             email:       'sale.edit@lighthouse.com',
-            permissions: ['view', 'create', 'edit'],
+            permissions: ['order_edit'],
             positions:   $positions,
             sites:       $sites,
             positionId:  $operatorManagerId,
@@ -215,7 +227,7 @@ class UserSeeder extends Seeder
             'password'          => Hash::make('Passw0rd!'),
         ]);
 
-        $user->assignRole('sale');
+        $user->assignRole('user');
         $user->syncPermissions($permissions);
 
         $profile = $this->createStaffProfile($user, $createdBy ?? $user);

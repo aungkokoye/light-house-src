@@ -4,18 +4,20 @@ namespace Modules\Orders\Http\Controllers;
 
 use App\Concerns\AuditableCrud;
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use App\Concerns\HasAbilities;
 use Modules\Orders\Http\Requests\StoreInvoiceRequest;
 use Modules\Orders\Http\Requests\UpdateInvoiceRequest;
-use App\Models\User;
 use Modules\Orders\Models\Invoice;
 use Modules\Orders\Models\Payment;
 use Modules\Orders\Services\InvoiceManager;
 
 class InvoiceController extends Controller
 {
-    use AuditableCrud;
+    use AuditableCrud, HasAbilities;
 
     const int DEFAULT_PER_PAGE = 15;
     const array PER_PAGE_LIST  = [5, 10, 15, 25, 50];
@@ -48,11 +50,14 @@ class InvoiceController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $perPage = in_array((int) $request->input('per_page'), self::PER_PAGE_LIST)
+        $perPage   = in_array((int) $request->input('per_page'), self::PER_PAGE_LIST)
             ? (int) $request->input('per_page')
             : self::DEFAULT_PER_PAGE;
+        $paginated = $this->manager->list($request, $perPage);
 
-        return response()->json($this->manager->list($request, $perPage));
+        return response()->json(array_merge($paginated->toArray(), [
+            'can' => $this->listAbilities(Invoice::class),
+        ]));
     }
 
     public function store(StoreInvoiceRequest $request): JsonResponse
@@ -65,7 +70,11 @@ class InvoiceController extends Controller
 
     public function show(Invoice $invoice): JsonResponse
     {
-        return response()->json($this->manager->show($invoice));
+        return response()->json(array_merge($this->manager->show($invoice)->toArray(), [
+            'can' => array_merge($this->resourceAbilities($invoice), [
+            'add_payment' => Gate::allows('create', Payment::class),
+        ]),
+        ]));
     }
 
     public function update(UpdateInvoiceRequest $request, Invoice $invoice): JsonResponse

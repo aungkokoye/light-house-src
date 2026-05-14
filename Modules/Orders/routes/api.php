@@ -13,7 +13,7 @@ use Modules\Orders\Models\Payment;
 use Modules\Orders\Models\PaymentPrice;
 use Modules\Orders\Models\Product;
 
-Route::middleware(['auth:sanctum', 'role:admin|sale'])->prefix('order')->group(function () {
+Route::middleware(['auth:sanctum', 'role:admin|user'])->prefix('order')->group(function () {
     Route::get('/banks',           [BankController::class, 'index'])  ->can('viewAny', Bank::class);
     Route::post('/banks',          [BankController::class, 'store'])  ->can('create',  Bank::class);
     Route::get('/banks/{bank}',    [BankController::class, 'show'])   ->can('view',    'bank');

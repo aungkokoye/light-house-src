@@ -17,7 +17,7 @@
                         <h1 class="text-3xl font-bold text-gray-900">Banks</h1>
                         <p class="text-sm text-gray-500 mt-0.5">Manage payment banks.</p>
                     </div>
-                    <RouterLink v-if="can('create')" to="/admin/banks/create"
+                    <RouterLink v-if="can.create" to="/order/banks/create"
                         class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -109,20 +109,20 @@
                                     <td class="px-6 py-3.5 text-xs text-gray-400">{{ formatDate(bank.created_at) }}</td>
                                     <td class="px-6 py-3.5">
                                         <div class="flex items-center gap-1">
-                                            <RouterLink v-if="can('view')" :to="`/admin/banks/${bank.id}`"
+                                            <RouterLink v-if="can.view" :to="`/order/banks/${bank.id}`"
                                                 class="p-1.5 text-indigo-600 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
                                                 </svg>
                                             </RouterLink>
-                                            <RouterLink v-if="can('edit')" :to="`/admin/banks/${bank.id}/edit`"
+                                            <RouterLink v-if="can.edit" :to="`/order/banks/${bank.id}/edit`"
                                                 class="p-1.5 text-indigo-600 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931z" />
                                                 </svg>
                                             </RouterLink>
-                                            <button v-if="can('delete')" @click="confirmDelete(bank)"
+                                            <button v-if="can.delete" @click="confirmDelete(bank)"
                                                 class="p-1.5 text-red-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
@@ -191,8 +191,7 @@ const currentPage = ref(1)
 const perPage = ref(20)
 const meta = ref({})
 const deleteTarget = ref(null)
-const myPermissions = ref([])
-const myRole = ref('')
+const can = ref({})
 
 const visiblePages = computed(() => {
     const total = meta.value.last_page ?? 1
@@ -209,16 +208,6 @@ const visiblePages = computed(() => {
     pages.push(total)
     return pages
 })
-
-function can(action) {
-    if (myPermissions.value.includes('super')) return true
-    const isAdmin = myRole.value === 'admin'
-    if (action === 'view')   return myPermissions.value.includes('view')
-    if (action === 'create') return isAdmin && myPermissions.value.includes('create')
-    if (action === 'edit')   return isAdmin && myPermissions.value.includes('edit')
-    if (action === 'delete') return isAdmin && myPermissions.value.includes('delete')
-    return false
-}
 
 const hasActiveFilters = computed(() =>
     search.value !== '' || sortBy.value !== 'name' || sortDir.value !== 'asc'
@@ -269,38 +258,26 @@ async function fetchBanks(page = 1) {
         if (search.value) params.search = search.value
         const { data } = await axios.get('/api/order/banks', { params })
         banks.value = data.data
+        can.value   = data.can ?? {}
         meta.value = { total: data.total, from: data.from, to: data.to, last_page: data.last_page }
         currentPage.value = data.current_page
         const finalParams = { ...params, page: data.current_page }
         router.replace({ query: finalParams })
-        sessionStorage.setItem('bank-list-back', '/admin/banks?' + new URLSearchParams(finalParams).toString())
+        sessionStorage.setItem('bank-list-back', '/order/banks?' + new URLSearchParams(finalParams).toString())
     } catch (e) {
-        console.error('fetchBanks error', e?.response?.status)
+        if (e?.response?.status === 401) router.push('/login')
     } finally {
         banksLoading.value = false
     }
 }
 
 onMounted(async () => {
+    if (!localStorage.getItem('token')) { router.push('/login'); return }
     if (route.query.search)   search.value  = route.query.search
     if (route.query.sort_by)  sortBy.value  = route.query.sort_by
     if (route.query.sort_dir) sortDir.value = route.query.sort_dir
     if (route.query.per_page) perPage.value = Number(route.query.per_page)
-    if (!localStorage.getItem('token')) { router.push('/login'); return }
-    try {
-        const { data: me } = await axios.get('/api/me')
-        const roles = me.roles?.map(r => r.name) ?? []
-        if (!roles.includes('admin') && !roles.includes('sale')) {
-            router.replace('/403'); return
-        }
-        myRole.value = roles.includes('admin') ? 'admin' : 'sale'
-        myPermissions.value = me.permissions?.map(p => p.name) ?? []
-    } catch {
-        router.push('/login')
-        return
-    } finally {
-        loading.value = false
-    }
-    fetchBanks(Number(route.query.page) || 1)
+    await fetchBanks(Number(route.query.page) || 1)
+    loading.value = false
 })
 </script>

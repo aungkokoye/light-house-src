@@ -3,6 +3,7 @@
 namespace Modules\Orders\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Concerns\HasAbilities;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Orders\Http\Requests\StoreBankRequest;
@@ -12,13 +13,18 @@ use Modules\Orders\Services\BankManager;
 
 class BankController extends Controller
 {
+    use HasAbilities;
+
     public function __construct(private readonly BankManager $bankManager) {}
 
     public function index(Request $request): JsonResponse
     {
-        $perPage = (int) $request->input('per_page', 20);
+        $perPage  = (int) $request->input('per_page', 20);
+        $paginated = $this->bankManager->list($request, $perPage);
 
-        return response()->json($this->bankManager->list($request, $perPage));
+        return response()->json(array_merge($paginated->toArray(), [
+            'can' => $this->listAbilities(Bank::class),
+        ]));
     }
 
     public function store(StoreBankRequest $request): JsonResponse
@@ -28,7 +34,9 @@ class BankController extends Controller
 
     public function show(Bank $bank): JsonResponse
     {
-        return response()->json($this->bankManager->show($bank));
+        return response()->json(array_merge($this->bankManager->show($bank)->toArray(), [
+            'can' => $this->resourceAbilities($bank),
+        ]));
     }
 
     public function update(UpdateBankRequest $request, Bank $bank): JsonResponse

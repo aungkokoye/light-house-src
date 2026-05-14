@@ -7,7 +7,7 @@
 
             <template v-else>
                 <div class="mb-8 flex items-center gap-3">
-                    <RouterLink to="/admin/invoices" @click.prevent="goBack('/admin/invoices', 'invoice-list-back')" class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+                    <RouterLink to="/order/invoices" @click.prevent="goBack('/order/invoices', 'invoice-list-back')" class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                         </svg>
@@ -74,7 +74,7 @@
 
                                 <div class="flex items-center justify-between">
                                     <span class="text-xs font-medium text-gray-400">Item {{ i + 1 }}</span>
-                                    <button v-if="canDelete()" type="button" @click="removeJob(i)" :disabled="form.jobs.length === 1"
+                                    <button v-if="can.delete" type="button" @click="removeJob(i)" :disabled="form.jobs.length === 1"
                                         class="p-1 text-red-400 hover:text-red-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
                                     </button>
@@ -162,7 +162,7 @@
                                 <!-- Card header -->
                                 <div class="flex items-center justify-between">
                                     <span class="text-xs font-medium text-gray-400">Payment {{ i + 1 }}</span>
-                                    <button v-if="canDelete() && !(hasFinalPayment && balance === 0)" type="button" @click="removePayment(i)"
+                                    <button v-if="can.delete && !(hasFinalPayment && balance === 0)" type="button" @click="removePayment(i)"
                                         class="p-1 text-red-400 hover:text-red-600 transition-colors">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
                                     </button>
@@ -262,7 +262,7 @@
                             </div>
 
                             <div class="flex items-center gap-3">
-                                <button type="button" @click="goBack('/admin/invoices', 'invoice-list-back')" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors">Cancel</button>
+                                <button type="button" @click="goBack('/order/invoices', 'invoice-list-back')" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors">Cancel</button>
                                 <button type="submit" :disabled="submitting"
                                     class="px-5 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors">
                                     {{ submitting ? 'Saving…' : 'Save Changes' }}
@@ -302,13 +302,7 @@ const submitting = ref(false)
 const errors = ref({})
 const generalError = ref('')
 const invoice = ref(null)
-const myPermissions = ref([])
-const myRole = ref('')
-
-function canDelete() {
-    if (myPermissions.value.includes('super')) return true
-    return myRole.value === 'admin' && myPermissions.value.includes('delete')
-}
+const can = ref({})
 const banks = ref([])
 const paymentMeta = ref(null)
 
@@ -427,7 +421,7 @@ async function submit() {
                 note:         p.note || null,
             })),
         })
-        router.push(`/admin/invoices/${route.params.id}`)
+        router.push(`/order/invoices/${route.params.id}`)
     } catch (e) {
         if (e?.response?.status === 422) errors.value = e.response.data.errors ?? {}
         else generalError.value = 'Something went wrong. Please try again.'
@@ -439,20 +433,14 @@ async function submit() {
 onMounted(async () => {
     if (!localStorage.getItem('token')) { router.push('/login'); return }
     try {
-        const { data: me } = await axios.get('/api/me')
-        const roles = me.roles?.map(r => r.name) ?? []
-        if (!roles.includes('admin') && !roles.includes('sale')) { router.replace('/403'); return }
-        myRole.value = roles.includes('admin') ? 'admin' : 'sale'
-        myPermissions.value = me.permissions?.map(p => p.name) ?? []
-    } catch { router.push('/login'); return }
-    try {
         const [invoiceRes, bankRes, metaRes] = await Promise.all([
             axios.get(`/api/order/invoices/${route.params.id}`),
             axios.get('/api/order/banks'),
             axios.get('/api/order/payments/meta'),
         ])
         invoice.value = invoiceRes.data
-        banks.value = bankRes.data
+        can.value     = invoiceRes.data.can ?? {}
+        banks.value   = bankRes.data.data ?? []
         paymentMeta.value = metaRes.data
 
         form.value.customer_id = invoice.value.customer_id
@@ -489,7 +477,7 @@ onMounted(async () => {
             payment_date: (p.payment_date ?? '').slice(0, 10),
             note:         p.note ?? '',
         }))
+        loading.value = false
     } catch { generalError.value = 'Failed to load invoice.' }
-    finally { loading.value = false }
 })
 </script>

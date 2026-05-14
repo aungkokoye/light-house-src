@@ -147,19 +147,22 @@ onMounted(async () => {
             { data: user },
             { data: positions },
             { data: sites },
+            { data: rolesData },
         ] = await Promise.all([
             axios.get(`/api/admin/users/${route.params.id}`),
             axios.get('/api/admin/staff-positions/all'),
             axios.get('/api/admin/sites/all'),
+            axios.get(`/api/admin/users/${route.params.id}/staff-roles?per_page=1`),
         ])
+
+        if (!rolesData.can?.create) { router.replace('/403'); return }
+
         userName.value    = user.name
         allPositions.value = positions
         allSites.value     = sites
-    } catch {
-        router.push(`/admin/users/${route.params.id}/staff-roles`)
-        return
-    } finally {
         loading.value = false
+    } catch (e) {
+        if (!e?.response) router.push(`/admin/users/${route.params.id}/staff-roles`)
     }
 })
 </script>

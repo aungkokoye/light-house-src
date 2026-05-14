@@ -89,10 +89,9 @@ onMounted(async () => {
     try {
         const { data } = await axios.get(`/api/admin/staff-positions/${route.params.id}`)
         form.value = { name: data.name, description: data.description ?? '' }
-    } catch {
-        router.push('/admin/staff-positions')
-    } finally {
         loading.value = false
+    } catch (e) {
+        if (!e?.response) router.push('/admin/staff-positions')
     }
 })
 </script>

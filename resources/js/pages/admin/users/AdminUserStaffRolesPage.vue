@@ -21,7 +21,7 @@
                             All role assignments for <span class="font-medium text-gray-700">{{ userName }}</span>.
                         </p>
                     </div>
-                    <RouterLink v-if="can('edit')" :to="{ path: `/admin/users/${route.params.id}/staff-roles/create`, query: { back: route.fullPath } }"
+                    <RouterLink v-if="can.create" :to="{ path: `/admin/users/${route.params.id}/staff-roles/create`, query: { back: route.fullPath } }"
                         class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -97,20 +97,20 @@
                                     </td>
                                     <td class="px-6 py-3.5">
                                         <div class="flex items-center gap-1">
-                                            <RouterLink v-if="can('edit')" :to="{ path: `/admin/users/${route.params.id}/staff-roles/${role.id}`, query: { back: route.fullPath } }"
+                                            <RouterLink v-if="can.view" :to="{ path: `/admin/users/${route.params.id}/staff-roles/${role.id}`, query: { back: route.fullPath } }"
                                                 class="p-1.5 text-indigo-600 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
                                                 </svg>
                                             </RouterLink>
-                                            <RouterLink v-if="can('edit')" :to="{ path: `/admin/users/${route.params.id}/staff-roles/${role.id}/edit`, query: { back: route.fullPath } }"
+                                            <RouterLink v-if="can.edit" :to="{ path: `/admin/users/${route.params.id}/staff-roles/${role.id}/edit`, query: { back: route.fullPath } }"
                                                 class="p-1.5 text-indigo-600 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931z" />
                                                 </svg>
                                             </RouterLink>
-                                            <button v-if="can('delete')" @click="confirmDelete(role)" :disabled="!role.end_date"
+                                            <button v-if="can.delete" @click="confirmDelete(role)" :disabled="!role.end_date"
                                                 class="p-1.5 rounded-lg transition-colors"
                                                 :class="!role.end_date ? 'text-gray-200 cursor-not-allowed' : 'text-red-400 hover:text-gray-600 hover:bg-gray-100'"
                                                 :title="!role.end_date ? 'Cannot delete the active role' : 'Delete'">
@@ -183,11 +183,7 @@ const sortBy = ref(null)
 const sortDir = ref('desc')
 const userName = ref('')
 const deleteTarget = ref(null)
-const myPermissions = ref([])
-
-function can(permission) {
-    return myPermissions.value.includes('super') || myPermissions.value.includes(permission)
-}
+const can = ref({})
 
 const columns = [
     { key: 'id',            label: 'ID',         sortable: true },
@@ -252,6 +248,7 @@ async function fetchRoles(page = 1) {
         const { data } = await axios.get(`/api/admin/users/${route.params.id}/staff-roles`, { params })
         roles.value = data.data
         meta.value  = { total: data.total, from: data.from, to: data.to, last_page: data.last_page }
+        can.value   = data.can ?? {}
         currentPage.value = data.current_page
     } catch (e) {
         console.error('fetchRoles error', e?.response?.status)
@@ -263,8 +260,6 @@ async function fetchRoles(page = 1) {
 onMounted(async () => {
     const me = await requireAdmin()
     if (!me) return
-
-    myPermissions.value = me.permissions?.map(p => p.name) ?? []
 
     try {
         const { data: user } = await axios.get(`/api/admin/users/${route.params.id}`)

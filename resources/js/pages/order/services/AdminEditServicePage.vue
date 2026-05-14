@@ -7,14 +7,14 @@
 
             <template v-else>
                 <div class="mb-8 flex items-center gap-3">
-                    <RouterLink to="/admin/products" class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 transition-colors">
+                    <RouterLink to="/order/services" class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                         </svg>
                     </RouterLink>
                     <div>
-                        <h1 class="text-3xl font-bold text-gray-900">Edit Product</h1>
-                        <p class="text-sm text-gray-500 mt-0.5">Update product details.</p>
+                        <h1 class="text-3xl font-bold text-gray-900">Edit Service</h1>
+                        <p class="text-sm text-gray-500 mt-0.5">Update service details.</p>
                     </div>
                 </div>
 
@@ -34,29 +34,6 @@
                                 class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50 resize-none"
                                 :class="errors.description ? 'border-red-300' : 'border-gray-300'"></textarea>
                             <p v-if="errors.description" class="mt-1 text-xs text-red-500">{{ errors.description[0] }}</p>
-                        </div>
-
-                        <!-- Current price (read-only) -->
-                        <div>
-                            <div class="flex items-center justify-between mb-1.5">
-                                <label class="text-xs font-medium text-gray-600">Per Price</label>
-                                <RouterLink :to="`/admin/products/${route.params.id}/prices`"
-                                    class="text-xs text-indigo-500 hover:text-indigo-700 transition-colors">
-                                    Price History →
-                                </RouterLink>
-                            </div>
-                            <div class="px-3 py-2 text-sm border border-gray-200 rounded-lg bg-gray-100 text-gray-600">
-                                {{ currentPrice !== null ? currentPrice.toLocaleString() : '—' }}
-                            </div>
-                        </div>
-
-                        <!-- Add new price -->
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1.5">New Price <span class="text-gray-400">(optional — replaces current)</span></label>
-                            <input v-model.number="form.per_price" type="number" min="0" placeholder="Leave blank to keep current price"
-                                class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
-                                :class="errors.per_price ? 'border-red-300' : 'border-gray-300'" />
-                            <p v-if="errors.per_price" class="mt-1 text-xs text-red-500">{{ errors.per_price[0] }}</p>
                         </div>
 
                         <p v-if="generalError" class="text-xs text-red-500">{{ generalError }}</p>
@@ -90,20 +67,15 @@ const loading = ref(true)
 const submitting = ref(false)
 const errors = ref({})
 const generalError = ref('')
-const form = ref({ name: '', description: '', per_price: null })
-const currentPrice = ref(null)
+const form = ref({ name: '', description: '' })
 
 async function submit() {
     errors.value = {}
     generalError.value = ''
     submitting.value = true
     try {
-        const payload = { name: form.value.name, description: form.value.description }
-        if (form.value.per_price !== null && form.value.per_price !== '') {
-            payload.per_price = form.value.per_price
-        }
-        await axios.put(`/api/order/products/${route.params.id}`, payload)
-        router.push(`/admin/products/${route.params.id}`)
+        await axios.put(`/api/order/services/${route.params.id}`, form.value)
+        router.push(`/order/services/${route.params.id}`)
     } catch (e) {
         if (e?.response?.status === 422) errors.value = e.response.data.errors ?? {}
         else generalError.value = 'Something went wrong. Please try again.'
@@ -116,13 +88,11 @@ onMounted(async () => {
     const me = await requireAdmin()
     if (!me) return
     try {
-        const { data } = await axios.get(`/api/order/products/${route.params.id}`)
-        form.value = { name: data.name, description: data.description ?? '', per_price: null }
-        currentPrice.value = data.prices?.[0]?.per_price ?? null
-    } catch {
-        router.push('/admin/products')
-    } finally {
+        const { data } = await axios.get(`/api/order/services/${route.params.id}`)
+        form.value = { name: data.name, description: data.description ?? '' }
         loading.value = false
+    } catch (e) {
+        if (!e?.response) router.push('/order/services')
     }
 })
 </script>

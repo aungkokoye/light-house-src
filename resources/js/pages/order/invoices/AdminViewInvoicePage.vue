@@ -7,7 +7,7 @@
 
             <template v-else>
                 <div class="mb-6 flex items-center gap-3">
-                    <RouterLink to="/admin/invoices" @click.prevent="goBack('/admin/invoices', 'invoice-list-back')" class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+                    <RouterLink to="/order/invoices" @click.prevent="goBack('/order/invoices', 'invoice-list-back')" class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                         </svg>
@@ -16,7 +16,7 @@
                         <h1 class="text-3xl font-bold text-gray-900 font-mono">{{ invoice.invoice_no }}</h1>
                         <p class="text-xs text-gray-400 mt-0.5">Created {{ formatDate(invoice.created_at) }} by {{ invoice.created_by?.name ?? '—' }}</p>
                     </div>
-                    <RouterLink v-if="can('edit')" :to="`/admin/invoices/${invoice.id}/edit`"
+                    <RouterLink v-if="can.edit" :to="`/order/invoices/${invoice.id}/edit`"
                         class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931z" /></svg>
                         Edit
@@ -104,7 +104,7 @@
                         <h2 class="font-semibold text-gray-900">Payments</h2>
                         <div class="flex items-center gap-3">
                             <span class="text-xs text-gray-400">Paid: {{ totalPaid.toLocaleString() }} / {{ invoice.total.toLocaleString() }}</span>
-                            <button v-if="can('add-payment') && !hasFinalPayment" type="button" @click="openAddPayment"
+                            <button v-if="can.add_payment && !hasFinalPayment" type="button" @click="openAddPayment"
                                 class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -293,8 +293,7 @@ const { formatDate } = useFormatDate()
 const loading = ref(true)
 const invoice = ref(null)
 const noteModal = ref(null)
-const myPermissions = ref([])
-const myRole = ref('')
+const can = ref({})
 const banks = ref([])
 const paymentMeta = ref(null)
 
@@ -308,14 +307,6 @@ const showAddPayment = ref(false)
 const addingPayment = ref(false)
 const pmtErrors = ref({})
 const pmtForm = ref({ type_id: '', bank_id: '', stage: '', amount: 0, payment_date: '', note: '' })
-
-function can(action) {
-    if (myPermissions.value.includes('super')) return true
-    const isAdminOrSale = ['admin', 'sale'].includes(myRole.value)
-    if (action === 'edit') return isAdminOrSale && myPermissions.value.includes('edit')
-    if (action === 'add-payment') return isAdminOrSale && myPermissions.value.includes('create')
-    return false
-}
 
 function openAddPayment() {
     pmtForm.value = { type_id: '', bank_id: '', stage: '', amount: 0, payment_date: '', note: '' }
@@ -363,18 +354,14 @@ const balance = computed(() => (invoice.value?.total ?? 0) - totalPaid.value)
 onMounted(async () => {
     if (!localStorage.getItem('token')) { router.push('/login'); return }
     try {
-        const { data: me } = await axios.get('/api/me')
-        const roles = me.roles?.map(r => r.name) ?? []
-        if (!roles.includes('admin') && !roles.includes('sale')) { router.replace('/403'); return }
-        myRole.value = roles.includes('admin') ? 'admin' : 'sale'
-        myPermissions.value = me.permissions?.map(p => p.name) ?? []
         const [invoiceRes, bankRes, metaRes] = await Promise.all([
             axios.get(`/api/order/invoices/${route.params.id}`),
             axios.get('/api/order/banks'),
             axios.get('/api/order/payments/meta'),
         ])
         invoice.value = invoiceRes.data
-        banks.value = bankRes.data
+        can.value     = invoiceRes.data.can ?? {}
+        banks.value   = bankRes.data.data ?? []
         paymentMeta.value = metaRes.data
     } catch { router.push('/login') }
     finally { loading.value = false }

@@ -118,17 +118,14 @@ async function submit() {
 onMounted(async () => {
     const me = await requireAdmin()
     if (!me) return
-    if (!me.permissions?.some(p => p.name === 'super')) {
-        router.replace('/403')
-        return
-    }
     try {
         const [catsRes, entryRes] = await Promise.all([
             axios.get('/api/admin/chat-knowledge-categories/all'),
             axios.get(`/api/admin/chat-knowledge/${route.params.id}`)
         ])
-        categories.value = catsRes.data
         const data = entryRes.data
+        if (!data.can?.edit) { router.replace('/403'); return }
+        categories.value = catsRes.data
         form.value = {
             chat_knowledge_category_id: data.chat_knowledge_category_id,
             title: data.title,
@@ -136,10 +133,9 @@ onMounted(async () => {
             active: data.active,
             sort_order: data.sort_order
         }
-    } catch {
-        router.push('/admin/chat-knowledge')
-    } finally {
         loading.value = false
+    } catch (e) {
+        if (!e?.response) router.push('/admin/chat-knowledge')
     }
 })
 </script>

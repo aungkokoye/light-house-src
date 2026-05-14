@@ -98,17 +98,12 @@ async function submit() {
 onMounted(async () => {
     const me = await requireAdmin()
     if (!me) return
-    if (!me.permissions?.some(p => p.name === 'super')) {
-        router.replace('/403')
-        return
-    }
     try {
         const { data } = await axios.get(`/api/admin/chat-knowledge-categories/${route.params.id}`)
         form.value = { name: data.name, description: data.description ?? '', sort_order: data.sort_order }
-    } catch {
-        router.push('/admin/chat-knowledge-categories')
-    } finally {
         loading.value = false
+    } catch (e) {
+        if (!e?.response) router.push('/admin/chat-knowledge-categories')
     }
 })
 </script>

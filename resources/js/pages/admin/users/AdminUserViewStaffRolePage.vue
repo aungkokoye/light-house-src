@@ -19,7 +19,7 @@
                         <h1 class="text-3xl font-bold text-gray-900">Staff Role</h1>
                         <p class="text-sm text-gray-500 mt-0.5">Role assignment #{{ staffRole.id }}</p>
                     </div>
-                    <RouterLink v-if="can('edit')" :to="{ path: `/admin/users/${route.params.id}/staff-roles/${route.params.roleId}/edit`, query: { back: route.query.back } }"
+                    <RouterLink v-if="can.edit" :to="{ path: `/admin/users/${route.params.id}/staff-roles/${route.params.roleId}/edit`, query: { back: route.query.back } }"
                         class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
                         Edit
                     </RouterLink>
@@ -87,21 +87,16 @@ const { requireAdmin } = useAdminGuard()
 const { formatDate } = useFormatDate()
 const loading = ref(true)
 const staffRole = ref({})
-const myPermissions = ref([])
-
-function can(permission) {
-    return myPermissions.value.includes('super') || myPermissions.value.includes(permission)
-}
+const can = ref({})
 
 onMounted(async () => {
     const me = await requireAdmin()
     if (!me) return
 
-    myPermissions.value = me.permissions?.map(p => p.name) ?? []
-
     try {
         const { data } = await axios.get(`/api/admin/users/${route.params.id}/staff-roles/${route.params.roleId}`)
         staffRole.value = data
+        can.value       = data.can ?? {}
     } catch {
         router.push(`/admin/users/${route.params.id}/staff-roles`)
     } finally {

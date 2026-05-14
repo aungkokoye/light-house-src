@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Concerns\AuditableCrud;
+use App\Concerns\HasAbilities;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StorePermissionRequest;
 use App\Http\Requests\Admin\UpdatePermissionRequest;
@@ -13,15 +14,23 @@ use Spatie\Permission\Models\Permission;
 
 class AdminPermissionController extends Controller
 {
-    use AuditableCrud;
+    use AuditableCrud, HasAbilities;
 
     public function __construct(private readonly PermissionManager $permissionManager) {}
 
     public function index(Request $request): JsonResponse
     {
         $perPage = (int) $request->input('per_page', 20);
+        $list    = $this->permissionManager->list($request, $perPage);
 
-        return response()->json($this->permissionManager->list($request, $perPage));
+        return response()->json(array_merge($list->toArray(), [
+            'can' => $this->listAbilities(Permission::class),
+        ]));
+    }
+
+    public function all(): JsonResponse
+    {
+        return response()->json($this->permissionManager->all());
     }
 
     public function store(StorePermissionRequest $request): JsonResponse
@@ -34,7 +43,9 @@ class AdminPermissionController extends Controller
 
     public function show(Permission $permission): JsonResponse
     {
-        return response()->json($this->permissionManager->show($permission));
+        return response()->json(array_merge($this->permissionManager->show($permission)->toArray(), [
+            'can' => $this->resourceAbilities($permission),
+        ]));
     }
 
     public function update(UpdatePermissionRequest $request, Permission $permission): JsonResponse

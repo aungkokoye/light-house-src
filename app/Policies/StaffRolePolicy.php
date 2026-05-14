@@ -5,39 +5,33 @@ namespace App\Policies;
 use App\Models\StaffRole;
 use App\Models\User;
 
-class StaffRolePolicy
+class StaffRolePolicy extends AppPolicy
 {
-    /** Super permission bypasses all checks. */
-    public function before(User $authUser, string $ability): ?bool
-    {
-        return $authUser->hasPermissionTo('super') ? true : null;
-    }
-
     /** List / view — admin + edit. */
     public function viewAny(User $authUser): bool
     {
-        return $authUser->hasRole('admin') && $authUser->hasPermissionTo('edit');
+        return $this->basePolicyCheck($authUser, AppPolicy::UPDATE_ALLOW_PERMISSIONS);
     }
 
     public function view(User $authUser, StaffRole $staffRole): bool
     {
-        return $authUser->hasRole('admin') && $authUser->hasPermissionTo('edit');
+        return $this->basePolicyCheck($authUser, AppPolicy::UPDATE_ALLOW_PERMISSIONS);
     }
 
     /** Create / update — admin + edit. */
     public function create(User $authUser): bool
     {
-        return $authUser->hasRole('admin') && $authUser->hasPermissionTo('edit');
+        return $this->basePolicyCheck($authUser, AppPolicy::UPDATE_ALLOW_PERMISSIONS);
     }
 
     public function update(User $authUser, StaffRole $staffRole): bool
     {
-        return $authUser->hasRole('admin') && $authUser->hasPermissionTo('edit');
+        return $this->basePolicyCheck($authUser, AppPolicy::UPDATE_ALLOW_PERMISSIONS);
     }
 
     /** Delete — admin + delete. */
     public function delete(User $authUser, StaffRole $staffRole): bool
     {
-        return $authUser->hasRole('admin') && $authUser->hasPermissionTo('delete');
+        return $this->basePolicyCheck($authUser, AppPolicy::UPDATE_ALLOW_PERMISSIONS);
     }
 }

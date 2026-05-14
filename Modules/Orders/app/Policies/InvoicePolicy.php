@@ -3,37 +3,34 @@
 namespace Modules\Orders\Policies;
 
 use App\Models\User;
+use App\Policies\AppPolicy;
 use Modules\Orders\Models\Invoice;
 
-class InvoicePolicy
+class InvoicePolicy extends OrderPolicy
 {
-    public function before(User $user, string $ability): ?bool
-    {
-        return $user->hasPermissionTo('super') ? true : null;
-    }
-
     public function viewAny(User $user): bool
     {
-        return $user->hasRole(['admin', 'sale']);
+        return $this->userPolicyCheck($user, OrderPolicy::LIST_ALLOW_PERMISSIONS);
     }
 
     public function view(User $user, Invoice $invoice): bool
     {
-        return $user->hasRole(['admin', 'sale']) && $user->hasPermissionTo('view');
+        return $this->userPolicyCheck($user, OrderPolicy::VIEW_ALLOW_PERMISSIONS);
     }
 
     public function create(User $user): bool
     {
-        return $user->hasRole(['admin', 'sale']) && $user->hasPermissionTo('create');
+        return $this->userPolicyCheck($user, OrderPolicy::CREATE_ALLOW_PERMISSIONS);
     }
 
     public function update(User $user, Invoice $invoice): bool
     {
-        return $user->hasRole(['admin', 'sale']) && $user->hasPermissionTo('edit');
+        return $this->adminPolicyCheck($user, AppPolicy::UPDATE_ALLOW_PERMISSIONS) ||
+            $this->userPolicyCheck($user, OrderPolicy::UPDATE_ALLOW_PERMISSIONS);
     }
 
     public function delete(User $user, Invoice $invoice): bool
     {
-        return $user->hasRole('admin') && $user->hasPermissionTo('delete');
+        return $this->adminPolicyCheck($user, AppPolicy::DELETE_ALLOW_PERMISSIONS);
     }
 }

@@ -3,6 +3,8 @@
 
     <div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 pt-24 pb-12 px-4">
         <div class="max-w-xl mx-auto">
+            <LoadingSpinner v-if="loading" />
+            <template v-else>
             <div class="mb-8 flex items-center gap-3">
                 <RouterLink to="/admin/staff-positions" class="text-gray-400 hover:text-gray-600 transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -43,6 +45,7 @@
                     </div>
                 </form>
             </div>
+            </template>
         </div>
     </div>
 </template>
@@ -52,10 +55,12 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import AppHeader from '../../../components/AppHeader.vue'
+import LoadingSpinner from '../../../components/LoadingSpinner.vue'
 import { useAdminGuard } from '../../../composables/useAdminGuard'
 
 const router = useRouter()
 const { requireAdmin } = useAdminGuard()
+const loading = ref(true)
 const submitting = ref(false)
 const errors = ref({})
 const generalError = ref('')
@@ -79,5 +84,12 @@ async function submit() {
 onMounted(async () => {
     const me = await requireAdmin()
     if (!me) return
+    try {
+        const { data } = await axios.get('/api/admin/staff-positions?per_page=1')
+        if (!data.can?.create) { router.replace('/403'); return }
+        loading.value = false
+    } catch (e) {
+        if (!e?.response) router.push('/admin/staff-positions')
+    }
 })
 </script>

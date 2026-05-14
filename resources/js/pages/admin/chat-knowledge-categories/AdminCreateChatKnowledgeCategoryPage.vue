@@ -97,10 +97,12 @@ async function submit() {
 onMounted(async () => {
     const me = await requireAdmin()
     if (!me) return
-    if (!me.permissions?.some(p => p.name === 'super')) {
-        router.replace('/403')
-        return
+    try {
+        const { data } = await axios.get('/api/admin/chat-knowledge-categories?per_page=1')
+        if (!data.can?.create) { router.replace('/403'); return }
+        loading.value = false
+    } catch (e) {
+        if (!e?.response) router.push('/admin/chat-knowledge-categories')
     }
-    loading.value = false
 })
 </script>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Concerns\HasAbilities;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreUserRequest;
 use App\Http\Requests\Admin\UpdateUserRequest;
@@ -14,6 +15,8 @@ use Illuminate\Support\Facades\DB;
 
 class AdminUserController extends Controller
 {
+    use HasAbilities;
+
     const int DEFAULT_PER_PAGE = 20;
     const array PER_PAGE_LIST = [10, 20, 30, 40, 50];
 
@@ -28,7 +31,11 @@ class AdminUserController extends Controller
             ? (int) $request->input('per_page')
             : self::DEFAULT_PER_PAGE;
 
-        return response()->json($this->userManager->list($request, $perPage));
+        $list = $this->userManager->list($request, $perPage);
+
+        return response()->json(array_merge($list->toArray(), [
+            'can' => $this->listAbilities(User::class),
+        ]));
     }
 
     public function store(StoreUserRequest $request): JsonResponse
@@ -71,7 +78,9 @@ class AdminUserController extends Controller
         $user->created_by_name  = $user->createdBy?->name  ?? config('app.default_creator_name');
         $user->created_by_email = $user->createdBy?->email ?? config('app.default_creator_email');
 
-        return response()->json($user);
+        return response()->json(array_merge($user->toArray(), [
+            'can' => $this->resourceAbilities($user),
+        ]));
     }
 
     public function update(UpdateUserRequest $request, User $user): JsonResponse

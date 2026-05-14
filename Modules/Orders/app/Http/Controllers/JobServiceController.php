@@ -3,6 +3,7 @@
 namespace Modules\Orders\Http\Controllers;
 
 use App\Concerns\AuditableCrud;
+use App\Concerns\HasAbilities;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,7 +14,7 @@ use Modules\Orders\Services\JobServiceManager;
 
 class JobServiceController extends Controller
 {
-    use AuditableCrud;
+    use AuditableCrud, HasAbilities;
 
     const int DEFAULT_PER_PAGE = 15;
     const array PER_PAGE_LIST  = [5, 10, 15, 25, 50];
@@ -22,11 +23,14 @@ class JobServiceController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $perPage = in_array((int) $request->input('per_page'), self::PER_PAGE_LIST)
+        $perPage   = in_array((int) $request->input('per_page'), self::PER_PAGE_LIST)
             ? (int) $request->input('per_page')
             : self::DEFAULT_PER_PAGE;
+        $paginated = $this->manager->list($request, $perPage);
 
-        return response()->json($this->manager->list($request, $perPage));
+        return response()->json(array_merge($paginated->toArray(), [
+            'can' => $this->listAbilities(JobService::class),
+        ]));
     }
 
     public function store(StoreJobServiceRequest $request): JsonResponse
@@ -39,7 +43,9 @@ class JobServiceController extends Controller
 
     public function show(JobService $job_service): JsonResponse
     {
-        return response()->json($this->manager->show($job_service));
+        return response()->json(array_merge($this->manager->show($job_service)->toArray(), [
+            'can' => $this->resourceAbilities($job_service),
+        ]));
     }
 
     public function update(UpdateJobServiceRequest $request, JobService $job_service): JsonResponse

@@ -7,7 +7,7 @@
 
             <template v-else>
                 <div class="mb-6 flex items-center gap-3">
-                    <RouterLink :to="`/admin/products/${route.params.id}`" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <RouterLink :to="`/order/products/${route.params.id}`" class="text-gray-400 hover:text-gray-600 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                         </svg>
@@ -34,7 +34,7 @@
                                     <th class="px-6 py-3 font-medium">Price</th>
                                     <th class="px-6 py-3 font-medium">Created At</th>
                                     <th class="px-6 py-3 font-medium">Updated At</th>
-                                    <th v-if="canDelete" class="px-6 py-3"></th>
+                                    <th v-if="can.delete" class="px-6 py-3"></th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-50">
@@ -48,7 +48,7 @@
                                     </td>
                                     <td class="px-6 py-3.5 text-xs text-gray-400">{{ formatDate(price.created_at, true) }}</td>
                                     <td class="px-6 py-3.5 text-xs text-gray-400">{{ formatDate(price.updated_at, true) }}</td>
-                                    <td v-if="canDelete" class="px-6 py-3.5">
+                                    <td v-if="can.delete" class="px-6 py-3.5">
                                         <button v-if="prices.length > 1" @click="confirmDelete(price)"
                                             class="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -85,7 +85,7 @@ const { formatDate } = useFormatDate()
 const loading = ref(true)
 const prices = ref([])
 const productName = ref('')
-const canDelete = ref(false)
+const can = ref({})
 const deleteTarget = ref(null)
 
 function confirmDelete(price) { deleteTarget.value = price }
@@ -101,18 +101,13 @@ async function deletePrice() {
 onMounted(async () => {
     if (!localStorage.getItem('token')) { router.push('/login'); return }
     try {
-        const { data: me } = await axios.get('/api/me')
-        const roles = me.roles?.map(r => r.name) ?? []
-        if (!roles.includes('admin') && !roles.includes('sale')) { router.replace('/403'); return }
-        const perms = me.permissions?.map(p => p.name) ?? []
-        canDelete.value = perms.includes('super') || (roles.includes('admin') && perms.includes('delete'))
         const { data } = await axios.get(`/api/order/products/${route.params.id}`)
+        can.value = data.can ?? {}
         productName.value = data.name
         prices.value = data.prices ?? []
-    } catch {
-        router.push('/admin/products')
-    } finally {
         loading.value = false
+    } catch (e) {
+        if (!e?.response) router.push('/order/products')
     }
 })
 </script>

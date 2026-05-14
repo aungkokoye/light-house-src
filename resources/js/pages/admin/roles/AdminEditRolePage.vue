@@ -79,14 +79,12 @@ async function submit() {
 onMounted(async () => {
     const me = await requireAdmin()
     if (!me) return
-    if (!me.permissions?.some(p => p.name === 'super')) { router.replace('/403'); return }
     try {
         const { data } = await axios.get(`/api/admin/roles/${route.params.id}`)
         form.value.name = data.name
-    } catch {
-        router.push('/admin/roles')
-    } finally {
         loading.value = false
+    } catch (e) {
+        if (!e?.response) router.push('/admin/roles')
     }
 })
 </script>

@@ -7,7 +7,7 @@
 
             <template v-else>
                 <div class="mb-8 flex items-center gap-3">
-                    <RouterLink to="/admin/services" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <RouterLink to="/order/services" class="text-gray-400 hover:text-gray-600 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                         </svg>
@@ -39,7 +39,7 @@
                         <p v-if="generalError" class="text-xs text-red-500">{{ generalError }}</p>
 
                         <div class="flex items-center justify-end gap-3 pt-2">
-                            <RouterLink to="/admin/services" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors">Cancel</RouterLink>
+                            <RouterLink to="/order/services" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors">Cancel</RouterLink>
                             <button type="submit" :disabled="submitting"
                                 class="px-5 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors">
                                 {{ submitting ? 'Creating…' : 'Create Service' }}
@@ -74,7 +74,7 @@ async function submit() {
     submitting.value = true
     try {
         const { data } = await axios.post('/api/order/services', form.value)
-        router.push(`/admin/services/${data.id}`)
+        router.push(`/order/services/${data.id}`)
     } catch (e) {
         if (e?.response?.status === 422) errors.value = e.response.data.errors ?? {}
         else generalError.value = 'Something went wrong. Please try again.'

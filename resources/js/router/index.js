@@ -54,30 +54,30 @@ import AdminChatKnowledgeCategoriesPage from '../pages/admin/chat-knowledge-cate
 import AdminCreateChatKnowledgeCategoryPage from '../pages/admin/chat-knowledge-categories/AdminCreateChatKnowledgeCategoryPage.vue';
 import AdminEditChatKnowledgeCategoryPage from '../pages/admin/chat-knowledge-categories/AdminEditChatKnowledgeCategoryPage.vue';
 
-// Admin — Banks
-import AdminBanksPage from '../pages/admin/banks/AdminBanksPage.vue';
-import AdminCreateBankPage from '../pages/admin/banks/AdminCreateBankPage.vue';
-import AdminEditBankPage from '../pages/admin/banks/AdminEditBankPage.vue';
-import AdminViewBankPage from '../pages/admin/banks/AdminViewBankPage.vue';
+// Order — Banks
+import AdminBanksPage from '../pages/order/banks/AdminBanksPage.vue';
+import AdminCreateBankPage from '../pages/order/banks/AdminCreateBankPage.vue';
+import AdminEditBankPage from '../pages/order/banks/AdminEditBankPage.vue';
+import AdminViewBankPage from '../pages/order/banks/AdminViewBankPage.vue';
 
-// Admin — Services
-import AdminServicesPage from '../pages/admin/services/AdminServicesPage.vue';
-import AdminCreateServicePage from '../pages/admin/services/AdminCreateServicePage.vue';
-import AdminEditServicePage from '../pages/admin/services/AdminEditServicePage.vue';
-import AdminViewServicePage from '../pages/admin/services/AdminViewServicePage.vue';
+// Order — Services
+import AdminServicesPage from '../pages/order/services/AdminServicesPage.vue';
+import AdminCreateServicePage from '../pages/order/services/AdminCreateServicePage.vue';
+import AdminEditServicePage from '../pages/order/services/AdminEditServicePage.vue';
+import AdminViewServicePage from '../pages/order/services/AdminViewServicePage.vue';
 
-// Admin — Invoices
-import AdminInvoicesPage from '../pages/admin/invoices/AdminInvoicesPage.vue';
-import AdminCreateInvoicePage from '../pages/admin/invoices/AdminCreateInvoicePage.vue';
-import AdminEditInvoicePage from '../pages/admin/invoices/AdminEditInvoicePage.vue';
-import AdminViewInvoicePage from '../pages/admin/invoices/AdminViewInvoicePage.vue';
+// Order — Invoices
+import AdminInvoicesPage from '../pages/order/invoices/AdminInvoicesPage.vue';
+import AdminCreateInvoicePage from '../pages/order/invoices/AdminCreateInvoicePage.vue';
+import AdminEditInvoicePage from '../pages/order/invoices/AdminEditInvoicePage.vue';
+import AdminViewInvoicePage from '../pages/order/invoices/AdminViewInvoicePage.vue';
 
-// Admin — Products
-import AdminProductsPage from '../pages/admin/products/AdminProductsPage.vue';
-import AdminCreateProductPage from '../pages/admin/products/AdminCreateProductPage.vue';
-import AdminEditProductPage from '../pages/admin/products/AdminEditProductPage.vue';
-import AdminViewProductPage from '../pages/admin/products/AdminViewProductPage.vue';
-import AdminProductPricesPage from '../pages/admin/products/AdminProductPricesPage.vue';
+// Order — Products
+import AdminProductsPage from '../pages/order/products/AdminProductsPage.vue';
+import AdminCreateProductPage from '../pages/order/products/AdminCreateProductPage.vue';
+import AdminEditProductPage from '../pages/order/products/AdminEditProductPage.vue';
+import AdminViewProductPage from '../pages/order/products/AdminViewProductPage.vue';
+import AdminProductPricesPage from '../pages/order/products/AdminProductPricesPage.vue';
 
 // Admin — Permissions
 import AdminPermissionsPage from '../pages/admin/permissions/AdminPermissionsPage.vue';
@@ -126,23 +126,23 @@ const routes = [
     { path: '/admin/users/:id/staff-roles/create',             component: AdminUserCreateStaffRolePage },
     { path: '/admin/users/:id/staff-roles/:roleId',            component: AdminUserViewStaffRolePage },
     { path: '/admin/users/:id/staff-roles/:roleId/edit',       component: AdminUserEditStaffRolePage },
-    { path: '/admin/invoices',             component: AdminInvoicesPage },
-    { path: '/admin/invoices/create',      component: AdminCreateInvoicePage },
-    { path: '/admin/invoices/:id',         component: AdminViewInvoicePage },
-    { path: '/admin/invoices/:id/edit',    component: AdminEditInvoicePage },
-    { path: '/admin/banks',            component: AdminBanksPage },
-    { path: '/admin/banks/create',     component: AdminCreateBankPage },
-    { path: '/admin/banks/:id',        component: AdminViewBankPage },
-    { path: '/admin/banks/:id/edit',   component: AdminEditBankPage },
-    { path: '/admin/services',             component: AdminServicesPage },
-    { path: '/admin/services/create',      component: AdminCreateServicePage },
-    { path: '/admin/services/:id',         component: AdminViewServicePage },
-    { path: '/admin/services/:id/edit',    component: AdminEditServicePage },
-    { path: '/admin/products',                  component: AdminProductsPage },
-    { path: '/admin/products/create',           component: AdminCreateProductPage },
-    { path: '/admin/products/:id',              component: AdminViewProductPage },
-    { path: '/admin/products/:id/edit',         component: AdminEditProductPage },
-    { path: '/admin/products/:id/prices',       component: AdminProductPricesPage },
+    { path: '/order/invoices',             component: AdminInvoicesPage },
+    { path: '/order/invoices/create',      component: AdminCreateInvoicePage },
+    { path: '/order/invoices/:id',         component: AdminViewInvoicePage },
+    { path: '/order/invoices/:id/edit',    component: AdminEditInvoicePage },
+    { path: '/order/banks',            component: AdminBanksPage },
+    { path: '/order/banks/create',     component: AdminCreateBankPage },
+    { path: '/order/banks/:id',        component: AdminViewBankPage },
+    { path: '/order/banks/:id/edit',   component: AdminEditBankPage },
+    { path: '/order/services',             component: AdminServicesPage },
+    { path: '/order/services/create',      component: AdminCreateServicePage },
+    { path: '/order/services/:id',         component: AdminViewServicePage },
+    { path: '/order/services/:id/edit',    component: AdminEditServicePage },
+    { path: '/order/products',                  component: AdminProductsPage },
+    { path: '/order/products/create',           component: AdminCreateProductPage },
+    { path: '/order/products/:id',              component: AdminViewProductPage },
+    { path: '/order/products/:id/edit',         component: AdminEditProductPage },
+    { path: '/order/products/:id/prices',       component: AdminProductPricesPage },
     { path: '/admin/audit-logs',       component: AdminAuditLogsPage },
     { path: '/admin/audit-logs/:id',  component: AdminViewAuditLogPage },
     { path: '/admin/chat-knowledge',             component: AdminChatKnowledgePage },

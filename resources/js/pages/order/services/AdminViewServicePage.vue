@@ -8,7 +8,7 @@
             <template v-else-if="service">
                 <div class="mb-8 flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <RouterLink to="/admin/services" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <RouterLink to="/order/services" class="text-gray-400 hover:text-gray-600 transition-colors">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                             </svg>
@@ -18,7 +18,7 @@
                             <p class="text-sm text-gray-500 mt-0.5">{{ service.name }}</p>
                         </div>
                     </div>
-                    <RouterLink v-if="canEdit" :to="`/admin/services/${service.id}/edit`"
+                    <RouterLink v-if="can.edit" :to="`/order/services/${service.id}/edit`"
                         class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931z" />
@@ -72,20 +72,16 @@ const { formatDate } = useFormatDate()
 
 const loading = ref(true)
 const service = ref(null)
-const canEdit = ref(false)
+const can = ref({})
 
 onMounted(async () => {
     if (!localStorage.getItem('token')) { router.push('/login'); return }
     try {
-        const { data: me } = await axios.get('/api/me')
-        const roles = me.roles?.map(r => r.name) ?? []
-        if (!roles.includes('admin') && !roles.includes('sale')) { router.replace('/403'); return }
-        const perms = me.permissions?.map(p => p.name) ?? []
-        canEdit.value = perms.includes('super') || (roles.includes('admin') && perms.includes('edit'))
         const { data } = await axios.get(`/api/order/services/${route.params.id}`)
         service.value = data
+        can.value = data.can ?? {}
     } catch {
-        router.push('/admin/services')
+        router.push('/order/services')
     } finally {
         loading.value = false
     }

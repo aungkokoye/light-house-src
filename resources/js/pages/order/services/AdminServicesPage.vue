@@ -2,7 +2,7 @@
     <AppHeader />
 
     <div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 pt-24 pb-12 px-4">
-        <div class="max-w-5xl mx-auto">
+        <div class="max-w-4xl mx-auto">
 
             <LoadingSpinner v-if="loading" />
 
@@ -14,15 +14,15 @@
                         </svg>
                     </RouterLink>
                     <div class="flex-1">
-                        <h1 class="text-3xl font-bold text-gray-900">Invoices</h1>
-                        <p class="text-sm text-gray-500 mt-0.5">Manage customer invoices.</p>
+                        <h1 class="text-3xl font-bold text-gray-900">Services</h1>
+                        <p class="text-sm text-gray-500 mt-0.5">Manage job services.</p>
                     </div>
-                    <RouterLink v-if="can('create')" to="/admin/invoices/create"
+                    <RouterLink v-if="can.create" to="/order/services/create"
                         class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                         </svg>
-                        New Invoice
+                        New Service
                     </RouterLink>
                 </div>
 
@@ -31,7 +31,7 @@
                         <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
                         </svg>
-                        <input v-model="search" @input="debouncedFetch" type="text" placeholder="Search invoice no. or customer name…"
+                        <input v-model="search" @input="debouncedFetch" type="text" placeholder="Search service name…"
                             class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50" />
                     </div>
 
@@ -43,10 +43,10 @@
 
                 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                     <div class="px-6 py-4 border-b border-gray-50 flex items-center justify-between">
-                        <h2 class="font-semibold text-gray-900">All Invoices</h2>
+                        <h2 class="font-semibold text-gray-900">All Services</h2>
                         <div class="flex items-center gap-3">
                             <span class="text-xs text-gray-400">{{ meta.total ?? 0 }} total</span>
-                            <select v-model="perPage" @change="fetchInvoices(1)"
+                            <select v-model="perPage" @change="fetchServices(1)"
                                 class="text-xs border border-gray-300 rounded-lg px-2 py-1 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-gray-600">
                                 <option :value="5">5 / page</option>
                                 <option :value="10">10 / page</option>
@@ -57,14 +57,14 @@
                         </div>
                     </div>
 
-                    <div v-if="!listLoading && invoices.length === 0" class="px-6 py-12 text-center">
-                        <p class="text-sm text-gray-400 mb-4">No invoices found.</p>
-                        <RouterLink v-if="can('create')" to="/admin/invoices/create"
+                    <div v-if="!servicesLoading && services.length === 0" class="px-6 py-12 text-center">
+                        <p class="text-sm text-gray-400 mb-4">No services found.</p>
+                        <RouterLink v-if="can.create" to="/order/services/create"
                             class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                             </svg>
-                            New Invoice
+                            New Service
                         </RouterLink>
                     </div>
 
@@ -80,24 +80,15 @@
                                             </span>
                                         </span>
                                     </th>
-                                    <th class="px-6 py-3 font-medium cursor-pointer select-none hover:text-gray-600" @click="toggleSort('invoice_no')">
-                                        <span class="inline-flex items-center gap-1">Invoice No
+                                    <th class="px-6 py-3 font-medium cursor-pointer select-none hover:text-gray-600" @click="toggleSort('name')">
+                                        <span class="inline-flex items-center gap-1">Name
                                             <span class="inline-flex flex-col leading-none">
-                                                <svg class="w-2.5 h-2.5 -mb-0.5" :class="sortBy==='invoice_no'&&sortDir==='asc'?'text-indigo-500':'text-gray-200'" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0L5 0Z"/></svg>
-                                                <svg class="w-2.5 h-2.5" :class="sortBy==='invoice_no'&&sortDir==='desc'?'text-indigo-500':'text-gray-200'" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0H10L5 6Z"/></svg>
+                                                <svg class="w-2.5 h-2.5 -mb-0.5" :class="sortBy==='name'&&sortDir==='asc'?'text-indigo-500':'text-gray-200'" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0L5 0Z"/></svg>
+                                                <svg class="w-2.5 h-2.5" :class="sortBy==='name'&&sortDir==='desc'?'text-indigo-500':'text-gray-200'" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0H10L5 6Z"/></svg>
                                             </span>
                                         </span>
                                     </th>
-                                    <th class="px-6 py-3 font-medium">Customer</th>
-                                    <th class="px-6 py-3 font-medium cursor-pointer select-none hover:text-gray-600" @click="toggleSort('total')">
-                                        <span class="inline-flex items-center gap-1">Total
-                                            <span class="inline-flex flex-col leading-none">
-                                                <svg class="w-2.5 h-2.5 -mb-0.5" :class="sortBy==='total'&&sortDir==='asc'?'text-indigo-500':'text-gray-200'" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0L5 0Z"/></svg>
-                                                <svg class="w-2.5 h-2.5" :class="sortBy==='total'&&sortDir==='desc'?'text-indigo-500':'text-gray-200'" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0H10L5 6Z"/></svg>
-                                            </span>
-                                        </span>
-                                    </th>
-                                    <th class="px-6 py-3 font-medium">Balance</th>
+                                    <th class="px-6 py-3 font-medium">Description</th>
                                     <th class="px-6 py-3 font-medium cursor-pointer select-none hover:text-gray-600" @click="toggleSort('created_at')">
                                         <span class="inline-flex items-center gap-1">Created At
                                             <span class="inline-flex flex-col leading-none">
@@ -110,30 +101,25 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-50">
-                                <tr v-if="listLoading">
-                                    <td colspan="7" class="px-6 py-8 text-center text-sm text-gray-400">Loading…</td>
+                                <tr v-if="servicesLoading">
+                                    <td colspan="5" class="px-6 py-8 text-center text-sm text-gray-400">Loading…</td>
                                 </tr>
-                                <tr v-else v-for="invoice in invoices" :key="invoice.id" class="hover:bg-gray-50/50 transition-colors">
-                                    <td class="px-6 py-3.5 text-xs font-mono text-gray-400">{{ invoice.id }}</td>
-                                    <td class="px-6 py-3.5 font-mono font-medium text-indigo-700">{{ invoice.invoice_no }}</td>
-                                    <td class="px-6 py-3.5 text-gray-700">{{ invoice.customer?.name ?? '—' }}</td>
-                                    <td class="px-6 py-3.5 text-gray-900 font-medium">{{ invoice.total.toLocaleString() }}</td>
-                                    <td class="px-6 py-3.5 font-medium"
-                                        :class="(invoice.total - invoice.paid_amount) > 0 ? 'text-red-500' : 'text-green-600'">
-                                        {{ (invoice.total - invoice.paid_amount).toLocaleString() }}
-                                    </td>
-                                    <td class="px-6 py-3.5 text-xs text-gray-400">{{ formatDate(invoice.created_at) }}</td>
+                                <tr v-else v-for="service in services" :key="service.id" class="hover:bg-gray-50/50 transition-colors">
+                                    <td class="px-6 py-3.5 text-xs font-mono text-gray-400">{{ service.id }}</td>
+                                    <td class="px-6 py-3.5 font-medium text-gray-900">{{ service.name }}</td>
+                                    <td class="px-6 py-3.5 text-gray-500 max-w-xs truncate">{{ service.description ?? '—' }}</td>
+                                    <td class="px-6 py-3.5 text-xs text-gray-400">{{ formatDate(service.created_at) }}</td>
                                     <td class="px-6 py-3.5">
                                         <div class="flex items-center gap-1">
-                                            <RouterLink v-if="can('view')" :to="`/admin/invoices/${invoice.id}`"
+                                            <RouterLink v-if="can.view" :to="`/order/services/${service.id}`"
                                                 class="p-1.5 text-indigo-600 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" /></svg>
                                             </RouterLink>
-                                            <RouterLink v-if="can('edit')" :to="`/admin/invoices/${invoice.id}/edit`"
+                                            <RouterLink v-if="can.edit" :to="`/order/services/${service.id}/edit`"
                                                 class="p-1.5 text-indigo-600 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931z" /></svg>
                                             </RouterLink>
-                                            <button v-if="can('delete')" @click="confirmDelete(invoice)"
+                                            <button v-if="can.delete" @click="confirmDelete(service)"
                                                 class="p-1.5 text-red-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
                                             </button>
@@ -144,22 +130,23 @@
                         </table>
                     </div>
 
+                    <!-- Pagination -->
                     <div v-if="meta.last_page > 1" class="px-6 py-4 border-t border-gray-50 flex items-center justify-between">
                         <p class="text-xs text-gray-400">Showing {{ meta.from }}–{{ meta.to }} of {{ meta.total }}</p>
                         <div class="flex items-center gap-1">
-                            <button @click="fetchInvoices(currentPage - 1)" :disabled="currentPage === 1"
+                            <button @click="fetchServices(currentPage - 1)" :disabled="currentPage === 1"
                                 class="px-3 py-1.5 text-xs rounded-lg border border-gray-100 text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
                                 Prev
                             </button>
                             <template v-for="page in visiblePages" :key="page">
                                 <span v-if="page === '...'" class="px-2 text-xs text-gray-300">…</span>
-                                <button v-else @click="fetchInvoices(page)"
+                                <button v-else @click="fetchServices(page)"
                                     class="px-3 py-1.5 text-xs rounded-lg border transition-colors"
                                     :class="page === currentPage ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-gray-100 text-gray-500 hover:bg-gray-50'">
                                     {{ page }}
                                 </button>
                             </template>
-                            <button @click="fetchInvoices(currentPage + 1)" :disabled="currentPage === meta.last_page"
+                            <button @click="fetchServices(currentPage + 1)" :disabled="currentPage === meta.last_page"
                                 class="px-3 py-1.5 text-xs rounded-lg border border-gray-100 text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
                                 Next
                             </button>
@@ -170,13 +157,13 @@
         </div>
     </div>
 
-    <DeleteModal :show="!!deleteTarget" @confirm="deleteInvoice" @cancel="deleteTarget = null"
-        title="Delete Invoice" message="Are you sure you want to delete this invoice?" />
+    <DeleteModal :show="!!deleteTarget" @confirm="deleteService" @cancel="deleteTarget = null"
+        title="Delete Service" message="Are you sure you want to delete this service?" />
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 import axios from 'axios'
 import AppHeader from '../../../components/AppHeader.vue'
 import LoadingSpinner from '../../../components/LoadingSpinner.vue'
@@ -184,29 +171,53 @@ import DeleteModal from '../../../components/DeleteModal.vue'
 import { useFormatDate } from '../../../composables/useFormatDate'
 
 const router = useRouter()
-const route  = useRoute()
 const { formatDate } = useFormatDate()
 const loading = ref(true)
-const listLoading = ref(false)
-const invoices = ref([])
+const servicesLoading = ref(false)
+const services = ref([])
 const meta = ref({})
-const search  = ref(route.query.search   ?? '')
-const sortBy  = ref(route.query.sort_by  ?? 'created_at')
-const sortDir = ref(route.query.sort_dir ?? 'desc')
-const currentPage = ref(Number(route.query.page)     || 1)
-const perPage     = ref(Number(route.query.per_page) || 15)
+const search = ref('')
+const sortBy = ref('name')
+const sortDir = ref('asc')
+const currentPage = ref(1)
+const perPage = ref(15)
 const deleteTarget = ref(null)
-const myPermissions = ref([])
-const myRole = ref('')
+const can = ref({})
 
-function can(action) {
-    if (myPermissions.value.includes('super')) return true
-    const isAdmin = myRole.value === 'admin'
-    if (action === 'view')   return myPermissions.value.includes('view')
-    if (action === 'create') return myPermissions.value.includes('create')
-    if (action === 'edit')   return myPermissions.value.includes('edit')
-    if (action === 'delete') return isAdmin && myPermissions.value.includes('delete')
-    return false
+const STORAGE_KEY = 'admin_services_state'
+
+function saveState() {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
+        search: search.value,
+        page: currentPage.value,
+        perPage: perPage.value,
+        sortBy: sortBy.value,
+        sortDir: sortDir.value,
+    }))
+}
+
+function restoreState() {
+    const saved = sessionStorage.getItem(STORAGE_KEY)
+    if (!saved) return false
+    const state = JSON.parse(saved)
+    search.value      = state.search  ?? ''
+    currentPage.value = state.page    ?? 1
+    perPage.value     = state.perPage ?? 15
+    sortBy.value      = state.sortBy  ?? 'name'
+    sortDir.value     = state.sortDir ?? 'asc'
+    return true
+}
+
+const hasActiveFilters = computed(() =>
+    search.value !== '' || sortBy.value !== 'name' || sortDir.value !== 'asc'
+)
+
+function resetFilters() {
+    search.value = ''
+    sortBy.value = 'name'
+    sortDir.value = 'asc'
+    sessionStorage.removeItem(STORAGE_KEY)
+    fetchServices(1)
 }
 
 const visiblePages = computed(() => {
@@ -218,65 +229,48 @@ const visiblePages = computed(() => {
     return [1, '...', cur - 1, cur, cur + 1, '...', total]
 })
 
-const hasActiveFilters = computed(() =>
-    search.value !== '' || sortBy.value !== 'created_at' || sortDir.value !== 'desc'
-)
-
-function resetFilters() {
-    search.value = ''
-    sortBy.value = 'created_at'
-    sortDir.value = 'desc'
-    router.replace({ query: {} })
-    fetchInvoices(1)
-}
-
 function toggleSort(col) {
     if (sortBy.value === col) sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc'
     else { sortBy.value = col; sortDir.value = 'asc' }
-    fetchInvoices(1)
+    fetchServices(1)
 }
 
 let searchTimer = null
 function debouncedFetch() {
     clearTimeout(searchTimer)
-    searchTimer = setTimeout(() => fetchInvoices(1), 350)
+    searchTimer = setTimeout(() => fetchServices(1), 350)
 }
 
-async function fetchInvoices(page = 1) {
-    listLoading.value = true
-    const query = { sort_by: sortBy.value, sort_dir: sortDir.value, page, per_page: perPage.value }
-    if (search.value.trim()) query.search = search.value.trim()
-    router.replace({ query })
-    sessionStorage.setItem('invoice-list-back', '/admin/invoices?' + new URLSearchParams(query).toString())
+async function fetchServices(page = 1) {
+    servicesLoading.value = true
+    currentPage.value = page
+    saveState()
     try {
-        const { data } = await axios.get('/api/order/invoices', { params: query })
-        invoices.value = data.data
+        const params = { page, per_page: perPage.value, sort_by: sortBy.value, sort_dir: sortDir.value }
+        if (search.value.trim()) params.search = search.value.trim()
+        const { data } = await axios.get('/api/order/services', { params })
+        services.value = data.data
+        can.value   = data.can ?? {}
         meta.value = { total: data.total, from: data.from, to: data.to, last_page: data.last_page }
         currentPage.value = data.current_page
     } catch (e) { console.error(e?.response?.status) }
-    finally { listLoading.value = false }
+    finally { servicesLoading.value = false }
 }
 
-function confirmDelete(invoice) { deleteTarget.value = invoice }
+function confirmDelete(service) { deleteTarget.value = service }
 
-async function deleteInvoice() {
+async function deleteService() {
     try {
-        await axios.delete(`/api/order/invoices/${deleteTarget.value.id}`)
+        await axios.delete(`/api/order/services/${deleteTarget.value.id}`)
         deleteTarget.value = null
-        fetchInvoices(currentPage.value)
+        fetchServices(currentPage.value)
     } catch (e) { console.error(e?.response?.status) }
 }
 
 onMounted(async () => {
     if (!localStorage.getItem('token')) { router.push('/login'); return }
-    try {
-        const { data: me } = await axios.get('/api/me')
-        const roles = me.roles?.map(r => r.name) ?? []
-        if (!roles.includes('admin') && !roles.includes('sale')) { router.replace('/403'); return }
-        myRole.value = roles.includes('admin') ? 'admin' : 'sale'
-        myPermissions.value = me.permissions?.map(p => p.name) ?? []
-        await fetchInvoices(1)
-    } catch { router.push('/login') }
-    finally { loading.value = false }
+    const restored = restoreState()
+    await fetchServices(restored ? currentPage.value : 1)
+    loading.value = false
 })
 </script>

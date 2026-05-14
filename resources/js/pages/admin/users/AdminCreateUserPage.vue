@@ -58,6 +58,11 @@
                                 class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50" />
                         </div>
 
+                        <!-- Access Control -->
+                        <div class="border-t border-gray-100 pt-4">
+                            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-4">Access Control</p>
+                            <div class="space-y-5">
+
                         <!-- Role -->
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1.5">Role <span class="text-red-400">*</span></label>
@@ -70,15 +75,32 @@
                         </div>
 
                         <!-- Permissions -->
-                        <div v-if="allPermissions.length">
-                            <label class="block text-xs font-medium text-gray-600 mb-2">Permissions</label>
-                            <div class="grid grid-cols-2 gap-2">
-                                <label v-for="p in allPermissions" :key="p"
-                                    class="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 bg-gray-50 cursor-pointer hover:bg-indigo-50 hover:border-indigo-200 transition-colors">
-                                    <input type="checkbox" :value="p" v-model="form.permissions"
-                                        class="w-3.5 h-3.5 rounded accent-indigo-600" />
-                                    <span class="text-xs text-gray-700 capitalize">{{ p }}</span>
-                                </label>
+                        <div v-if="groupedPermissions.length">
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Permissions</label>
+                            <p class="text-xs text-gray-400 mb-3">Select one permission per group. Higher-level permissions include access to lower ones.</p>
+                            <div class="space-y-3">
+                                <div v-for="group in groupedPermissions" :key="group.key">
+                                    <p class="text-xs font-medium text-gray-500 mb-1.5">{{ group.label }}</p>
+                                    <div class="flex flex-wrap items-center gap-1">
+                                        <template v-for="(p, i) in group.permissions" :key="p">
+                                            <button type="button" @click="togglePermission(p)"
+                                                class="px-2.5 py-1 text-xs rounded-md border transition-colors"
+                                                :class="form.permissions.includes(p)
+                                                    ? 'bg-indigo-600 text-white border-indigo-600'
+                                                    : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-indigo-300 hover:bg-indigo-50'">
+                                                {{ permLabel(p) }}
+                                            </button>
+                                            <svg v-if="i < group.permissions.length - 1" class="w-3 h-3 text-gray-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </template>
+                                        <button v-if="group.key === 'super' && form.permissions.length" type="button" @click="form.permissions = []"
+                                            class="ml-auto text-xs text-gray-400 hover:text-red-500 transition-colors">Clear all</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                             </div>
                         </div>
 
@@ -144,7 +166,7 @@
                                         <input ref="photoInput" type="file" accept="image/jpeg,image/jpg,image/png,image/webp" class="hidden" @change="handlePhotoSelect" />
                                     </div>
                                     <div>
-                                        <p class="text-xs text-gray-500">Click photo to select</p>
+                                        <p class="text-xs font-semibold text-gray-600">Click photo to select</p>
                                         <p class="text-xs text-gray-400 mt-0.5">JPG, PNG, WEBP · max 20MB · uploaded after save</p>
                                     </div>
                                 </div>
@@ -383,7 +405,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import AppHeader from '../../../components/AppHeader.vue'
@@ -456,6 +478,63 @@ const form = ref({
     },
 })
 
+const PERM_ORDER = ['list', 'view', 'create', 'edit', 'update', 'delete', 'super']
+
+function permGroupKey(p) {
+    if (p === 'super') return 'super'
+    if (PERM_ORDER.includes(p)) return 'general'
+    const i = p.lastIndexOf('_')
+    return i > 0 ? p.slice(0, i) : 'general'
+}
+
+function permBase(p) {
+    if (PERM_ORDER.includes(p)) return p
+    const i = p.lastIndexOf('_')
+    return i > 0 ? p.slice(i + 1) : p
+}
+
+function permLabel(p) {
+    const b = permBase(p)
+    return b.charAt(0).toUpperCase() + b.slice(1)
+}
+
+const groupedPermissions = computed(() => {
+    const map = {}
+    for (const p of allPermissions.value) {
+        const key = permGroupKey(p)
+        if (!map[key]) map[key] = []
+        map[key].push(p)
+    }
+    return Object.entries(map).map(([key, perms]) => ({
+        key,
+        label: key === 'general' ? 'Admin' : key === 'super' ? 'All Permissions' : key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+        permissions: [...perms].sort((a, b) => {
+            const ai = PERM_ORDER.indexOf(permBase(a))
+            const bi = PERM_ORDER.indexOf(permBase(b))
+            return (ai < 0 ? 999 : ai) - (bi < 0 ? 999 : bi)
+        }),
+    })).sort((a, b) => (a.key === 'super' ? 1 : b.key === 'super' ? -1 : 0))
+})
+
+function togglePermission(p) {
+    if (p === 'super') {
+        form.value.permissions = form.value.permissions.includes('super') ? [] : ['super']
+        return
+    }
+    const key = permGroupKey(p)
+    const group = groupedPermissions.value.find(g => g.key === key)
+    if (!group) return
+    const current = new Set(form.value.permissions)
+    if (current.has(p)) {
+        current.delete(p)
+    } else {
+        group.permissions.forEach(gp => current.delete(gp))
+        current.delete('super')
+        current.add(p)
+    }
+    form.value.permissions = [...current]
+}
+
 watch(() => form.value.role, (role) => {
     form.value.permissions = role === 'admin' ? [...allPermissions.value] : []
 })
@@ -489,9 +568,13 @@ async function submit() {
     try {
         const { data } = await axios.post('/api/admin/users', buildPayload())
         if (photoFile.value && form.value.role !== 'customer') {
-            const formData = new FormData()
-            formData.append('photo', photoFile.value)
-            await axios.post(`/api/admin/users/${data.id}/photo`, formData)
+            try {
+                const formData = new FormData()
+                formData.append('photo', photoFile.value)
+                await axios.post(`/api/admin/users/${data.id}/photo`, formData)
+            } catch {
+                // photo upload failed; user was created — navigate anyway
+            }
         }
         router.push(`/admin/users/${data.id}`)
     } catch (e) {
@@ -518,7 +601,7 @@ onMounted(async () => {
             { data: positions },
             { data: sites },
         ] = await Promise.all([
-            axios.get('/api/admin/permissions'),
+            axios.get('/api/admin/permissions/all'),
             axios.get('/api/admin/roles/all'),
             axios.get('/api/admin/staff-positions/all'),
             axios.get('/api/admin/sites/all'),
@@ -533,8 +616,9 @@ onMounted(async () => {
         if (!form.value.role || !allRoles.value.includes(form.value.role)) {
             form.value.role = allRoles.value[0] ?? ''
         }
-    } finally {
         loading.value = false
+    } catch (e) {
+        if (!e?.response) router.push('/admin/users')
     }
 })
 </script>

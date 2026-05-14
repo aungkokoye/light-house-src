@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Concerns\HasAbilities;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreChatKnowledgeCategoryRequest;
 use App\Http\Requests\Admin\UpdateChatKnowledgeCategoryRequest;
@@ -12,6 +13,8 @@ use Illuminate\Http\Request;
 
 class AdminChatKnowledgeCategoryController extends Controller
 {
+    use HasAbilities;
+
     public function __construct(private readonly ChatKnowledgeCategoryManager $manager) {}
 
     public function all(): JsonResponse
@@ -26,8 +29,11 @@ class AdminChatKnowledgeCategoryController extends Controller
         $this->authorize('viewAny', ChatKnowledgeCategory::class);
 
         $perPage = (int) $request->input('per_page', 20);
+        $list    = $this->manager->list($request, $perPage);
 
-        return response()->json($this->manager->list($request, $perPage));
+        return response()->json(array_merge($list->toArray(), [
+            'can' => $this->listAbilities(ChatKnowledgeCategory::class),
+        ]));
     }
 
     public function store(StoreChatKnowledgeCategoryRequest $request): JsonResponse
@@ -41,7 +47,9 @@ class AdminChatKnowledgeCategoryController extends Controller
     {
         $this->authorize('view', $chatKnowledgeCategory);
 
-        return response()->json($this->manager->show($chatKnowledgeCategory));
+        return response()->json(array_merge($this->manager->show($chatKnowledgeCategory)->toArray(), [
+            'can' => $this->resourceAbilities($chatKnowledgeCategory),
+        ]));
     }
 
     public function update(UpdateChatKnowledgeCategoryRequest $request, ChatKnowledgeCategory $chatKnowledgeCategory): JsonResponse

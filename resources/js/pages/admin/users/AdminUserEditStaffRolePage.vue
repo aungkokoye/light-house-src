@@ -173,11 +173,9 @@ onMounted(async () => {
         }
         allPositions.value = positions
         allSites.value     = sites
-    } catch {
-        router.push(`/admin/users/${route.params.id}/staff-roles`)
-        return
-    } finally {
         loading.value = false
+    } catch (e) {
+        if (!e?.response) router.push(`/admin/users/${route.params.id}/staff-roles`)
     }
 })
 </script>
