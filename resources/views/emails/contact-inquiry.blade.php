@@ -10,16 +10,9 @@
     <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8fafc;padding:40px 0;">
         <tr>
             <td align="center">
-                <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
+                <table width="100%" cellpadding="0" cellspacing="0" style="max-width:680px;">
 
-                    <!-- Logo / Header -->
-                    <tr>
-                        <td align="center" style="padding-bottom:32px;">
-                            <p style="margin:0;font-size:20px;font-weight:700;color:#1e3a5f;letter-spacing:1px;">
-                                LIGHTHOUSE <span style="color:#dc2626;">PRINTING SOLUTIONS</span>
-                            </p>
-                        </td>
-                    </tr>
+                    @include('emails.partials.header')
 
                     <!-- Card -->
                     <tr>
@@ -34,7 +27,6 @@
 
                             <hr style="border:none;border-top:1px solid #f3f4f6;margin:0 0 24px;" />
 
-                            <!-- Fields -->
                             <table width="100%" cellpadding="0" cellspacing="0">
                                 <tr>
                                     <td style="padding-bottom:16px;">
@@ -55,7 +47,7 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td style="padding-bottom:0;">
+                                    <td>
                                         <p style="margin:0 0 4px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#9ca3af;">Message</p>
                                         <p style="margin:0;font-size:15px;color:#111827;line-height:1.6;white-space:pre-wrap;">{{ $body }}</p>
                                     </td>
@@ -65,14 +57,7 @@
                         </td>
                     </tr>
 
-                    <!-- Footer -->
-                    <tr>
-                        <td align="center" style="padding-top:24px;">
-                            <p style="margin:0;font-size:12px;color:#9ca3af;">
-                                &copy; {{ date('Y') }} Lighthouse Printing Solutions, Yangon, Myanmar.
-                            </p>
-                        </td>
-                    </tr>
+                    @include('emails.partials.footer')
 
                 </table>
             </td>

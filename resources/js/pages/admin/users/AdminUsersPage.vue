@@ -18,7 +18,7 @@
                         <h1 class="text-3xl font-bold text-gray-900">Users</h1>
                         <p class="text-sm text-gray-500 mt-0.5">Manage all registered users.</p>
                     </div>
-                    <RouterLink v-if="can('create')" :to="{ path: '/admin/users/create', query: { back: route.fullPath } }"
+                    <RouterLink v-if="can.create" to="/admin/users/create"
                         class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -90,9 +90,7 @@
                     <!-- Active filters / reset -->
                     <div v-if="hasActiveFilters" class="mt-3 flex items-center justify-between">
                         <p class="text-xs text-gray-400">Filters applied</p>
-                        <button @click="resetFilters" class="text-xs text-indigo-600 hover:text-indigo-700 font-medium transition-colors">
-                            Clear all
-                        </button>
+                        <a href="#" @click.prevent="resetFilters" class="text-xs text-indigo-600 hover:text-indigo-700 font-medium transition-colors">Clear all</a>
                     </div>
                 </div>
 
@@ -130,8 +128,8 @@
                             <thead>
                                 <tr class="text-left text-xs text-gray-400 border-b border-gray-50">
                                     <th v-for="col in columns" :key="col.key"
-                                        class="px-6 py-3 font-medium"
-                                        :class="col.sortable ? 'cursor-pointer select-none hover:text-gray-600' : ''"
+                                        class="py-3 font-medium"
+                                        :class="[col.compact ? 'px-3' : 'px-6', col.sortable ? 'cursor-pointer select-none hover:text-gray-600' : '']"
                                         @click="col.sortable && toggleSort(col.key)">
                                         <span class="inline-flex items-center gap-1">
                                             {{ col.label }}
@@ -165,7 +163,7 @@
                                             </span>
                                         </div>
                                     </td>
-                                    <td class="px-6 py-3.5 text-xs text-gray-600">
+                                    <td class="px-3 py-3.5 text-xs text-gray-600">
                                         <span v-if="u.roles?.[0]?.name && u.roles?.[0]?.name !== 'customer'">
                                             {{ u.staff_profile?.current_role?.position?.name ?? '—' }}
                                         </span>
@@ -174,42 +172,42 @@
                                         </span>
                                         <span v-else class="text-gray-300">—</span>
                                     </td>
-                                    <td class="px-6 py-3.5">
+                                    <td class="px-3 py-3.5">
                                         <span class="inline-flex items-center gap-1 text-xs font-medium"
                                             :class="u.email_verified_at ? 'text-green-600' : 'text-yellow-600'">
                                             <span class="w-1.5 h-1.5 rounded-full" :class="u.email_verified_at ? 'bg-green-500' : 'bg-yellow-500'"></span>
                                             {{ u.email_verified_at ? 'Yes' : 'No' }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-3.5">
+                                    <td class="px-3 py-3.5">
                                         <span class="inline-flex items-center gap-1 text-xs font-medium"
                                             :class="u.activated ? 'text-green-600' : 'text-red-500'">
                                             <span class="w-1.5 h-1.5 rounded-full" :class="u.activated ? 'bg-green-500' : 'bg-red-400'"></span>
                                             {{ u.activated ? 'Yes' : 'No' }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-3.5 text-xs text-gray-400">
+                                    <td class="px-3 py-3.5 text-xs text-gray-400">
                                         <span>{{ formatDate(u.created_at) }}</span>
                                         <span v-if="u.updated_at !== u.created_at" class="block text-gray-500">
                                             {{ formatDate(u.updated_at) }}
                                         </span>
                                     </td>
                                     <td class="px-3 py-3.5 w-px whitespace-nowrap">
-                                        <div class="flex items-center gap-1">
-                                            <RouterLink v-if="can('view')" :to="{ path: `/admin/users/${u.id}`, query: { back: route.fullPath } }"
+                                        <div class="flex items-center">
+                                            <RouterLink v-if="can.view" :to="`/admin/users/${u.id}`"
                                                 class="p-1.5 text-indigo-600 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
                                                 </svg>
                                             </RouterLink>
-                                            <RouterLink v-if="can('edit')" :to="{ path: `/admin/users/${u.id}/edit`, query: { back: route.fullPath } }"
+                                            <RouterLink v-if="can.edit" :to="`/admin/users/${u.id}/edit`"
                                                 class="p-1.5 text-indigo-600 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
                                                 </svg>
                                             </RouterLink>
-                                            <button v-if="can('delete')" @click="confirmDelete(u)"
+                                            <button v-if="can.delete" @click="confirmDelete(u)"
                                                 class="p-1.5 text-red-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
@@ -279,23 +277,19 @@ const deleteTarget = ref(null)
 const deleting = ref(false)
 const sortBy = ref('id')
 const sortDir = ref('asc')
-const myPermissions = ref([])
+const can = ref({})
 const allRoles = ref([])
 const allPositions = ref([])
 
-function can(permission) {
-    return myPermissions.value.includes('super') || myPermissions.value.includes(permission)
-}
-
 const columns = [
-    { key: 'id',               label: 'ID',             sortable: true  },
-    { key: 'name',             label: 'Name',           sortable: true  },
-    { key: 'email',            label: 'Email',          sortable: true  },
-    { key: 'role',             label: 'Role',           sortable: false },
-    { key: 'position',         label: 'Position',       sortable: false },
-    { key: 'email_verified_at',label: 'Email Verified', sortable: true  },
-    { key: 'activated',        label: 'Activated',      sortable: true  },
-    { key: 'updated_at',       label: 'Created / Updated', sortable: true },
+    { key: 'id',               label: 'ID',                sortable: true  },
+    { key: 'name',             label: 'Name',              sortable: true  },
+    { key: 'email',            label: 'Email',             sortable: true  },
+    { key: 'role',             label: 'Role',              sortable: false },
+    { key: 'position',         label: 'Position',          sortable: false, compact: true },
+    { key: 'email_verified_at',label: 'Email Verified',    sortable: true,  compact: true },
+    { key: 'activated',        label: 'Activated',         sortable: true,  compact: true },
+    { key: 'updated_at',       label: 'Created / Updated', sortable: true,  compact: true },
 ]
 
 const filters = ref({
@@ -309,7 +303,7 @@ const filters = ref({
 })
 
 const hasActiveFilters = computed(() =>
-    Object.values(filters.value).some(v => v !== '')
+    Object.values(filters.value).some(v => v !== '') || sortBy.value !== 'id' || sortDir.value !== 'asc'
 )
 
 const visiblePages = computed(() => {
@@ -330,6 +324,8 @@ const visiblePages = computed(() => {
 
 function resetFilters() {
     filters.value = { search: '', position: '', role: '', activated: '', email_verified: '', updated_from: '', updated_to: '' }
+    sortBy.value = 'id'
+    sortDir.value = 'asc'
     router.replace({ query: {} })
     fetchUsers(1)
 }
@@ -376,10 +372,12 @@ async function fetchUsers(page = 1) {
         Object.keys(params).forEach(k => params[k] === '' && delete params[k])
         const { data } = await axios.get('/api/admin/users', { params })
         users.value = data.data
-        meta.value = { total: data.total, from: data.from, to: data.to, last_page: data.last_page }
+        meta.value  = { total: data.total, from: data.from, to: data.to, last_page: data.last_page }
+        can.value   = data.can ?? {}
         currentPage.value = data.current_page
-        // sync state to URL so back-navigation restores it
-        router.replace({ query: { ...params, page: data.current_page } })
+        const finalParams = { ...params, page: data.current_page }
+        router.replace({ query: finalParams })
+        sessionStorage.setItem('user-list-back', '/admin/users?' + new URLSearchParams(finalParams).toString())
     } catch (e) {
         console.error('fetchUsers error', e?.response?.status, e?.response?.data)
     } finally {
@@ -395,7 +393,6 @@ onMounted(async () => {
             axios.get('/api/admin/roles/all'),
             axios.get('/api/admin/staff-positions/all'),
         ])
-        myPermissions.value = me.permissions?.map(p => p.name) ?? []
         allRoles.value = roles.map(r => r.name)
         allPositions.value = positions
     } catch {

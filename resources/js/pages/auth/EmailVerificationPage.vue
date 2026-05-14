@@ -6,10 +6,10 @@
                 <!-- Icon -->
                 <div class="flex items-center justify-center mx-auto mb-4">
                     <RouterLink to="/" class="flex items-center gap-2.5">
-                        <img :src="'/images/logo.png'" alt="Lighthouse Printing Solutions" class="h-14 w-auto" />
+                        <img :src="'/images/logo.png'" :alt="COMPANY_NAME" class="h-14 w-auto" />
                         <div class="flex flex-col leading-tight text-left">
-                            <span class="text-base font-bold text-red-600 tracking-tight">LightHouse</span>
-                            <span class="text-sm font-medium text-gray-400 tracking-wide">Printing Solutions</span>
+                            <span class="text-base font-bold text-red-600 tracking-tight">{{ COMPANY_NAME_MAIN }}</span>
+                            <span class="text-sm font-medium text-gray-400 tracking-wide">{{ COMPANY_NAME_SUB }}</span>
                         </div>
                     </RouterLink>
                 </div>
@@ -68,6 +68,9 @@
 import { ref, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import axios from 'axios'
+import { useCompany } from '../../composables/useCompany'
+
+const { COMPANY_NAME, COMPANY_NAME_MAIN, COMPANY_NAME_SUB } = useCompany()
 
 const route = useRoute()
 const email = route.query.email ?? ''

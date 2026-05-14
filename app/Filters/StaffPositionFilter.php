@@ -18,7 +18,7 @@ class StaffPositionFilter
     public function search(?string $term): static
     {
         if ($term) {
-            $this->query->where('name', 'like', "%{$term}%");
+            $this->query->where('name', 'like', "{$term}%");
         }
 
         return $this;

@@ -16,8 +16,8 @@
 
                 <!-- Icon grid -->
                 <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <!-- Audit Logs — admin only -->
-                    <RouterLink v-if="isAdmin" to="/admin/audit-logs"
+                    <!-- Audit Logs -->
+                    <RouterLink v-if="can.audit_logs" to="/admin/audit-logs"
                         class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col items-center gap-4 hover:shadow-md hover:border-violet-100 transition-all">
                         <div class="w-14 h-14 rounded-2xl bg-violet-50 flex items-center justify-center group-hover:bg-violet-100 transition-colors">
                             <svg class="w-7 h-7 text-violet-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -30,8 +30,36 @@
                         </div>
                     </RouterLink>
 
-                    <!-- Chat Knowledge — super admin only -->
-                    <RouterLink v-if="isSuper" to="/admin/chat-knowledge"
+                    <!-- Invoices -->
+                    <RouterLink v-if="can.invoices" to="/order/invoices"
+                        class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col items-center gap-4 hover:shadow-md hover:border-orange-100 transition-all">
+                        <div class="w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center group-hover:bg-orange-100 transition-colors">
+                            <svg class="w-7 h-7 text-orange-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9z" />
+                            </svg>
+                        </div>
+                        <div class="text-center">
+                            <p class="font-semibold text-gray-900">Invoices</p>
+                            <p class="text-xs text-gray-400 mt-0.5">Manage customer invoices</p>
+                        </div>
+                    </RouterLink>
+
+                    <!-- Banks -->
+                    <RouterLink v-if="can.banks" to="/order/banks"
+                        class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col items-center gap-4 hover:shadow-md hover:border-amber-100 transition-all">
+                        <div class="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center group-hover:bg-amber-100 transition-colors">
+                            <svg class="w-7 h-7 text-amber-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" />
+                            </svg>
+                        </div>
+                        <div class="text-center">
+                            <p class="font-semibold text-gray-900">Banks</p>
+                            <p class="text-xs text-gray-400 mt-0.5">Manage payment banks</p>
+                        </div>
+                    </RouterLink>
+
+                    <!-- Chat Knowledge -->
+                    <RouterLink v-if="can.chat_knowledge" to="/admin/chat-knowledge"
                         class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col items-center gap-4 hover:shadow-md hover:border-teal-100 transition-all">
                         <div class="w-14 h-14 rounded-2xl bg-teal-50 flex items-center justify-center group-hover:bg-teal-100 transition-colors">
                             <svg class="w-7 h-7 text-teal-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -44,8 +72,8 @@
                         </div>
                     </RouterLink>
 
-                    <!-- Chat Knowledge Categories — super admin only -->
-                    <RouterLink v-if="isSuper" to="/admin/chat-knowledge-categories"
+                    <!-- Chat Knowledge Categories -->
+                    <RouterLink v-if="can.chat_knowledge_categories" to="/admin/chat-knowledge-categories"
                         class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col items-center gap-4 hover:shadow-md hover:border-teal-100 transition-all">
                         <div class="w-14 h-14 rounded-2xl bg-teal-50 flex items-center justify-center group-hover:bg-teal-100 transition-colors">
                             <svg class="w-7 h-7 text-teal-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -59,8 +87,8 @@
                         </div>
                     </RouterLink>
 
-                    <!-- Permissions — admin only -->
-                    <RouterLink v-if="isAdmin" to="/admin/permissions"
+                    <!-- Permissions -->
+                    <RouterLink v-if="can.permissions" to="/admin/permissions"
                         class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col items-center gap-4 hover:shadow-md hover:border-rose-100 transition-all">
                         <div class="w-14 h-14 rounded-2xl bg-rose-50 flex items-center justify-center group-hover:bg-rose-100 transition-colors">
                             <svg class="w-7 h-7 text-rose-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -73,8 +101,22 @@
                         </div>
                     </RouterLink>
 
+                    <!-- Products -->
+                    <RouterLink v-if="can.products" to="/order/products"
+                        class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col items-center gap-4 hover:shadow-md hover:border-emerald-100 transition-all">
+                        <div class="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
+                            <svg class="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                            </svg>
+                        </div>
+                        <div class="text-center">
+                            <p class="font-semibold text-gray-900">Products</p>
+                            <p class="text-xs text-gray-400 mt-0.5">Manage products</p>
+                        </div>
+                    </RouterLink>
+
                     <!-- Profile — all users -->
-                    <RouterLink to="/profile"
+                    <RouterLink v-if="can.profile" to="/profile"
                         class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col items-center gap-4 hover:shadow-md hover:border-indigo-100 transition-all">
                         <div class="w-14 h-14 rounded-2xl bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition-colors">
                             <svg class="w-7 h-7 text-indigo-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -87,8 +129,8 @@
                         </div>
                     </RouterLink>
 
-                    <!-- Roles — admin only -->
-                    <RouterLink v-if="isAdmin" to="/admin/roles"
+                    <!-- Roles -->
+                    <RouterLink v-if="can.roles" to="/admin/roles"
                         class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col items-center gap-4 hover:shadow-md hover:border-indigo-100 transition-all">
                         <div class="w-14 h-14 rounded-2xl bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition-colors">
                             <svg class="w-7 h-7 text-indigo-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -101,8 +143,22 @@
                         </div>
                     </RouterLink>
 
-                    <!-- Sites — admin only -->
-                    <RouterLink v-if="isAdmin" to="/admin/sites"
+                    <!-- Services -->
+                    <RouterLink v-if="can.services" to="/order/services"
+                        class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col items-center gap-4 hover:shadow-md hover:border-violet-100 transition-all">
+                        <div class="w-14 h-14 rounded-2xl bg-violet-50 flex items-center justify-center group-hover:bg-violet-100 transition-colors">
+                            <svg class="w-7 h-7 text-violet-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l5.653-4.655m5.8-5.8 1.875-1.875a2.625 2.625 0 0 1 3.712 3.712l-1.875 1.875M11.42 15.17 9.17 12.92" />
+                            </svg>
+                        </div>
+                        <div class="text-center">
+                            <p class="font-semibold text-gray-900">Services</p>
+                            <p class="text-xs text-gray-400 mt-0.5">Manage job services</p>
+                        </div>
+                    </RouterLink>
+
+                    <!-- Sites -->
+                    <RouterLink v-if="can.sites" to="/admin/sites"
                         class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col items-center gap-4 hover:shadow-md hover:border-indigo-100 transition-all">
                         <div class="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
                             <svg class="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -115,8 +171,8 @@
                         </div>
                     </RouterLink>
 
-                    <!-- Staff Positions — admin only -->
-                    <RouterLink v-if="isAdmin" to="/admin/staff-positions"
+                    <!-- Staff Positions -->
+                    <RouterLink v-if="can.staff_positions" to="/admin/staff-positions"
                         class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col items-center gap-4 hover:shadow-md hover:border-sky-100 transition-all">
                         <div class="w-14 h-14 rounded-2xl bg-sky-50 flex items-center justify-center group-hover:bg-sky-100 transition-colors">
                             <svg class="w-7 h-7 text-sky-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -129,8 +185,8 @@
                         </div>
                     </RouterLink>
 
-                    <!-- Users — admin only -->
-                    <RouterLink v-if="isAdmin" to="/admin/users"
+                    <!-- Users -->
+                    <RouterLink v-if="can.users" to="/admin/users"
                         class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col items-center gap-4 hover:shadow-md hover:border-indigo-100 transition-all">
                         <div class="w-14 h-14 rounded-2xl bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition-colors">
                             <svg class="w-7 h-7 text-indigo-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -150,7 +206,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
 import AppHeader from '../components/AppHeader.vue'
 import LoadingSpinner from '../components/LoadingSpinner.vue'
 import { useAuth } from '../composables/useAuth'
@@ -158,11 +215,16 @@ import { useAuth } from '../composables/useAuth'
 const { requireAuth } = useAuth()
 const loading = ref(true)
 const user = ref(null)
-
-const isAdmin = computed(() => user.value?.roles?.some(r => r.name === 'admin'))
-const isSuper = computed(() => isAdmin.value && user.value?.permissions?.some(p => p.name === 'super'))
+const can = ref({})
 
 onMounted(async () => {
     await requireAuth(user, loading)
+    if (!user.value) return
+    try {
+        const { data } = await axios.get('/api/admin/abilities')
+        can.value = data.can ?? {}
+    } catch {
+        // leave can empty
+    }
 })
 </script>

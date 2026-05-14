@@ -4,39 +4,41 @@ namespace App\Policies;
 
 use App\Models\User;
 
-class UserPolicy
+class UserPolicy extends AppPolicy
 {
     /** List — admin role only (no extra permission required). */
     public function viewAny(User $authUser): bool
     {
-        return $authUser->hasRole('admin');
+        return $this->userPolicyCheck($authUser, AppPolicy::LIST_ALLOW_PERMISSIONS);
     }
 
-    /** View a single user — admin + (view | super). */
+    /** View a single user — admin. */
     public function view(User $authUser, User $user): bool
     {
-        return $authUser->hasRole('admin')
-            && ($authUser->hasPermissionTo('view') || $authUser->hasPermissionTo('super'));
+        return $this->userPolicyCheck($authUser, AppPolicy::VIEW_ALLOW_PERMISSIONS);
     }
 
-    /** Create a new user — admin + (create | super). */
+    /** Create a new user — admin + (create). */
     public function create(User $authUser): bool
     {
-        return $authUser->hasRole('admin')
-            && ($authUser->hasPermissionTo('create') || $authUser->hasPermissionTo('super'));
+        return $this->userPolicyCheck($authUser, AppPolicy::CREATE_ALLOW_PERMISSIONS);
     }
 
-    /** Update a user — admin + (edit | super). */
+    /** Update a user — admin + (edit). */
     public function update(User $authUser, User $user): bool
     {
-        return $authUser->hasRole('admin')
-            && ($authUser->hasPermissionTo('edit') || $authUser->hasPermissionTo('super'));
+        return $this->userPolicyCheck($authUser, AppPolicy::UPDATE_ALLOW_PERMISSIONS);
     }
 
-    /** Delete a user — admin + (delete | super). */
+    /** Upload staff photo — admin + (create ). */
+    public function uploadPhoto(User $authUser, User $user): bool
+    {
+        return $this->userPolicyCheck($authUser, AppPolicy::CREATE_ALLOW_PERMISSIONS);
+    }
+
+    /** Delete a user — admin + (super). */
     public function delete(User $authUser, User $user): bool
     {
-        return $authUser->hasRole('admin')
-            && ($authUser->hasPermissionTo('delete') || $authUser->hasPermissionTo('super'));
+        return $this->superUserPolicyCheck($authUser);
     }
 }

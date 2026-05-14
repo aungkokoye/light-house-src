@@ -7,11 +7,11 @@
 
             <template v-else>
                 <div class="mb-8 flex items-center gap-3">
-                    <button @click="router.back()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <RouterLink to="/admin/roles" class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                         </svg>
-                    </button>
+                    </RouterLink>
                     <div>
                         <h1 class="text-3xl font-bold text-gray-900">Edit Role</h1>
                         <p class="text-sm text-gray-500 mt-0.5">Update <span class="font-medium text-gray-700">{{ form.name }}</span>.</p>
@@ -79,14 +79,12 @@ async function submit() {
 onMounted(async () => {
     const me = await requireAdmin()
     if (!me) return
-    if (!me.permissions?.some(p => p.name === 'super')) { router.replace('/403'); return }
     try {
         const { data } = await axios.get(`/api/admin/roles/${route.params.id}`)
         form.value.name = data.name
-    } catch {
-        router.push('/admin/roles')
-    } finally {
         loading.value = false
+    } catch (e) {
+        if (!e?.response) router.push('/admin/roles')
     }
 })
 </script>

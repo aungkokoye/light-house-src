@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Concerns\AuditableCrud;
+use App\Concerns\HasAbilities;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreRoleRequest;
 use App\Http\Requests\Admin\UpdateRoleRequest;
@@ -13,15 +14,18 @@ use Spatie\Permission\Models\Role;
 
 class AdminRoleController extends Controller
 {
-    use AuditableCrud;
+    use AuditableCrud, HasAbilities;
 
     public function __construct(private readonly RoleManager $roleManager) {}
 
     public function index(Request $request): JsonResponse
     {
         $perPage = (int) $request->input('per_page', 20);
+        $list    = $this->roleManager->list($request, $perPage);
 
-        return response()->json($this->roleManager->list($request, $perPage));
+        return response()->json(array_merge($list->toArray(), [
+            'can' => $this->listAbilities(Role::class),
+        ]));
     }
 
     public function all(): JsonResponse
@@ -39,7 +43,9 @@ class AdminRoleController extends Controller
 
     public function show(Role $role): JsonResponse
     {
-        return response()->json($this->roleManager->show($role));
+        return response()->json(array_merge($this->roleManager->show($role)->toArray(), [
+            'can' => $this->resourceAbilities($role),
+        ]));
     }
 
     public function update(UpdateRoleRequest $request, Role $role): JsonResponse

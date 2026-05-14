@@ -2,10 +2,10 @@
     <header class="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur border-b border-gray-100">
         <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
             <RouterLink to="/" class="flex items-center gap-2.5">
-                <img :src="'/images/logo.png'" alt="Lighthouse Printing Solutions" class="h-10 w-auto" />
+                <img :src="'/images/logo.png'" :alt="COMPANY_NAME" class="h-10 w-auto" />
                 <div class="flex flex-col leading-tight">
-                    <span class="text-sm font-bold text-red-600 tracking-tight">LightHouse</span>
-                    <span class="text-xs font-medium text-gray-400 tracking-wide">Printing Solutions</span>
+                    <span class="text-sm font-bold text-red-600 tracking-tight">{{ COMPANY_NAME_MAIN }}</span>
+                    <span class="text-xs font-medium text-gray-400 tracking-wide">{{ COMPANY_NAME_SUB }}</span>
                 </div>
             </RouterLink>
 
@@ -21,6 +21,8 @@
 
 <script setup>
 import { useLogout } from '../composables/useLogout'
+import { useCompany } from '../composables/useCompany'
 
 const { logout } = useLogout()
+const { COMPANY_NAME, COMPANY_NAME_MAIN, COMPANY_NAME_SUB } = useCompany()
 </script>

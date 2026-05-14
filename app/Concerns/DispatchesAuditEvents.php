@@ -11,6 +11,7 @@ trait DispatchesAuditEvents
 {
     private array $hiddenAuditFields = [
         'password', 'remember_token', 'email_verification_token',
+        'created_at', 'updated_at',
     ];
 
     protected function auditCreated(Model $model, ?array $newValues = null): void
@@ -54,6 +55,16 @@ trait DispatchesAuditEvents
 
     protected function filterAuditValues(array $values): array
     {
-        return array_diff_key($values, array_flip($this->hiddenAuditFields));
+        $filtered = array_diff_key($values, array_flip($this->hiddenAuditFields));
+
+        return array_map(function ($v) {
+            if ($v instanceof \Carbon\CarbonInterface) {
+                return $v->toDateTimeString();
+            }
+            if (is_string($v) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $v)) {
+                return $v . ' 00:00:00';
+            }
+            return $v;
+        }, $filtered);
     }
 }

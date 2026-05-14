@@ -73,7 +73,7 @@ class UserManager
             $this->staffProfileManager->create($user, $staffProfile, $staffRole ?? [], $createdBy);
         }
 
-        $user = $user->fresh(['roles', 'permissions', 'staffProfile.staffRoles', 'companyProfile']);
+        $user = $user->fresh(['roles', 'permissions', 'staffProfile.staffRoles.position:id,name', 'staffProfile.staffRoles.createdBy:id,name', 'companyProfile']);
         $this->auditCreated($user, $this->buildSnapshot($user));
 
         return $user;
@@ -92,7 +92,7 @@ class UserManager
         ?array $staffProfile = null,
         ?array $staffRole = null,
     ): User {
-        $user->load(['roles', 'permissions', 'staffProfile.staffRoles', 'companyProfile']);
+        $user->load(['roles', 'permissions', 'staffProfile.staffRoles.position:id,name', 'staffProfile.staffRoles.createdBy:id,name', 'companyProfile']);
         $oldValues = $this->buildSnapshot($user);
         $hasSuper  = Auth::user()?->hasPermissionTo('super') ?? false;
 
@@ -126,7 +126,7 @@ class UserManager
             $this->staffProfileManager->upsert($user, $staffProfile, $staffRole, $createdBy);
         }
 
-        $user = $user->fresh(['roles', 'permissions', 'staffProfile.staffRoles', 'companyProfile']);
+        $user = $user->fresh(['roles', 'permissions', 'staffProfile.staffRoles.position:id,name', 'staffProfile.staffRoles.createdBy:id,name', 'companyProfile']);
         $this->auditUpdated($user, $oldValues, $this->buildSnapshot($user));
 
         if ($wasActivated) {
@@ -142,7 +142,7 @@ class UserManager
 
     public function delete(User $user): void
     {
-        $user->load(['roles', 'permissions', 'staffProfile.staffRoles', 'companyProfile']);
+        $user->load(['roles', 'permissions', 'staffProfile.staffRoles.position:id,name', 'staffProfile.staffRoles.createdBy:id,name', 'companyProfile']);
         $this->auditDeleted($user, $this->buildSnapshot($user));
         $user->syncRoles([]);
         $user->syncPermissions([]);
@@ -156,12 +156,24 @@ class UserManager
 
     private function buildSnapshot(User $user): array
     {
+        $staffProfile = null;
+        if ($user->staffProfile) {
+            $staffProfile = $this->filterAuditValues($user->staffProfile->getAttributes());
+            $staffProfile['staffRoles'] = $user->staffProfile->staffRoles->map(fn($sr) => array_merge(
+                $this->filterAuditValues($sr->getAttributes()),
+                [
+                    'staff_position_id' => ['id' => $sr->position?->id, 'name' => $sr->position?->name],
+                    'created_by'        => ['id' => $sr->createdBy?->id, 'name' => $sr->createdBy?->name],
+                ]
+            ))->toArray();
+        }
+
         return array_merge(
             $this->filterAuditValues($user->getAttributes()),
             [
                 'roles'          => $user->roles->pluck('name')->toArray(),
                 'permissions'    => $user->permissions->pluck('name')->toArray(),
-                'staffProfile'   => $user->staffProfile?->toArray(),
+                'staffProfile'   => $staffProfile,
                 'companyProfile' => $user->companyProfile?->toArray(),
             ]
         );

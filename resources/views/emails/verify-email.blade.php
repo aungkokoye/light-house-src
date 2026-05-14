@@ -10,29 +10,14 @@
     <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8fafc;padding:40px 0;">
         <tr>
             <td align="center">
-                <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
+                <table width="100%" cellpadding="0" cellspacing="0" style="max-width:680px;">
 
-                    <!-- Logo -->
-                    <tr>
-                        <td align="center" style="padding-bottom:32px;">
-                            <table cellpadding="0" cellspacing="0">
-                                <tr>
-                                    <td style="background-color:#4f46e5;border-radius:10px;width:36px;height:36px;text-align:center;vertical-align:middle;">
-                                        <span style="color:#ffffff;font-size:18px;font-weight:bold;line-height:36px;">&#9788;</span>
-                                    </td>
-                                    <td style="padding-left:10px;font-size:18px;font-weight:600;color:#111827;vertical-align:middle;">
-                                        Light House
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
+                    @include('emails.partials.header')
 
                     <!-- Card -->
                     <tr>
                         <td style="background-color:#ffffff;border-radius:16px;border:1px solid #e5e7eb;padding:40px;">
 
-                            <!-- Heading -->
                             <p style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">
                                 Verify your email address
                             </p>
@@ -40,10 +25,8 @@
                                 Hi {{ $name }}, thanks for signing up! Please confirm your email address to activate your account.
                             </p>
 
-                            <!-- Divider -->
                             <hr style="border:none;border-top:1px solid #f3f4f6;margin:0 0 24px;" />
 
-                            <!-- Button -->
                             <table width="100%" cellpadding="0" cellspacing="0">
                                 <tr>
                                     <td align="center">
@@ -55,15 +38,12 @@
                                 </tr>
                             </table>
 
-                            <!-- Expiry note -->
                             <p style="margin:24px 0 0;font-size:13px;color:#9ca3af;text-align:center;">
                                 This link expires in 24 hours.
                             </p>
 
-                            <!-- Divider -->
                             <hr style="border:none;border-top:1px solid #f3f4f6;margin:24px 0;" />
 
-                            <!-- Fallback URL -->
                             <p style="margin:0;font-size:13px;color:#6b7280;">
                                 If the button doesn't work, copy and paste this link into your browser:
                             </p>
@@ -74,13 +54,11 @@
                         </td>
                     </tr>
 
-                    <!-- Footer -->
+                    @include('emails.partials.footer')
+
                     <tr>
-                        <td align="center" style="padding-top:24px;">
-                            <p style="margin:0;font-size:12px;color:#9ca3af;">
-                                &copy; {{ date('Y') }} Light House. All rights reserved.
-                            </p>
-                            <p style="margin:4px 0 0;font-size:12px;color:#d1d5db;">
+                        <td align="center" style="padding-top:8px;">
+                            <p style="margin:0;font-size:12px;color:#d1d5db;">
                                 If you didn't create an account, you can safely ignore this email.
                             </p>
                         </td>

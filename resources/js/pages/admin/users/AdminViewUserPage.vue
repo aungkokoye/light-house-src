@@ -10,7 +10,7 @@
                 <!-- Header -->
                 <div class="mb-8 flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <RouterLink :to="route.query.back || '/admin/users'" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <RouterLink to="/admin/users" @click.prevent="goBack('/admin/users', 'user-list-back')" class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                             </svg>
@@ -20,7 +20,7 @@
                             <p class="text-sm text-gray-500 mt-0.5">Viewing account for <span class="font-medium text-gray-700">{{ user.name }}</span>.</p>
                         </div>
                     </div>
-                    <RouterLink v-if="can('edit')" :to="{ path: `/admin/users/${user.id}/edit`, query: { back: route.query.back || '/admin/users' } }"
+                    <RouterLink v-if="can.edit" :to="`/admin/users/${user.id}/edit`"
                         class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931z" />
@@ -287,9 +287,11 @@ import AppHeader from '../../../components/AppHeader.vue'
 import LoadingSpinner from '../../../components/LoadingSpinner.vue'
 import { useAdminGuard } from '../../../composables/useAdminGuard'
 import { useFormatDate } from '../../../composables/useFormatDate'
+import { useGoBack } from '../../../composables/useGoBack'
 
 const router = useRouter()
 const route = useRoute()
+const { goBack } = useGoBack()
 const { requireAdmin } = useAdminGuard()
 const { formatDate } = useFormatDate()
 const loading = ref(true)
@@ -300,11 +302,7 @@ const userInitials = computed(() =>
         : '?'
 )
 const resending = ref(false)
-const myPermissions = ref([])
-
-function can(permission) {
-    return myPermissions.value.includes('super') || myPermissions.value.includes(permission)
-}
+const can = ref({})
 
 async function resendVerification() {
     resending.value = true
@@ -319,11 +317,10 @@ onMounted(async () => {
     const me = await requireAdmin()
     if (!me) return
 
-    myPermissions.value = me.permissions?.map(p => p.name) ?? []
-
     try {
         const { data } = await axios.get(`/api/admin/users/${route.params.id}`)
         user.value = data
+        can.value  = data.can ?? {}
     } catch {
         router.push('/admin/users')
     } finally {

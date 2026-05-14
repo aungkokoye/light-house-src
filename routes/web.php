@@ -36,7 +36,7 @@ Route::get('/email/verify/{token}', function (string $token) {
 Route::get('/auth/google/redirect', [SocialAuthController::class, 'redirectToGoogle']);
 Route::get('/auth/google/callback', [SocialAuthController::class, 'handleGoogleCallback']);
 
-// SPA catch-all — must be last
+// SPA catch-all — must be last, excludes /api/* paths
 Route::get('/{any}', function () {
     return view('app');
-})->where('any', '.*');
+})->where('any', '^(?!api(?:/|$)).*');

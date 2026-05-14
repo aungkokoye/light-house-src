@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Concerns\AuditableCrud;
+use App\Concerns\HasAbilities;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreStaffPositionRequest;
 use App\Http\Requests\Admin\UpdateStaffPositionRequest;
@@ -13,7 +14,7 @@ use Illuminate\Http\Request;
 
 class AdminStaffPositionController extends Controller
 {
-    use AuditableCrud;
+    use AuditableCrud, HasAbilities;
 
     public function __construct(private readonly StaffPositionManager $staffPositionManager) {}
 
@@ -25,8 +26,11 @@ class AdminStaffPositionController extends Controller
     public function index(Request $request): JsonResponse
     {
         $perPage = (int) $request->input('per_page', 20);
+        $list    = $this->staffPositionManager->list($request, $perPage);
 
-        return response()->json($this->staffPositionManager->list($request, $perPage));
+        return response()->json(array_merge($list->toArray(), [
+            'can' => $this->listAbilities(StaffPosition::class),
+        ]));
     }
 
     public function store(StoreStaffPositionRequest $request): JsonResponse
@@ -39,7 +43,9 @@ class AdminStaffPositionController extends Controller
 
     public function show(StaffPosition $staffPosition): JsonResponse
     {
-        return response()->json($this->staffPositionManager->show($staffPosition));
+        return response()->json(array_merge($this->staffPositionManager->show($staffPosition)->toArray(), [
+            'can' => $this->resourceAbilities($staffPosition),
+        ]));
     }
 
     public function update(UpdateStaffPositionRequest $request, StaffPosition $staffPosition): JsonResponse
@@ -53,8 +59,18 @@ class AdminStaffPositionController extends Controller
 
     public function destroy(StaffPosition $staffPosition): JsonResponse
     {
-        $this->auditDeleted($staffPosition);
-        $this->staffPositionManager->delete($staffPosition);
+        $snapshot = $this->filterAuditValues($staffPosition->getAttributes());
+
+        try {
+            $this->staffPositionManager->delete($staffPosition);
+        } catch (\Illuminate\Database\QueryException $e) {
+            if ($e->getCode() === '23000') {
+                return response()->json(['message' => 'Cannot delete this position because it is assigned to one or more staff members.'], 422);
+            }
+            throw $e;
+        }
+
+        $this->auditDeleted($staffPosition, $snapshot);
 
         return response()->json(['message' => 'Staff position deleted successfully.']);
     }

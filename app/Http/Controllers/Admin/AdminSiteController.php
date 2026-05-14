@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Concerns\AuditableCrud;
+use App\Concerns\HasAbilities;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreSiteRequest;
 use App\Http\Requests\Admin\UpdateSiteRequest;
@@ -13,7 +14,7 @@ use Illuminate\Http\Request;
 
 class AdminSiteController extends Controller
 {
-    use AuditableCrud;
+    use AuditableCrud, HasAbilities;
 
     public function __construct(private readonly SiteManager $siteManager) {}
 
@@ -25,8 +26,11 @@ class AdminSiteController extends Controller
     public function index(Request $request): JsonResponse
     {
         $perPage = (int) $request->input('per_page', 20);
+        $list    = $this->siteManager->list($request, $perPage);
 
-        return response()->json($this->siteManager->list($request, $perPage));
+        return response()->json(array_merge($list->toArray(), [
+            'can' => $this->listAbilities(Site::class),
+        ]));
     }
 
     public function store(StoreSiteRequest $request): JsonResponse
@@ -39,7 +43,9 @@ class AdminSiteController extends Controller
 
     public function show(Site $site): JsonResponse
     {
-        return response()->json($this->siteManager->show($site));
+        return response()->json(array_merge($this->siteManager->show($site)->toArray(), [
+            'can' => $this->resourceAbilities($site),
+        ]));
     }
 
     public function update(UpdateSiteRequest $request, Site $site): JsonResponse

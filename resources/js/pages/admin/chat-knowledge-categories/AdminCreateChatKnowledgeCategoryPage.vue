@@ -7,13 +7,13 @@
 
             <template v-else>
                 <div class="mb-8 flex items-center gap-3">
-                    <RouterLink to="/admin/chat-knowledge-categories" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <RouterLink to="/admin/chat-knowledge-categories" @click.prevent="goBack('/admin/chat-knowledge-categories', 'chat-knowledge-categories-back')" class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                         </svg>
                     </RouterLink>
                     <div>
-                        <h1 class="text-3xl font-bold text-gray-900">New Category</h1>
+                        <h1 class="text-3xl font-bold text-gray-900">New Chat Knowledge Categories</h1>
                         <p class="text-sm text-gray-500 mt-0.5">Add a knowledge category for the AI chatbot.</p>
                     </div>
                 </div>
@@ -47,7 +47,7 @@
                         <p v-if="generalError" class="text-xs text-red-500">{{ generalError }}</p>
 
                         <div class="flex items-center justify-end gap-3 pt-2">
-                            <RouterLink to="/admin/chat-knowledge-categories" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors">Cancel</RouterLink>
+                            <button type="button" @click="goBack('/admin/chat-knowledge-categories', 'chat-knowledge-categories-back')" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors">Cancel</button>
                             <button type="submit" :disabled="submitting"
                                 class="px-5 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors">
                                 {{ submitting ? 'Creating…' : 'Create Category' }}
@@ -67,9 +67,11 @@ import axios from 'axios'
 import AppHeader from '../../../components/AppHeader.vue'
 import LoadingSpinner from '../../../components/LoadingSpinner.vue'
 import { useAdminGuard } from '../../../composables/useAdminGuard'
+import { useGoBack } from '../../../composables/useGoBack'
 
 const router = useRouter()
 const { requireAdmin } = useAdminGuard()
+const { goBack } = useGoBack()
 const loading = ref(true)
 const submitting = ref(false)
 const errors = ref({})
@@ -95,10 +97,12 @@ async function submit() {
 onMounted(async () => {
     const me = await requireAdmin()
     if (!me) return
-    if (!me.permissions?.some(p => p.name === 'super')) {
-        router.replace('/403')
-        return
+    try {
+        const { data } = await axios.get('/api/admin/chat-knowledge-categories?per_page=1')
+        if (!data.can?.create) { router.replace('/403'); return }
+        loading.value = false
+    } catch (e) {
+        if (!e?.response) router.push('/admin/chat-knowledge-categories')
     }
-    loading.value = false
 })
 </script>
