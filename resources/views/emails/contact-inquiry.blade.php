@@ -12,12 +12,10 @@
             <td align="center">
                 <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
 
-                    <!-- Logo / Header -->
+                    <!-- Logo -->
                     <tr>
                         <td align="center" style="padding-bottom:32px;">
-                            <p style="margin:0;font-size:20px;font-weight:700;color:#1e3a5f;letter-spacing:1px;">
-                                LIGHTHOUSE <span style="color:#dc2626;">PRINTING SOLUTIONS</span>
-                            </p>
+                            <img src="{{ asset('images/logo.png') }}" alt="Light House" height="48" style="display:block;" />
                         </td>
                     </tr>
 

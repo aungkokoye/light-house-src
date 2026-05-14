@@ -15,16 +15,7 @@
                     <!-- Logo -->
                     <tr>
                         <td align="center" style="padding-bottom:32px;">
-                            <table cellpadding="0" cellspacing="0">
-                                <tr>
-                                    <td style="background-color:#4f46e5;border-radius:10px;width:36px;height:36px;text-align:center;vertical-align:middle;">
-                                        <span style="color:#ffffff;font-size:18px;font-weight:bold;line-height:36px;">&#9788;</span>
-                                    </td>
-                                    <td style="padding-left:10px;font-size:18px;font-weight:600;color:#111827;vertical-align:middle;">
-                                        Light House
-                                    </td>
-                                </tr>
-                            </table>
+                            <img src="{{ asset('images/logo.png') }}" alt="Light House" height="48" style="display:block;" />
                         </td>
                     </tr>
 

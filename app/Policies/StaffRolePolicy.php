@@ -10,28 +10,28 @@ class StaffRolePolicy extends AppPolicy
     /** List / view — admin + edit. */
     public function viewAny(User $authUser): bool
     {
-        return $this->basePolicyCheck($authUser, AppPolicy::UPDATE_ALLOW_PERMISSIONS);
+        return $this->userPolicyCheck($authUser, AppPolicy::UPDATE_ALLOW_PERMISSIONS);
     }
 
     public function view(User $authUser, StaffRole $staffRole): bool
     {
-        return $this->basePolicyCheck($authUser, AppPolicy::UPDATE_ALLOW_PERMISSIONS);
+        return $this->userPolicyCheck($authUser, AppPolicy::UPDATE_ALLOW_PERMISSIONS);
     }
 
     /** Create / update — admin + edit. */
     public function create(User $authUser): bool
     {
-        return $this->basePolicyCheck($authUser, AppPolicy::UPDATE_ALLOW_PERMISSIONS);
+        return $this->userPolicyCheck($authUser, AppPolicy::UPDATE_ALLOW_PERMISSIONS);
     }
 
     public function update(User $authUser, StaffRole $staffRole): bool
     {
-        return $this->basePolicyCheck($authUser, AppPolicy::UPDATE_ALLOW_PERMISSIONS);
+        return $this->userPolicyCheck($authUser, AppPolicy::UPDATE_ALLOW_PERMISSIONS);
     }
 
     /** Delete — admin + delete. */
     public function delete(User $authUser, StaffRole $staffRole): bool
     {
-        return $this->basePolicyCheck($authUser, AppPolicy::UPDATE_ALLOW_PERMISSIONS);
+        return $this->userPolicyCheck($authUser, AppPolicy::UPDATE_ALLOW_PERMISSIONS);
     }
 }

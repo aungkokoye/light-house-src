@@ -22,14 +22,24 @@
                     <!-- Header fields -->
                     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
                         <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Customer <span class="text-red-400">*</span></label>
+                            <div class="flex items-center justify-between mb-1.5">
+                                <label class="block text-xs font-medium text-gray-600">Customer <span class="text-red-400">*</span></label>
+                                <button type="button" @click="showNewCustomer = true"
+                                    class="inline-flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-700 transition-colors">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                    </svg>
+                                    New Customer
+                                </button>
+                            </div>
                             <SearchableSelect
                                 v-model="form.customer_id"
-                                :options="[]"
+                                :options="customerOptions"
                                 :on-search="searchCustomers"
-                                placeholder="Search customer…"
-                                :has-error="!!errors.customer_id" />
-                            <p v-if="errors.customer_id" class="mt-1 text-xs text-red-500">{{ errors.customer_id[0] }}</p>
+                                placeholder="Start typing to search by customer name, email or company name"
+                                :has-error="!!errors.customer_id"
+                                @update:modelValue="newlyRegistered = false" />
+                            <p v-if="newlyRegistered" class="mt-1 text-xs text-indigo-500">Newly registered customer</p>
                         </div>
 
                         <div>
@@ -232,6 +242,93 @@
             </template>
         </div>
     </div>
+
+    <!-- New Customer Modal -->
+    <Teleport to="body">
+        <div v-if="showNewCustomer" class="fixed inset-0 z-50 flex items-center justify-center px-4">
+            <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="closeNewCustomer"></div>
+
+            <div class="relative w-full max-w-lg bg-white rounded-2xl shadow-xl overflow-hidden">
+                <!-- Modal header -->
+                <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                    <h3 class="font-semibold text-gray-900">Register New Customer</h3>
+                    <button type="button" @click="closeNewCustomer" class="p-1 text-gray-400 hover:text-gray-600 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Modal body -->
+                <div class="px-6 py-5 space-y-4 max-h-[70vh] overflow-y-auto">
+                    <!-- Account -->
+                    <div class="space-y-3">
+                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Account</p>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Name <span class="text-red-400">*</span></label>
+                            <input v-model="newCustomer.name" type="text" placeholder="Full name"
+                                class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
+                                :class="newCustomerErrors.name ? 'border-red-300' : 'border-gray-300'" />
+                            <p v-if="newCustomerErrors.name" class="mt-1 text-xs text-red-500">{{ newCustomerErrors.name[0] }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Email <span class="text-red-400">*</span></label>
+                            <input v-model="newCustomer.email" type="email" placeholder="email@example.com"
+                                class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
+                                :class="newCustomerErrors.email ? 'border-red-300' : 'border-gray-300'" />
+                            <p v-if="newCustomerErrors.email" class="mt-1 text-xs text-red-500">{{ newCustomerErrors.email[0] }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Company -->
+                    <div class="space-y-3">
+                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Company</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1.5">Company Name <span class="text-red-400">*</span></label>
+                                <input v-model="newCustomer.company_profile.name" type="text" placeholder="Company name"
+                                    class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
+                                    :class="newCustomerErrors['company_profile.name'] ? 'border-red-300' : 'border-gray-300'" />
+                                <p v-if="newCustomerErrors['company_profile.name']" class="mt-1 text-xs text-red-500">{{ newCustomerErrors['company_profile.name'][0] }}</p>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1.5">Title / Role <span class="text-red-400">*</span></label>
+                                <input v-model="newCustomer.company_profile.role" type="text" placeholder="e.g. Manager"
+                                    class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
+                                    :class="newCustomerErrors['company_profile.role'] ? 'border-red-300' : 'border-gray-300'" />
+                                <p v-if="newCustomerErrors['company_profile.role']" class="mt-1 text-xs text-red-500">{{ newCustomerErrors['company_profile.role'][0] }}</p>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Phone <span class="text-red-400">*</span></label>
+                            <input v-model="newCustomer.company_profile.phone" type="text" placeholder="+95 9 xxx xxx xxx"
+                                class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
+                                :class="newCustomerErrors['company_profile.phone'] ? 'border-red-300' : 'border-gray-300'" />
+                            <p v-if="newCustomerErrors['company_profile.phone']" class="mt-1 text-xs text-red-500">{{ newCustomerErrors['company_profile.phone'][0] }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Address <span class="text-red-400">*</span></label>
+                            <textarea v-model="newCustomer.company_profile.address" rows="2" placeholder="Company address"
+                                class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50 resize-none"
+                                :class="newCustomerErrors['company_profile.address'] ? 'border-red-300' : 'border-gray-300'"></textarea>
+                            <p v-if="newCustomerErrors['company_profile.address']" class="mt-1 text-xs text-red-500">{{ newCustomerErrors['company_profile.address'][0] }}</p>
+                        </div>
+                    </div>
+
+                    <p v-if="newCustomerGeneralError" class="text-xs text-red-500">{{ newCustomerGeneralError }}</p>
+                </div>
+
+                <!-- Modal footer -->
+                <div class="px-6 py-4 border-t border-gray-100 flex items-center justify-end gap-3">
+                    <button type="button" @click="closeNewCustomer" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors">Cancel</button>
+                    <button type="button" @click="submitNewCustomer" :disabled="savingCustomer"
+                        class="px-5 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors">
+                        {{ savingCustomer ? 'Registering…' : 'Register Customer' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </Teleport>
 </template>
 
 <script setup>
@@ -250,6 +347,45 @@ const errors = ref({})
 const generalError = ref('')
 const banks = ref([])
 const paymentMeta = ref(null)
+const customerOptions    = ref([])
+const showNewCustomer    = ref(false)
+const newlyRegistered    = ref(false)
+const savingCustomer = ref(false)
+const newCustomerErrors = ref({})
+const newCustomerGeneralError = ref('')
+const newCustomer = ref({
+    name: '', email: '',
+    company_profile: { name: '', role: '', phone: '', address: '' },
+})
+
+function closeNewCustomer() {
+    showNewCustomer.value = false
+    newCustomerErrors.value = {}
+    newCustomerGeneralError.value = ''
+    newCustomer.value = { name: '', email: '', company_profile: { name: '', role: '', phone: '', address: '' } }
+}
+
+async function submitNewCustomer() {
+    newCustomerErrors.value = {}
+    newCustomerGeneralError.value = ''
+    savingCustomer.value = true
+    try {
+        const { data } = await axios.post('/api/order/customers', newCustomer.value)
+        customerOptions.value = [{
+            value: data.id,
+            label: data.company_name ? `${data.name} (${data.company_name})` : data.name,
+            sub:   data.email,
+        }]
+        form.value.customer_id = data.id
+        newlyRegistered.value = true
+        closeNewCustomer()
+    } catch (e) {
+        if (e?.response?.status === 422) newCustomerErrors.value = e.response.data.errors ?? {}
+        else newCustomerGeneralError.value = 'Something went wrong. Please try again.'
+    } finally {
+        savingCustomer.value = false
+    }
+}
 
 async function searchCustomers(q) {
     if (!q || q.length < 2) return []
@@ -323,9 +459,9 @@ onMounted(async () => {
             axios.get('/api/order/banks'),
             axios.get('/api/order/payments/meta'),
         ])
-        banks.value   = bankRes.data.data ?? []
+        banks.value       = bankRes.data.data ?? []
         paymentMeta.value = metaRes.data
-        loading.value = false
+        loading.value     = false
     } catch {
         generalError.value = 'Failed to load form data.'
     }

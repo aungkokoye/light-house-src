@@ -34,7 +34,8 @@ Route::middleware(['auth:sanctum', 'role:admin|user'])->prefix('order')->group(f
     Route::get('/products/{product}/prices',                   [ProductController::class, 'prices'])       ->can('viewAny', PaymentPrice::class);
     Route::delete('/products/{product}/prices/{price}',        [ProductController::class, 'destroyPrice']) ->can('delete',  'price');
 
-    Route::get('/customers',             [InvoiceController::class, 'customers'])->can('viewAny', Invoice::class);
+    Route::get('/customers',             [InvoiceController::class, 'customers'])       ->can('viewAny', Invoice::class);
+    Route::post('/customers',            [InvoiceController::class, 'registerCustomer'])->can('create', Invoice::class);
 
     Route::get('/invoices',              [InvoiceController::class, 'index'])  ->can('viewAny', Invoice::class);
     Route::post('/invoices',             [InvoiceController::class, 'store'])  ->can('create',  Invoice::class);

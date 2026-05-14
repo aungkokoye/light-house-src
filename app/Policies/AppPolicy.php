@@ -13,13 +13,9 @@ class AppPolicy
     const array UPDATE_ALLOW_PERMISSIONS = ['update', 'delete', 'super'];
     const array DELETE_ALLOW_PERMISSIONS = ['delete', 'super'];
 
-    protected function basePolicyCheck(User $user, array $policies): bool
+    protected function userPolicyCheck(User $user, array $policies): bool
     {
-        if ($this->adminPolicyCheck($user, $policies))  {
-            return true;
-        }
-
-        return false;
+        return $this->adminPolicyCheck($user, $policies);
     }
 
     protected function adminPolicyCheck(User $user, array $policies): bool

@@ -2,11 +2,16 @@
 
 namespace Modules\Orders\Services;
 
+use App\Concerns\DispatchesAuditEvents;
+use App\Models\User;
+use App\Notifications\CustomerCredentialsNotification;
+use App\Services\UserManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Modules\Orders\Filters\InvoiceFilter;
 use Modules\Orders\Models\Invoice;
 use Modules\Orders\Models\InvoiceJob;
@@ -14,6 +19,38 @@ use Modules\Orders\Models\Payment;
 
 class InvoiceManager
 {
+    use DispatchesAuditEvents;
+
+    public function __construct(private readonly UserManager $userManager) {}
+
+    public function registerCustomer(array $data): User
+    {
+        $password = Str::password(12);
+        $token    = Str::random(64);
+
+        $customer = $this->userManager->create(
+            name:           $data['name'],
+            email:          $data['email'],
+            password:       $password,
+            role:           'customer',
+            companyProfile: $data['company_profile'],
+        );
+
+        $customer->forceFill([
+            'email_verification_token'      => $token,
+            'email_verification_expires_at' => now()->addHours(24),
+        ])->save();
+
+        $this->auditCreated($customer, array_merge(
+            $this->filterAuditValues($customer->getAttributes()),
+            ['company_profile' => $customer->companyProfile?->only(['name', 'role', 'phone', 'address'])]
+        ));
+
+        $customer->notify(new CustomerCredentialsNotification($password, $token));
+
+        return $customer;
+    }
+
     public function list(Request $request, int $perPage): LengthAwarePaginator
     {
         $query = Invoice::with(['customer:id,name,email', 'createdBy:id,name'])

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Verify your email</title>
+    <title>Your Account Credentials</title>
 </head>
 <body style="margin:0;padding:0;background-color:#f8fafc;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
 
@@ -23,43 +23,54 @@
                     <tr>
                         <td style="background-color:#ffffff;border-radius:16px;border:1px solid #e5e7eb;padding:40px;">
 
-                            <!-- Heading -->
                             <p style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">
-                                Verify your email address
+                                Welcome to Light House!
                             </p>
                             <p style="margin:0 0 24px;font-size:15px;color:#6b7280;line-height:1.6;">
-                                Hi {{ $name }}, thanks for signing up! Please confirm your email address to activate your account.
+                                Hi {{ $name }}, your account has been created. Use the credentials below to sign in.
                             </p>
 
-                            <!-- Divider -->
                             <hr style="border:none;border-top:1px solid #f3f4f6;margin:0 0 24px;" />
+
+                            <!-- Credentials -->
+                            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+                                <tr>
+                                    <td style="padding:10px 14px;background-color:#f9fafb;border-radius:8px 8px 0 0;border:1px solid #e5e7eb;border-bottom:none;">
+                                        <p style="margin:0;font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em;">Email</p>
+                                        <p style="margin:4px 0 0;font-size:15px;color:#111827;font-weight:500;">{{ $email }}</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:10px 14px;background-color:#f9fafb;border-radius:0 0 8px 8px;border:1px solid #e5e7eb;">
+                                        <p style="margin:0;font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em;">Password</p>
+                                        <p style="margin:4px 0 0;font-size:15px;color:#111827;font-weight:500;font-family:monospace;">{{ $password }}</p>
+                                    </td>
+                                </tr>
+                            </table>
 
                             <!-- Button -->
                             <table width="100%" cellpadding="0" cellspacing="0">
                                 <tr>
                                     <td align="center">
-                                        <a href="{{ $url }}"
+                                        <a href="{{ $verifyUrl }}"
                                            style="display:inline-block;background-color:#4f46e5;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;padding:14px 32px;border-radius:10px;">
-                                            Verify email address
+                                            Verify Email &amp; Sign In
                                         </a>
                                     </td>
                                 </tr>
                             </table>
 
-                            <!-- Expiry note -->
-                            <p style="margin:24px 0 0;font-size:13px;color:#9ca3af;text-align:center;">
+                            <p style="margin:16px 0 0;font-size:13px;color:#9ca3af;text-align:center;">
                                 This link expires in 24 hours.
                             </p>
 
-                            <!-- Divider -->
                             <hr style="border:none;border-top:1px solid #f3f4f6;margin:24px 0;" />
 
-                            <!-- Fallback URL -->
                             <p style="margin:0;font-size:13px;color:#6b7280;">
                                 If the button doesn't work, copy and paste this link into your browser:
                             </p>
                             <p style="margin:8px 0 0;font-size:12px;word-break:break-all;">
-                                <a href="{{ $url }}" style="color:#4f46e5;text-decoration:none;">{{ $url }}</a>
+                                <a href="{{ $verifyUrl }}" style="color:#4f46e5;text-decoration:none;">{{ $verifyUrl }}</a>
                             </p>
 
                         </td>
@@ -70,9 +81,6 @@
                         <td align="center" style="padding-top:24px;">
                             <p style="margin:0;font-size:12px;color:#9ca3af;">
                                 &copy; {{ date('Y') }} Light House. All rights reserved.
-                            </p>
-                            <p style="margin:4px 0 0;font-size:12px;color:#d1d5db;">
-                                If you didn't create an account, you can safely ignore this email.
                             </p>
                         </td>
                     </tr>

@@ -10,17 +10,20 @@ class PaymentPolicy extends OrderPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $this->userPolicyCheck($user, OrderPolicy::LIST_ALLOW_PERMISSIONS);
+        return $this->superUserPolicyCheck($user)
+            || $this->userPolicyCheck($user, OrderPolicy::LIST_ALLOW_PERMISSIONS);
     }
 
     public function view(User $user, Payment $payment): bool
     {
-        return $this->userPolicyCheck($user, OrderPolicy::CREATE_ALLOW_PERMISSIONS);
+        return $this->superUserPolicyCheck($user)
+            || $this->userPolicyCheck($user, OrderPolicy::CREATE_ALLOW_PERMISSIONS);
     }
 
     public function create(User $user): bool
     {
-        return $this->userPolicyCheck($user, OrderPolicy::CREATE_ALLOW_PERMISSIONS);
+        return $this->superUserPolicyCheck($user)
+            || $this->userPolicyCheck($user, OrderPolicy::CREATE_ALLOW_PERMISSIONS);
     }
 
     public function update(User $user, Payment $payment): bool

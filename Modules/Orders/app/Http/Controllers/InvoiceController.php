@@ -9,6 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use App\Concerns\HasAbilities;
+use Modules\Orders\Http\Requests\StoreCustomerRequest;
 use Modules\Orders\Http\Requests\StoreInvoiceRequest;
 use Modules\Orders\Http\Requests\UpdateInvoiceRequest;
 use Modules\Orders\Models\Invoice;
@@ -23,6 +24,20 @@ class InvoiceController extends Controller
     const array PER_PAGE_LIST  = [5, 10, 15, 25, 50];
 
     public function __construct(private readonly InvoiceManager $manager) {}
+
+    public function registerCustomer(StoreCustomerRequest $request): JsonResponse
+    {
+        $customer = $this->manager->registerCustomer($request->validated());
+
+        $customer->loadMissing('companyProfile:user_id,name');
+
+        return response()->json([
+            'id'           => $customer->id,
+            'name'         => $customer->name,
+            'email'        => $customer->email,
+            'company_name' => $customer->companyProfile?->name,
+        ], 201);
+    }
 
     public function customers(Request $request): JsonResponse
     {
