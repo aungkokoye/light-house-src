@@ -28,7 +28,7 @@
                     </div>
                     <div>
                         <div class="flex items-center gap-1.5">
-                            <p class="text-sm font-semibold text-white">LightHouse AI Assistant</p>
+                            <p class="text-sm font-semibold text-white">{{ COMPANY_NAME }} AI Assistant</p>
                         </div>
                         <p class="text-xs text-indigo-200">Powered by GPT · Always here to help</p>
                     </div>
@@ -43,7 +43,7 @@
             <!-- Messages -->
             <div ref="messagesEl" class="flex-1 overflow-y-auto px-4 py-4 space-y-3">
                 <div v-if="messages.length === 0" class="flex items-center justify-center h-full">
-                    <p class="text-sm text-gray-400 text-center">Hi! Ask me anything about LightHouse.</p>
+                    <p class="text-sm text-gray-400 text-center">Hi! Ask me anything about {{ COMPANY_NAME }}.</p>
                 </div>
                 <template v-for="(msg, i) in messages" :key="i">
                     <!-- User -->
@@ -86,6 +86,9 @@
 
 <script setup>
 import { ref, nextTick, watch } from 'vue'
+import { useCompany } from '../composables/useCompany'
+
+const { COMPANY_NAME } = useCompany()
 
 const props = defineProps({
     user: { type: Object, default: null },

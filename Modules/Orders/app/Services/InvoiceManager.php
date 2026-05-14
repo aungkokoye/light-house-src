@@ -67,14 +67,29 @@ class InvoiceManager
             ->paginate($perPage);
     }
 
-    public function show(Invoice $invoice): Invoice
+    public function sendToCustomer(Invoice $invoice): void
     {
-        return $invoice->load([
+        $invoice->loadMissing([
             'customer:id,name,email',
             'customer.companyProfile:user_id,name',
             'jobs.service:id,name',
             'jobs.product:id,name',
             'payments.bank:id,name',
+            'createdBy:id,name',
+        ]);
+
+        $invoice->customer->notify(new \App\Notifications\InvoiceNotification($invoice));
+    }
+
+    public function show(Invoice $invoice): Invoice
+    {
+        return $invoice->load([
+            'customer:id,name,email,email_verified_at',
+            'customer.companyProfile:user_id,name',
+            'jobs.service:id,name',
+            'jobs.product:id,name',
+            'payments.bank:id,name',
+            'payments.createdBy:id,name',
             'createdBy:id,name',
         ]);
     }

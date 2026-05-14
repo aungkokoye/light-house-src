@@ -38,14 +38,16 @@ Route::middleware(['auth:sanctum', 'role:admin|user'])->prefix('order')->group(f
     Route::post('/customers',            [InvoiceController::class, 'registerCustomer'])->can('create', Invoice::class);
 
     Route::get('/invoices',              [InvoiceController::class, 'index'])  ->can('viewAny', Invoice::class);
+    Route::post('/invoices/{invoice}/send', [InvoiceController::class, 'send'])->can('view', 'invoice');
     Route::post('/invoices',             [InvoiceController::class, 'store'])  ->can('create',  Invoice::class);
     Route::get('/invoices/{invoice}',    [InvoiceController::class, 'show'])   ->can('view',    'invoice');
     Route::put('/invoices/{invoice}',    [InvoiceController::class, 'update']) ->can('update',  'invoice');
     Route::delete('/invoices/{invoice}', [InvoiceController::class, 'destroy'])->can('delete',  'invoice');
 
-    Route::get('/payments/meta',          [PaymentController::class, 'meta']);
-    Route::post('/payments',              [PaymentController::class, 'store'])  ->can('create',  Payment::class);
-    Route::get('/payments/{payment}',     [PaymentController::class, 'show'])   ->can('view',    'payment');
-    Route::put('/payments/{payment}',     [PaymentController::class, 'update']) ->can('update',  'payment');
-    Route::delete('/payments/{payment}',  [PaymentController::class, 'destroy'])->can('delete',  'payment');
+    Route::get('/payments/meta',                        [PaymentController::class, 'meta']);
+    Route::post('/payments',                            [PaymentController::class, 'store'])       ->can('create',  Payment::class);
+    Route::get('/payments/{payment}',                   [PaymentController::class, 'show'])        ->can('view',    'payment');
+    Route::put('/payments/{payment}',                   [PaymentController::class, 'update'])      ->can('update',  'payment');
+    Route::delete('/payments/{payment}',                [PaymentController::class, 'destroy'])     ->can('delete',  'payment');
+    Route::post('/payments/{payment}/send-receipt',     [PaymentController::class, 'sendReceipt']) ->can('view',    'payment');
 });

@@ -75,6 +75,19 @@ class InvoiceController extends Controller
         ]));
     }
 
+    public function send(Invoice $invoice): JsonResponse
+    {
+        $invoice->loadMissing('customer:id,name,email,email_verified_at');
+
+        if (! $invoice->customer || ! $invoice->customer->email_verified_at) {
+            return response()->json(['message' => 'Customer email is not verified.'], 422);
+        }
+
+        $this->manager->sendToCustomer($invoice);
+
+        return response()->json(['message' => 'Invoice sent to ' . $invoice->customer->email]);
+    }
+
     public function store(StoreInvoiceRequest $request): JsonResponse
     {
         $invoice = $this->manager->create($request->validated());

@@ -50,6 +50,27 @@ class PaymentController extends Controller
         return response()->json($updated);
     }
 
+    public function sendReceipt(Payment $payment): JsonResponse
+    {
+        $payment->loadMissing([
+            'invoice:id,invoice_no,total,customer_id',
+            'invoice.customer:id,name,email,email_verified_at',
+            'invoice.customer.companyProfile:user_id,name',
+            'bank:id,name',
+            'createdBy:id,name',
+        ]);
+
+        $customer = $payment->invoice?->customer;
+
+        if (! $customer || ! $customer->email_verified_at) {
+            return response()->json(['message' => 'Customer email is not verified.'], 422);
+        }
+
+        $customer->notify(new \App\Notifications\PaymentReceiptNotification($payment));
+
+        return response()->json(['message' => 'Receipt sent to ' . $customer->email]);
+    }
+
     public function destroy(Payment $payment): JsonResponse
     {
         $payment->load('bank:id,name', 'createdBy:id,name');
