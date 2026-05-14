@@ -16,6 +16,11 @@
                         <h1 class="text-3xl font-bold text-gray-900 font-mono">{{ invoice.invoice_no }}</h1>
                         <p class="text-xs text-gray-400 mt-0.5">Created {{ formatDate(invoice.created_at) }} by {{ invoice.created_by?.name ?? '—' }}</p>
                     </div>
+                    <button type="button" @click="printInvoice"
+                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0 1 10.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0 .229 2.523a1.125 1.125 0 0 1-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0 0 21 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 0 0-1.913-.247M6.34 18H5.25A2.25 2.25 0 0 1 3 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 0 1 1.913-.247m10.5 0a48.536 48.536 0 0 0-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5Zm-3 0h.008v.008H15V10.5Z" /></svg>
+                        Print
+                    </button>
                     <RouterLink v-if="can.edit" :to="`/order/invoices/${invoice.id}/edit`"
                         class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931z" /></svg>
@@ -259,6 +264,119 @@
         </div>
     </Teleport>
 
+    <!-- Print layout (hidden on screen, visible when printing) -->
+    <div id="invoice-print" class="hidden">
+        <div class="print-page">
+            <!-- Header -->
+            <div class="print-header">
+                <div>
+                    <div class="print-logo-row">
+                        <img :src="'/images/logo.png'" alt="Light House" class="print-logo" />
+                        <div class="print-company-name">{{ COMPANY_NAME }}</div>
+                    </div>
+                    <div class="print-company-info">
+                        <div class="print-contact-row">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
+                            {{ COMPANY_ADDRESS }}
+                        </div>
+                        <div class="print-contact-row">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                            {{ COMPANY_FACEBOOK }}
+                        </div>
+                        <div class="print-contact-row">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/></svg>
+                            {{ COMPANY_PHONE }}
+                        </div>
+                        <div class="print-contact-row">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"/></svg>
+                            {{ COMPANY_EMAIL }}
+                        </div>
+                    </div>
+                </div>
+                <div class="print-header-right">
+                    <div class="print-invoice-label">INVOICE</div>
+                    <div class="print-invoice-no">{{ invoice?.invoice_no }}</div>
+                    <div class="print-meta">Date: {{ formatDate(invoice?.created_at) }}</div>
+                    <div class="print-meta">Created by: {{ invoice?.created_by?.name || invoice?.createdBy?.name || '—' }}</div>
+                </div>
+            </div>
+
+            <hr class="print-divider" />
+
+            <!-- Customer & Invoice info -->
+            <div class="print-info-grid">
+                <div>
+                    <div class="print-section-title">Bill To</div>
+                    <div class="print-value-lg">{{ invoice?.customer?.name }}</div>
+                    <div v-if="invoice?.customer?.company_profile?.name" class="print-value">{{ invoice.customer.company_profile.name }}</div>
+                    <div class="print-value-muted">{{ invoice?.customer?.email }}</div>
+                </div>
+                <div>
+                    <div class="print-section-title">Summary</div>
+                    <table class="print-summary-table">
+                        <tr><td class="print-summary-label">Subtotal</td><td class="print-summary-value">{{ subtotal.toLocaleString() }}</td></tr>
+                        <tr v-if="invoice?.discount > 0"><td class="print-summary-label">Discount</td><td class="print-summary-value">- {{ invoice.discount.toLocaleString() }}</td></tr>
+                        <tr class="print-total-row"><td class="print-summary-label">Total</td><td class="print-summary-value print-total-value">{{ invoice?.total.toLocaleString() }}</td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Invoice Items -->
+            <div class="print-section-title" style="margin-top:24px;">Invoice Items</div>
+            <table class="print-table">
+                <thead>
+                    <tr>
+                        <th>#</th><th>Product</th><th>Service</th><th>Qty</th><th>Unit Price</th><th>Delivery Date</th><th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(job, i) in invoice?.jobs" :key="job.id">
+                        <td>{{ i + 1 }}</td>
+                        <td>{{ job.product?.name ?? '—' }}</td>
+                        <td>{{ job.service?.name ?? '—' }}</td>
+                        <td>{{ job.quantity }}</td>
+                        <td>{{ job.unit_price.toLocaleString() }}</td>
+                        <td>{{ formatDate(job.delivery_date) }}</td>
+                        <td>{{ job.total.toLocaleString() }}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Note -->
+            <div v-if="invoice?.note" class="print-note">
+                <span class="print-note-label">Note:</span> {{ invoice.note }}
+            </div>
+
+            <!-- Payments -->
+            <div class="print-section-title" style="margin-top:24px;">Payments</div>
+            <table class="print-table">
+                <thead>
+                    <tr>
+                        <th>#</th><th>Type</th><th>Bank</th><th>Stage</th><th>Amount</th><th>Date</th><th>Note</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="!invoice?.payments?.length">
+                        <td colspan="7" style="text-align:center;color:#9ca3af;">No payments yet.</td>
+                    </tr>
+                    <tr v-else v-for="(pmt, i) in invoice.payments" :key="pmt.id">
+                        <td>{{ i + 1 }}</td>
+                        <td>{{ typeMap[pmt.type_id] }}</td>
+                        <td>{{ pmt.bank?.name ?? '—' }}</td>
+                        <td>{{ stageMap[pmt.stage] }}</td>
+                        <td>{{ pmt.amount.toLocaleString() }}</td>
+                        <td>{{ formatDate(pmt.payment_date) }}</td>
+                        <td>{{ pmt.note ?? '—' }}</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr><td colspan="6" style="text-align:right;">Total Paid</td><td>{{ totalPaid.toLocaleString() }}</td></tr>
+                    <tr class="print-balance-row"><td colspan="6" style="text-align:right;">Balance</td><td>{{ balance.toLocaleString() }}</td></tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
     <!-- Note modal -->
     <Teleport to="body">
         <div v-if="noteModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" @click.self="noteModal = null">
@@ -285,6 +403,12 @@ import AppHeader from '../../../components/AppHeader.vue'
 import LoadingSpinner from '../../../components/LoadingSpinner.vue'
 import { useFormatDate } from '../../../composables/useFormatDate'
 import { useGoBack } from '../../../composables/useGoBack'
+
+const COMPANY_NAME     = import.meta.env.VITE_COMPANY_NAME     ?? ''
+const COMPANY_ADDRESS  = import.meta.env.VITE_COMPANY_ADDRESS  ?? ''
+const COMPANY_PHONE    = import.meta.env.VITE_COMPANY_PHONE    ?? ''
+const COMPANY_EMAIL    = import.meta.env.VITE_COMPANY_EMAIL    ?? ''
+const COMPANY_FACEBOOK = import.meta.env.VITE_COMPANY_FACEBOOK ?? ''
 
 const router = useRouter()
 const { goBack } = useGoBack()
@@ -337,6 +461,10 @@ async function submitPayment() {
     }
 }
 
+function printInvoice() {
+    window.print()
+}
+
 const subtotal = computed(() =>
     (invoice.value?.jobs ?? []).reduce((sum, j) => sum + j.total, 0)
 )
@@ -367,3 +495,42 @@ onMounted(async () => {
     finally { loading.value = false }
 })
 </script>
+
+<style>
+@media print {
+    body * { visibility: hidden; }
+    #invoice-print { display: block !important; visibility: visible; position: fixed; top: 0; left: 0; width: 100%; }
+    #invoice-print * { visibility: visible; }
+
+    .print-page { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; color: #111827; padding: 32px; }
+    .print-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+    .print-logo { height: 48px; }
+    .print-header-right { text-align: right; }
+    .print-invoice-label { font-size: 22px; font-weight: 700; color: #4f46e5; letter-spacing: 2px; }
+    .print-invoice-no { font-size: 14px; font-weight: 600; font-family: monospace; color: #374151; margin-top: 2px; }
+    .print-meta { font-size: 11px; color: #6b7280; margin-top: 2px; }
+    .print-company-info { margin-top: 8px; font-size: 11px; color: #6b7280; }
+    .print-logo-row { display: flex; align-items: center; gap: 10px; }
+    .print-company-name { font-size: 15px; font-weight: 800; color: #111827; }
+    .print-contact-row { display: flex; align-items: center; gap: 5px; margin-top: 4px; }
+    .print-contact-row svg { width: 11px; height: 11px; flex-shrink: 0; color: #9ca3af; }
+    .print-divider { border: none; border-top: 1px solid #e5e7eb; margin: 16px 0; }
+    .print-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 8px; }
+    .print-section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #9ca3af; margin-bottom: 6px; }
+    .print-value-lg { font-size: 14px; font-weight: 600; color: #111827; }
+    .print-value { font-size: 12px; color: #374151; margin-top: 2px; }
+    .print-value-muted { font-size: 11px; color: #6b7280; margin-top: 2px; }
+    .print-summary-table { width: 100%; border-collapse: collapse; }
+    .print-summary-label { padding: 3px 0; color: #6b7280; }
+    .print-summary-value { padding: 3px 0; text-align: right; font-weight: 500; }
+    .print-total-row td { border-top: 1px solid #e5e7eb; padding-top: 6px; font-weight: 700; font-size: 14px; color: #4f46e5; }
+    .print-total-value { color: #4f46e5; }
+    .print-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 11px; }
+    .print-table th { background: #f9fafb; padding: 7px 10px; text-align: left; font-weight: 600; color: #6b7280; border-bottom: 1px solid #e5e7eb; font-size: 10px; text-transform: uppercase; letter-spacing: .05em; }
+    .print-table td { padding: 7px 10px; border-bottom: 1px solid #f3f4f6; color: #374151; }
+    .print-table tfoot td { border-top: 1px solid #e5e7eb; font-weight: 600; background: #f9fafb; }
+    .print-balance-row td { font-weight: 700; font-size: 13px; color: #4f46e5; }
+    .print-note { margin-top: 12px; font-size: 11px; color: #6b7280; background: #f9fafb; padding: 8px 12px; border-radius: 6px; }
+    .print-note-label { font-weight: 600; color: #374151; }
+}
+</style>
