@@ -12,7 +12,7 @@ class JobServiceManager
 {
     public function list(Request $request, int $perPage): LengthAwarePaginator
     {
-        return JobServiceFilter::for(JobService::with('createdBy:id,name'))
+        return JobServiceFilter::for(JobService::withCount('invoiceJobs')->with('createdBy:id,name'))
             ->search($request->input('search'))
             ->sort($request->input('sort_by', 'name'), $request->input('sort_dir', 'asc'))
             ->query()

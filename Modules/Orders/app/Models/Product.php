@@ -24,6 +24,11 @@ class Product extends Model
         'created_by',
     ];
 
+    public function invoiceJobs(): HasMany
+    {
+        return $this->hasMany(InvoiceJob::class, 'product_id');
+    }
+
     public function prices(): HasMany
     {
         return $this->hasMany(PaymentPrice::class);

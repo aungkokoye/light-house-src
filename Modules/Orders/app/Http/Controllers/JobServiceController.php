@@ -63,7 +63,15 @@ class JobServiceController extends Controller
     {
         $job_service->load('createdBy:id,name');
         $this->auditDeleted($job_service, $this->snapshot($job_service));
-        $this->manager->delete($job_service);
+
+        try {
+            $this->manager->delete($job_service);
+        } catch (\Illuminate\Database\QueryException $e) {
+            if ($e->getCode() === '23000') {
+                return response()->json(['message' => 'Cannot delete this service because it is used in existing invoices.'], 422);
+            }
+            throw $e;
+        }
 
         return response()->json(['message' => 'Service deleted successfully.']);
     }

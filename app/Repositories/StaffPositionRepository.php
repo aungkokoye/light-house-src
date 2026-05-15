@@ -11,7 +11,7 @@ class StaffPositionRepository
 {
     public function query(): Builder
     {
-        return StaffPosition::query();
+        return StaffPosition::withCount('staffRoles');
     }
 
     public function paginate(Builder $query, int $perPage): LengthAwarePaginator

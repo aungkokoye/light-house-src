@@ -14,7 +14,7 @@ class ProductManager
 {
     public function list(Request $request, int $perPage): LengthAwarePaginator
     {
-        $query = Product::with(['createdBy:id,name', 'prices' => fn($q) => $q->orderByDesc('updated_at')])
+        $query = Product::withCount('invoiceJobs')->with(['createdBy:id,name', 'prices' => fn($q) => $q->orderByDesc('updated_at')])
             ->addSelect([
                 'products.*',
                 'current_price' => DB::table('product_prices')

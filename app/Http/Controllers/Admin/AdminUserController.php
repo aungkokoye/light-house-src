@@ -111,7 +111,14 @@ class AdminUserController extends Controller
 
     public function destroy(User $user): JsonResponse
     {
-        $this->userManager->delete($user);
+        try {
+            $this->userManager->delete($user);
+        } catch (\Illuminate\Database\QueryException $e) {
+            if ($e->getCode() === '23000') {
+                return response()->json(['message' => 'Cannot delete this user because they have associated invoices.'], 422);
+            }
+            throw $e;
+        }
 
         return response()->json(['message' => 'User deleted successfully.']);
     }

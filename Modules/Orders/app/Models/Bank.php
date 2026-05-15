@@ -5,6 +5,7 @@ namespace Modules\Orders\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\User;
 use Modules\Orders\Database\Factories\BankFactory;
 
@@ -21,6 +22,11 @@ class Bank extends Model
         'name',
         'created_by',
     ];
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
 
     public function createdBy(): BelongsTo
     {

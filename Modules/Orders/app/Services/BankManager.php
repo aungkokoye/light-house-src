@@ -20,7 +20,7 @@ class BankManager
 
     public function list(Request $request, int $perPage = 20): LengthAwarePaginator
     {
-        $query = BankFilter::for(Bank::with('createdBy:id,name'))
+        $query = BankFilter::for(Bank::withCount('payments')->with('createdBy:id,name'))
             ->search($request->input('search'))
             ->sort($request->input('sort_by', 'name'), $request->input('sort_dir', 'asc'))
             ->query();
