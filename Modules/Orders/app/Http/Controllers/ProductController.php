@@ -64,7 +64,15 @@ class ProductController extends Controller
     {
         $product->load(['createdBy:id,name', 'prices']);
         $this->auditDeleted($product, $this->snapshot($product));
-        $this->productManager->delete($product);
+
+        try {
+            $this->productManager->delete($product);
+        } catch (\Illuminate\Database\QueryException $e) {
+            if ($e->getCode() === '23000') {
+                return response()->json(['message' => 'Cannot delete this product because it is used in existing invoices.'], 422);
+            }
+            throw $e;
+        }
 
         return response()->json(['message' => 'Product deleted successfully.']);
     }

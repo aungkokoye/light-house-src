@@ -5,12 +5,18 @@ namespace App\Repositories;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 class UserRepository
 {
     public function query(): Builder
     {
-        return User::with([
+        return User::addSelect([
+            'users.*',
+            'invoices_count' => DB::table('invoices')
+                ->selectRaw('COUNT(*)')
+                ->whereColumn('customer_id', 'users.id'),
+        ])->with([
             'roles',
             // Load profiles for all users; companyProfile for customers,
             // staffProfile.currentRole.position for staff — Eloquent batches these

@@ -46,7 +46,14 @@ class BankController extends Controller
 
     public function destroy(Bank $bank): JsonResponse
     {
-        $this->bankManager->delete($bank);
+        try {
+            $this->bankManager->delete($bank);
+        } catch (\Illuminate\Database\QueryException $e) {
+            if ($e->getCode() === '23000') {
+                return response()->json(['message' => 'Cannot delete this bank because it is used in existing payments.'], 422);
+            }
+            throw $e;
+        }
 
         return response()->json(['message' => 'Bank deleted successfully.']);
     }
