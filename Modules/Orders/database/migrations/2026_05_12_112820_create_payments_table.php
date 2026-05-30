@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('invoice_id')->constrained('invoices')->cascadeOnDelete();
-            $table->foreignId('bank_id')->constrained('banks')->nullOnDelete();
+            $table->foreignId('bank_id')->constrained('banks')->restrictOnDelete();
             $table->unsignedTinyInteger('stage');               // 1:advance/deposit 2:final
             $table->unsignedBigInteger('amount');
             $table->text('note')->nullable();
