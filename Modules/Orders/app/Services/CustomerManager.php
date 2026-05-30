@@ -21,10 +21,9 @@ class CustomerManager
         }
 
         return Customer::where(function ($q) use ($term) {
-            $q->where('name', 'like', "{$term}%")
-              ->orWhere('email', 'like', "{$term}%")
-              ->orWhere('company_name', 'like', "{$term}%");
-        })->select('id', 'name', 'email', 'company_name')->orderBy('name')->limit(20)->get();
+            $q->where('name', 'like', "%{$term}%")
+              ->orWhere('company_name', 'like', "%{$term}%");
+        })->select('id', 'name', 'company_name', 'phone')->orderBy('name')->limit(20)->get();
     }
 
     public function list(Request $request, int $perPage = 20): LengthAwarePaginator

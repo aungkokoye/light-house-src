@@ -36,7 +36,7 @@
                                 v-model="form.customer_id"
                                 :options="customerOptions"
                                 :on-search="searchCustomers"
-                                placeholder="Start typing to search by customer name, email or company name"
+                                placeholder="Search by customer name or company…"
                                 :has-error="!!errors.customer_id"
                                 @update:modelValue="newlyRegistered = false" />
                             <p v-if="newlyRegistered" class="mt-1 text-xs text-indigo-500">Newly registered customer</p>
@@ -365,8 +365,8 @@ async function submitNewCustomer() {
         const { data } = await axios.post('/api/order/customers', newCustomer.value)
         customerOptions.value = [{
             value: data.id,
-            label: data.company_name ? `${data.name} (${data.company_name})` : data.name,
-            sub:   data.email,
+            label: [data.name, data.company_name].filter(Boolean).join(' — '),
+            sub:   data.phone,
         }]
         form.value.customer_id = data.id
         newlyRegistered.value = true
@@ -384,8 +384,8 @@ async function searchCustomers(q) {
     const { data } = await axios.get('/api/order/customers/search', { params: { search: q } })
     return data.map(c => ({
         value: c.id,
-        label: c.company_name ? `${c.name} (${c.company_name})` : c.name,
-        sub:   c.email,
+        label: [c.name, c.company_name].filter(Boolean).join(' — '),
+        sub:   c.phone,
     }))
 }
 
