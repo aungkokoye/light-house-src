@@ -71,7 +71,7 @@
                 <!-- Jobs table -->
                 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
                     <div class="px-6 py-4 border-b border-gray-50">
-                        <h2 class="font-semibold text-gray-900">Invoice Items</h2>
+                        <h2 class="font-semibold text-gray-900">Jobs</h2>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
@@ -348,8 +348,8 @@
                 </div>
             </div>
 
-            <!-- Invoice Items -->
-            <div class="print-section-title" style="margin-top:24px;">Invoice Items</div>
+            <!-- Jobs -->
+            <div class="print-section-title" style="margin-top:24px;">Jobs</div>
             <table class="print-table">
                 <thead>
                     <tr>
