@@ -4,18 +4,18 @@ namespace Modules\Orders\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Modules\Orders\Models\Bank;
+use Modules\Orders\Models\Customer;
 use Modules\Orders\Models\Invoice;
 use Modules\Orders\Models\InvoiceJob;
 use Modules\Orders\Models\JobService;
 use Modules\Orders\Models\Payment;
 use Modules\Orders\Models\Product;
-use App\Models\User;
 
 class InvoiceSeeder extends Seeder
 {
     public function run(): void
     {
-        $customers  = User::role('customer')->whereHas('companyProfile')->pluck('id');
+        $customers  = Customer::pluck('id');
         $serviceIds = JobService::pluck('id');
         $productIds = Product::pluck('id');
         $bankIds    = Bank::pluck('id');

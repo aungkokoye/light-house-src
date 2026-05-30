@@ -15,6 +15,7 @@ class OrdersDatabaseSeeder extends Seeder
             BankSeeder::class,
             JobServiceSeeder::class,
             ProductSeeder::class,
+            CustomerSeeder::class,
             InvoiceSeeder::class,
         ]);
     }
