@@ -38,7 +38,7 @@
 
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1.5">Discount</label>
-                            <input v-model.number="form.discount" type="number" min="0" placeholder="0"
+                            <input v-model.number="form.discount" type="number" placeholder="0"
                                 class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
                                 :class="errors.discount ? 'border-red-300' : 'border-gray-300'" />
                             <p v-if="errors.discount" class="mt-1 text-xs text-red-500">{{ errors.discount[0] }}</p>
@@ -89,7 +89,7 @@
                                             <option value="">— Select product —</option>
                                             <option v-for="p in products" :key="p.id" :value="p.id">{{ p.name }}{{ p.current_price != null ? ` (${Number(p.current_price).toLocaleString()})` : '' }}</option>
                                         </select>
-                                        <p v-if="jobError(i,'product_id')" class="mt-1 text-xs text-red-500">Required</p>
+                                        <p v-if="jobError(i,'product_id')" class="mt-1 text-xs text-red-500">{{ jobError(i,'product_id')[0] }}</p>
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1.5">Service <span class="text-red-400">*</span></label>
@@ -99,24 +99,24 @@
                                             <option value="">— Select service —</option>
                                             <option v-for="s in services" :key="s.id" :value="s.id">{{ s.name }}</option>
                                         </select>
-                                        <p v-if="jobError(i,'service_id')" class="mt-1 text-xs text-red-500">Required</p>
+                                        <p v-if="jobError(i,'service_id')" class="mt-1 text-xs text-red-500">{{ jobError(i,'service_id')[0] }}</p>
                                     </div>
                                 </div>
 
                                 <div class="grid grid-cols-4 gap-4">
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1.5">Qty <span class="text-red-400">*</span></label>
-                                        <input v-model.number="job.quantity" type="number" min="1" placeholder="1"
+                                        <input v-model.number="job.quantity" type="number" placeholder="1"
                                             class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
                                             :class="jobError(i,'quantity') ? 'border-red-300' : 'border-gray-300'" />
-                                        <p v-if="jobError(i,'quantity')" class="mt-1 text-xs text-red-500">Required</p>
+                                        <p v-if="jobError(i,'quantity')" class="mt-1 text-xs text-red-500">{{ jobError(i,'quantity')[0] }}</p>
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1.5">Unit Price <span class="text-red-400">*</span></label>
-                                        <input v-model.number="job.unit_price" type="number" min="0" placeholder="0"
+                                        <input v-model.number="job.unit_price" type="number" placeholder="0"
                                             class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
                                             :class="jobError(i,'unit_price') ? 'border-red-300' : 'border-gray-300'" />
-                                        <p v-if="jobError(i,'unit_price')" class="mt-1 text-xs text-red-500">Required</p>
+                                        <p v-if="jobError(i,'unit_price')" class="mt-1 text-xs text-red-500">{{ jobError(i,'unit_price')[0] }}</p>
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1.5">Delivery Date <span class="text-red-400">*</span></label>
@@ -205,8 +205,6 @@
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1.5">Amount <span class="text-red-400">*</span></label>
                                         <input v-model.number="pmt.amount" type="number"
-                                            :min="pmt.stage === (paymentMeta?.stage_refund ?? 3) ? undefined : 1"
-                                            :max="pmt.stage === (paymentMeta?.stage_refund ?? 3) ? -1 : undefined"
                                             :placeholder="pmt.stage === (paymentMeta?.stage_refund ?? 3) ? 'e.g. -1000' : '0'"
                                             class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
                                             :class="anyAmountError ? 'border-red-300' : 'border-gray-300'" />

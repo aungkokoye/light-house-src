@@ -41,15 +41,19 @@ class UpdateInvoiceRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'jobs.*.product_id.required'             => 'Product is required.',
+            'jobs.*.service_id.required'             => 'Service is required.',
+            'jobs.*.quantity.required'               => 'Quantity is required.',
+            'jobs.*.unit_price.required'             => 'Unit price is required.',
             'jobs.*.delivery_date.required'          => 'Delivery date is required.',
-            'jobs.*.delivery_date.date'               => 'Delivery date must be a valid date.',
+            'jobs.*.delivery_date.date'              => 'Delivery date must be a valid date.',
             'jobs.*.delivery_date.after_or_equal'    => 'Delivery date should be today or later.',
+            'payments.*.payment_type_id.required'    => 'Payment type is required.',
+            'payments.*.stage.required'              => 'Payment stage is required.',
+            'payments.*.amount.required'             => 'Payment amount is required.',
             'payments.*.payment_date.required'       => 'Payment date is required.',
             'payments.*.payment_date.date'           => 'Payment date must be a valid date.',
             'payments.*.payment_date.after_or_equal' => 'Payment date should be today or later.',
-            'payments.*.amount.required'             => 'Payment amount is required.',
-            'payments.*.stage.required'              => 'Payment stage is required.',
-            'payments.*.payment_type_id.required'   => 'Payment type is required.',
         ];
     }
 
