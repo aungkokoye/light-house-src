@@ -341,13 +341,23 @@ const deletePaymentModal = ref({ show: false, index: null })
 const deleteJobModal = ref({ show: false, index: null })
 
 function newJob() {
-    return { service_id: '', product_id: '', quantity: 1, unit_price: 0, delivery_date: '', note: '' }
+    return { id: null, service_id: '', product_id: '', quantity: 1, unit_price: 0, delivery_date: '', note: '' }
 }
 function addJob() { form.value.jobs.push(newJob()) }
 function removeJob(i) { deleteJobModal.value = { show: true, index: i } }
-function confirmDeleteJob() {
-    form.value.jobs.splice(deleteJobModal.value.index, 1)
+async function confirmDeleteJob() {
+    const i = deleteJobModal.value.index
     deleteJobModal.value = { show: false, index: null }
+    const job = form.value.jobs[i]
+    if (job.id) {
+        try {
+            await axios.delete(`/api/order/invoices/${route.params.id}/jobs/${job.id}`)
+        } catch (e) {
+            generalError.value = e?.response?.data?.message ?? 'Failed to delete job. Please try again.'
+            return
+        }
+    }
+    form.value.jobs.splice(i, 1)
 }
 function jobError(i, field) { return errors.value[`jobs.${i}.${field}`] }
 
@@ -433,6 +443,7 @@ onMounted(async () => {
         form.value.discount    = invoice.value.discount
         form.value.note        = invoice.value.note ?? ''
         form.value.jobs        = invoice.value.jobs.map(j => ({
+            id:            j.id,
             service_id:    j.service_id,
             product_id:    j.product_id,
             quantity:      j.quantity,

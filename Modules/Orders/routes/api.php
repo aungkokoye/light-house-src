@@ -49,6 +49,7 @@ Route::middleware(['auth:sanctum', 'role:admin|user'])->prefix('order')->group(f
     Route::get('/invoices/{invoice}',              [InvoiceController::class, 'show'])  ->can('view',    'invoice');
     Route::put('/invoices/{invoice}',              [InvoiceController::class, 'update'])->can('update',  'invoice');
     Route::delete('/invoices/{invoice}',           [InvoiceController::class, 'destroy'])->can('delete', 'invoice');
+    Route::delete('/invoices/{invoice}/jobs/{job}', [InvoiceController::class, 'destroyJob'])->can('update', 'invoice');
 
     Route::get('/payments/meta',                   [PaymentController::class, 'meta']);
     Route::post('/payments',                       [PaymentController::class, 'store'])       ->can('create',  Payment::class);

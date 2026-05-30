@@ -11,6 +11,7 @@ use App\Concerns\HasAbilities;
 use Modules\Orders\Http\Requests\StoreInvoiceRequest;
 use Modules\Orders\Http\Requests\UpdateInvoiceRequest;
 use Modules\Orders\Models\Invoice;
+use Modules\Orders\Models\InvoiceJob;
 use Modules\Orders\Models\Payment;
 use Modules\Orders\Services\InvoiceManager;
 
@@ -74,6 +75,21 @@ class InvoiceController extends Controller
         $this->auditUpdated($updated, $oldValues, $this->snapshot($updated));
 
         return response()->json($updated);
+    }
+
+    public function destroyJob(Invoice $invoice, InvoiceJob $job): JsonResponse
+    {
+        if ($job->invoice_id !== $invoice->id) {
+            return response()->json(['message' => 'Job does not belong to this invoice.'], 403);
+        }
+
+        if ($invoice->jobs()->count() <= 1) {
+            return response()->json(['message' => 'Cannot delete the last job on an invoice.'], 422);
+        }
+
+        $job->delete();
+
+        return response()->json(['message' => 'Job deleted successfully.']);
     }
 
     public function destroy(Invoice $invoice): JsonResponse
