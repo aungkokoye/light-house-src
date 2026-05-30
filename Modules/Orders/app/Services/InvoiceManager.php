@@ -28,6 +28,7 @@ class InvoiceManager
 
         return InvoiceFilter::for($query)
             ->search($request->input('search'))
+            ->customer($request->integer('customer_id') ?: null)
             ->status($request->input('status'))
             ->createdFrom($request->input('date_from'))
             ->createdTo($request->input('date_to'))

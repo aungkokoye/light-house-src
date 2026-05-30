@@ -37,7 +37,7 @@
                 </div>
 
                 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-4 space-y-3">
-                    <div class="relative">
+                    <div v-if="!customerId" class="relative">
                         <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
                         </svg>
@@ -213,10 +213,11 @@ const loading = ref(true)
 const listLoading = ref(false)
 const invoices = ref([])
 const meta = ref({})
-const search   = ref(route.query.search    ?? '')
-const status   = ref(route.query.status   ?? 'all')
-const dateFrom = ref(route.query.date_from ?? '')
-const dateTo   = ref(route.query.date_to   ?? '')
+const search     = ref(route.query.search      ?? '')
+const status     = ref(route.query.status     ?? 'all')
+const dateFrom   = ref(route.query.date_from   ?? '')
+const dateTo     = ref(route.query.date_to     ?? '')
+const customerId = ref(route.query.customer_id ?? '')
 const sortBy   = ref(route.query.sort_by   ?? 'created_at')
 const sortDir  = ref(route.query.sort_dir  ?? 'desc')
 const currentPage = ref(Number(route.query.page)     || 1)
@@ -235,16 +236,17 @@ const visiblePages = computed(() => {
 
 const hasActiveFilters = computed(() =>
     search.value !== '' || status.value !== 'all' || dateFrom.value !== '' || dateTo.value !== '' ||
-    sortBy.value !== 'created_at' || sortDir.value !== 'desc'
+    customerId.value !== '' || sortBy.value !== 'created_at' || sortDir.value !== 'desc'
 )
 
 function resetFilters() {
-    search.value   = ''
-    status.value   = 'all'
-    dateFrom.value = ''
-    dateTo.value   = ''
-    sortBy.value   = 'created_at'
-    sortDir.value  = 'desc'
+    search.value     = ''
+    status.value     = 'all'
+    dateFrom.value   = ''
+    dateTo.value     = ''
+    customerId.value = ''
+    sortBy.value     = 'created_at'
+    sortDir.value    = 'desc'
     router.replace({ query: {} })
     fetchInvoices(1)
 }
@@ -266,8 +268,9 @@ async function fetchInvoices(page = 1) {
     const query = { sort_by: sortBy.value, sort_dir: sortDir.value, page, per_page: perPage.value }
     if (search.value.trim()) query.search = search.value.trim()
     if (status.value && status.value !== 'all') query.status = status.value
-    if (dateFrom.value) query.date_from = dateFrom.value
-    if (dateTo.value)   query.date_to   = dateTo.value
+    if (dateFrom.value)   query.date_from   = dateFrom.value
+    if (dateTo.value)     query.date_to     = dateTo.value
+    if (customerId.value) query.customer_id = customerId.value
     router.replace({ query })
     sessionStorage.setItem('invoice-list-back', '/order/invoices?' + new URLSearchParams(query).toString())
     try {

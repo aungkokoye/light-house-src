@@ -27,6 +27,15 @@ class InvoiceFilter
         return $this;
     }
 
+    public function customer(?int $customerId): static
+    {
+        if ($customerId) {
+            $this->query->where('invoices.customer_id', $customerId);
+        }
+
+        return $this;
+    }
+
     public function status(?string $status): static
     {
         $paidSub = 'COALESCE((SELECT SUM(amount) FROM payments WHERE invoice_id = invoices.id), 0)';

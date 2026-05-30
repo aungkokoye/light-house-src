@@ -38,7 +38,7 @@ class CustomerManager
 
     public function show(Customer $customer): Customer
     {
-        return $customer->load('createdBy:id,name');
+        return $customer->loadCount('invoices')->load('createdBy:id,name');
     }
 
     public function create(array $data): Customer
