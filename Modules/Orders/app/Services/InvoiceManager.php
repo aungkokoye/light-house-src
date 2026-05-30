@@ -79,16 +79,18 @@ class InvoiceManager
 
             $this->syncJobs($invoice, $jobs);
 
-            $p = $data['payment'];
-            Payment::create([
-                'invoice_id'   => $invoice->id,
-                'payment_type_id' => $p['payment_type_id'],
-                'stage'        => $p['stage'],
-                'amount'       => (int) $p['amount'],
-                'payment_date' => $p['payment_date'],
-                'note'         => $p['note'] ?? null,
-                'created_by'   => Auth::id(),
-            ]);
+            if (!empty($data['payment'])) {
+                $p = $data['payment'];
+                Payment::create([
+                    'invoice_id'      => $invoice->id,
+                    'payment_type_id' => $p['payment_type_id'],
+                    'stage'           => $p['stage'],
+                    'amount'          => (int) $p['amount'],
+                    'payment_date'    => $p['payment_date'],
+                    'note'            => $p['note'] ?? null,
+                    'created_by'      => Auth::id(),
+                ]);
+            }
 
             return $invoice->load([
                 'customer:id,name,email',

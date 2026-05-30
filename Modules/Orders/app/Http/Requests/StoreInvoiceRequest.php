@@ -27,11 +27,11 @@ class StoreInvoiceRequest extends FormRequest
             'jobs.*.unit_price'        => ['required', 'integer', 'min:0'],
             'jobs.*.delivery_date'     => ['required', 'date', 'after_or_equal:today'],
             'jobs.*.note'              => ['nullable', 'string', 'max:1000'],
-            'payment'                  => ['required', 'array'],
-            'payment.payment_type_id'  => ['required', 'integer', 'exists:payment_types,id'],
-            'payment.stage'            => ['required', 'integer', 'in:' . implode(',', [Payment::STAGE_ADVANCE, Payment::STAGE_FINAL])],
-            'payment.amount'           => ['required', 'integer', 'min:0'],
-            'payment.payment_date'     => ['required', 'date', 'after_or_equal:today'],
+            'payment'                  => ['nullable', 'array'],
+            'payment.payment_type_id'  => ['required_with:payment', 'integer', 'exists:payment_types,id'],
+            'payment.stage'            => ['required_with:payment', 'integer', 'in:' . implode(',', [Payment::STAGE_ADVANCE, Payment::STAGE_FINAL])],
+            'payment.amount'           => ['required_with:payment', 'integer', 'min:0'],
+            'payment.payment_date'     => ['required_with:payment', 'date', 'after_or_equal:today'],
             'payment.note'             => ['nullable', 'string', 'max:5000'],
         ];
     }
@@ -58,6 +58,10 @@ class StoreInvoiceRequest extends FormRequest
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $v) {
+            if (!$this->filled('payment')) {
+                return;
+            }
+
             $jobs     = $this->input('jobs', []);
             $discount = (int) $this->input('discount', 0);
             $amount   = (int) $this->input('payment.amount', 0);
