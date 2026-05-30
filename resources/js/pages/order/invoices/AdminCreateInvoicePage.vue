@@ -160,14 +160,14 @@
                         <div class="p-6 space-y-4">
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-xs font-medium text-gray-600 mb-1.5">Bank <span class="text-red-400">*</span></label>
-                                    <select v-model.number="form.payment.bank_id"
+                                    <label class="block text-xs font-medium text-gray-600 mb-1.5">Payment Type <span class="text-red-400">*</span></label>
+                                    <select v-model.number="form.payment.payment_type_id"
                                         class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
-                                        :class="errors['payment.bank_id'] ? 'border-red-300' : 'border-gray-300'">
-                                        <option value="">Select bank…</option>
-                                        <option v-for="b in banks" :key="b.id" :value="b.id">{{ b.name }}</option>
+                                        :class="errors['payment.payment_type_id'] ? 'border-red-300' : 'border-gray-300'">
+                                        <option value="">Select payment type…</option>
+                                        <option v-for="b in paymentTypes" :key="b.id" :value="b.id">{{ b.name }}</option>
                                     </select>
-                                    <p v-if="errors['payment.bank_id']" class="mt-1 text-xs text-red-500">{{ errors['payment.bank_id'][0] }}</p>
+                                    <p v-if="errors['payment.payment_type_id']" class="mt-1 text-xs text-red-500">{{ errors['payment.payment_type_id'][0] }}</p>
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-gray-600 mb-1.5">Stage <span class="text-red-400">*</span></label>
@@ -333,7 +333,7 @@ const loading = ref(true)
 const submitting = ref(false)
 const errors = ref({})
 const generalError = ref('')
-const banks = ref([])
+const paymentTypes = ref([])
 const products = ref([])
 const services = ref([])
 const paymentMeta = ref(null)
@@ -392,7 +392,7 @@ const form = ref({
     discount: 0,
     note: '',
     jobs: [newJob()],
-    payment: { bank_id: '', stage: '', amount: 0, payment_date: '', note: '' },
+    payment: { payment_type_id: '', stage: '', amount: 0, payment_date: '', note: '' },
 })
 
 function newJob() {
@@ -429,13 +429,13 @@ async function submit() {
 onMounted(async () => {
     if (!localStorage.getItem('token')) { router.push('/login'); return }
     try {
-        const [bankRes, metaRes, productRes, serviceRes] = await Promise.all([
-            axios.get('/api/order/banks'),
+        const [paymentTypeRes, metaRes, productRes, serviceRes] = await Promise.all([
+            axios.get('/api/order/payment-types'),
             axios.get('/api/order/payments/meta'),
             axios.get('/api/order/products', { params: { per_page: 100, sort_by: 'name', sort_dir: 'asc' } }),
             axios.get('/api/order/services', { params: { per_page: 100, sort_by: 'name', sort_dir: 'asc' } }),
         ])
-        banks.value       = bankRes.data.data ?? []
+        paymentTypes.value = paymentTypeRes.data.data ?? []
         products.value    = productRes.data.data ?? []
         services.value    = serviceRes.data.data ?? []
         paymentMeta.value = metaRes.data

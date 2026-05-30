@@ -7,15 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\User;
-use Modules\Orders\Database\Factories\BankFactory;
+use Modules\Orders\Database\Factories\PaymentTypeFactory;
 
-class Bank extends Model
+class PaymentType extends Model
 {
     use HasFactory;
 
-    protected static function newFactory(): BankFactory
+    protected static function newFactory(): PaymentTypeFactory
     {
-        return BankFactory::new();
+        return PaymentTypeFactory::new();
     }
 
     protected $fillable = [

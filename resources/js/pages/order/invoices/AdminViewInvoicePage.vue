@@ -151,7 +151,7 @@
                             <thead>
                                 <tr class="text-left text-xs text-gray-400 border-b border-gray-50">
                                     <th class="px-3 py-2 font-medium">#</th>
-                                    <th class="px-3 py-2 font-medium">Bank</th>
+                                    <th class="px-3 py-2 font-medium">Payment Type</th>
                                     <th class="px-3 py-2 font-medium">Stage</th>
                                     <th class="px-3 py-2 font-medium">Amount</th>
                                     <th class="px-3 py-2 font-medium">Date</th>
@@ -164,7 +164,7 @@
                                 </tr>
                                 <tr v-else v-for="(pmt, i) in invoice.payments" :key="pmt.id" class="hover:bg-gray-50/50">
                                     <td class="px-3 py-2.5 text-xs font-mono text-gray-400">{{ i + 1 }}</td>
-                                    <td class="px-3 py-2.5 text-gray-500">{{ pmt.bank?.name ?? '—' }}</td>
+                                    <td class="px-3 py-2.5 text-gray-500">{{ pmt.payment_type?.name ?? '—' }}</td>
                                     <td class="px-3 py-2.5">
                                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
                                             :class="STAGE_CLS[pmt.stage]">
@@ -241,14 +241,14 @@
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-medium text-gray-600 mb-1.5">Bank <span class="text-red-400">*</span></label>
-                        <select v-model.number="pmtForm.bank_id"
+                        <label class="block text-xs font-medium text-gray-600 mb-1.5">Payment Type <span class="text-red-400">*</span></label>
+                        <select v-model.number="pmtForm.payment_type_id"
                             class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
-                            :class="pmtErrors.bank_id ? 'border-red-300' : 'border-gray-300'">
-                            <option value="">Select bank</option>
-                            <option v-for="b in banks" :key="b.id" :value="b.id">{{ b.name }}</option>
+                            :class="pmtErrors.payment_type_id ? 'border-red-300' : 'border-gray-300'">
+                            <option value="">Select payment type</option>
+                            <option v-for="b in paymentTypes" :key="b.id" :value="b.id">{{ b.name }}</option>
                         </select>
-                        <p v-if="pmtErrors.bank_id" class="mt-1 text-xs text-red-500">{{ pmtErrors.bank_id[0] }}</p>
+                        <p v-if="pmtErrors.payment_type_id" class="mt-1 text-xs text-red-500">{{ pmtErrors.payment_type_id[0] }}</p>
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1.5">Stage <span class="text-red-400">*</span></label>
@@ -442,11 +442,11 @@
             <div class="print-section-title" style="margin-top:24px;">Payment Details</div>
             <table class="print-table">
                 <thead>
-                    <tr><th>Bank</th><th>Stage</th><th>Amount</th><th>Date</th></tr>
+                    <tr><th>Payment Type</th><th>Stage</th><th>Amount</th><th>Date</th></tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>{{ receiptPayment?.bank?.name ?? '—' }}</td>
+                        <td>{{ receiptPayment?.payment_type?.name ?? '—' }}</td>
                         <td>{{ stageMap[receiptPayment?.stage] }}</td>
                         <td>{{ receiptPayment?.amount?.toLocaleString() }}</td>
                         <td>{{ formatDate(receiptPayment?.payment_date) }}</td>
@@ -501,7 +501,7 @@ const loading = ref(true)
 const invoice = ref(null)
 const noteModal = ref(null)
 const can = ref({})
-const banks = ref([])
+const paymentTypes = ref([])
 const paymentMeta = ref(null)
 
 const STAGE_CLS = { 1: 'bg-amber-50 text-amber-700', 2: 'bg-indigo-50 text-indigo-700' }
@@ -511,10 +511,10 @@ const stageMap = computed(() => Object.fromEntries((paymentMeta.value?.stages ??
 const showAddPayment = ref(false)
 const addingPayment = ref(false)
 const pmtErrors = ref({})
-const pmtForm = ref({ bank_id: '', stage: '', amount: 0, payment_date: '', note: '' })
+const pmtForm = ref({ payment_type_id: '', stage: '', amount: 0, payment_date: '', note: '' })
 
 function openAddPayment() {
-    pmtForm.value = { bank_id: '', stage: '', amount: 0, payment_date: '', note: '' }
+    pmtForm.value = { payment_type_id: '', stage: '', amount: 0, payment_date: '', note: '' }
     pmtErrors.value = {}
     showAddPayment.value = true
 }
@@ -525,8 +525,8 @@ async function submitPayment() {
     addingPayment.value = true
     try {
         const { data: newPayment } = await axios.post('/api/order/payments', {
-            invoice_id:   invoice.value.id,
-            bank_id:      pmtForm.value.bank_id || null,
+            invoice_id:      invoice.value.id,
+            payment_type_id: pmtForm.value.payment_type_id || null,
             stage:        pmtForm.value.stage,
             amount:       pmtForm.value.amount,
             payment_date: pmtForm.value.payment_date,
@@ -596,14 +596,14 @@ const balance = computed(() => (invoice.value?.total ?? 0) - totalPaid.value)
 onMounted(async () => {
     if (!localStorage.getItem('token')) { router.push('/login'); return }
     try {
-        const [invoiceRes, bankRes, metaRes] = await Promise.all([
+        const [invoiceRes, paymentTypeRes, metaRes] = await Promise.all([
             axios.get(`/api/order/invoices/${route.params.id}`),
-            axios.get('/api/order/banks'),
+            axios.get('/api/order/payment-types'),
             axios.get('/api/order/payments/meta'),
         ])
-        invoice.value = invoiceRes.data
-        can.value     = invoiceRes.data.can ?? {}
-        banks.value   = bankRes.data.data ?? []
+        invoice.value      = invoiceRes.data
+        can.value          = invoiceRes.data.can ?? {}
+        paymentTypes.value = paymentTypeRes.data.data ?? []
         paymentMeta.value = metaRes.data
     } catch { router.push('/login') }
     finally { loading.value = false }

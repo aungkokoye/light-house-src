@@ -3,12 +3,12 @@
 namespace Modules\Orders\Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Modules\Orders\Models\Bank;
 use Modules\Orders\Models\Customer;
 use Modules\Orders\Models\Invoice;
 use Modules\Orders\Models\InvoiceJob;
 use Modules\Orders\Models\JobService;
 use Modules\Orders\Models\Payment;
+use Modules\Orders\Models\PaymentType;
 use Modules\Orders\Models\Product;
 
 class InvoiceSeeder extends Seeder
@@ -18,7 +18,7 @@ class InvoiceSeeder extends Seeder
         $customers  = Customer::pluck('id');
         $serviceIds = JobService::pluck('id');
         $productIds = Product::pluck('id');
-        $bankIds    = Bank::pluck('id');
+        $paymentTypeIds = PaymentType::pluck('id');
 
         for ($i = 0; $i < 50; $i++) {
             $discount = fake()->randomElement([0, 0, 0, 5000, 10000, 20000, 50000]);
@@ -97,7 +97,7 @@ class InvoiceSeeder extends Seeder
 
                 Payment::create([
                     'invoice_id'   => $invoice->id,
-                    'bank_id'      => $bankIds->random(),
+                    'payment_type_id' => $paymentTypeIds->random(),
                     'stage'        => $stage,
                     'amount'       => $amount,
                     'note'         => fake()->optional(0.4)->sentence(),

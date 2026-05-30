@@ -21,7 +21,7 @@ class InvoiceNotification extends Notification
             'customer:id,name,email,company_name',
             'jobs.service:id,name',
             'jobs.product:id,name',
-            'payments.bank:id,name',
+            'payments.paymentType:id,name',
             'createdBy:id,name',
         ]);
 

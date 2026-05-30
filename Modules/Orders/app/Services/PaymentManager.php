@@ -11,25 +11,25 @@ class PaymentManager
     {
         $payment = Payment::create([...$data, 'created_by' => Auth::id()]);
 
-        return $payment->load('bank:id,name', 'createdBy:id,name');
+        return $payment->load('paymentType:id,name', 'createdBy:id,name');
     }
 
     public function show(Payment $payment): Payment
     {
-        return $payment->load('bank:id,name', 'createdBy:id,name');
+        return $payment->load('paymentType:id,name', 'createdBy:id,name');
     }
 
     public function update(Payment $payment, array $data): Payment
     {
         $payment->update([
-            'bank_id'      => $data['bank_id'],
+            'payment_type_id' => $data['payment_type_id'],
             'stage'        => $data['stage'],
             'amount'       => (int) $data['amount'],
             'payment_date' => $data['payment_date'],
             'note'         => $data['note'] ?? null,
         ]);
 
-        return $payment->refresh()->load('bank:id,name', 'createdBy:id,name');
+        return $payment->refresh()->load('paymentType:id,name', 'createdBy:id,name');
     }
 
     public function delete(Payment $payment): void

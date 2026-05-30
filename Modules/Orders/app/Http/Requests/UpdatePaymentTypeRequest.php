@@ -5,7 +5,7 @@ namespace Modules\Orders\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class UpdateBankRequest extends FormRequest
+class UpdatePaymentTypeRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -15,7 +15,7 @@ class UpdateBankRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:50', Rule::unique('banks', 'name')->ignore($this->route('bank')->id)],
+            'name' => ['required', 'string', 'max:50', Rule::unique('payment_types', 'name')->ignore($this->route('payment_type')->id)],
         ];
     }
 }

@@ -4,7 +4,7 @@ namespace Modules\Orders\Filters;
 
 use Illuminate\Database\Eloquent\Builder;
 
-class BankFilter
+class PaymentTypeFilter
 {
     private const array SORTABLE = ['id', 'name', 'created_at', 'updated_at'];
 

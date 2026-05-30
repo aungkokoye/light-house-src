@@ -3,15 +3,15 @@
 namespace Modules\Orders\Providers;
 
 use Illuminate\Support\Facades\Gate;
-use Modules\Orders\Models\Bank;
 use Modules\Orders\Models\Customer;
 use Modules\Orders\Models\Invoice;
 use Modules\Orders\Models\JobService;
 use Modules\Orders\Models\Payment;
 use Modules\Orders\Models\PaymentPrice;
 use Modules\Orders\Models\Product;
-use Modules\Orders\Policies\BankPolicy;
+use Modules\Orders\Models\PaymentType;
 use Modules\Orders\Policies\CustomerPolicy;
+use Modules\Orders\Policies\PaymentTypePolicy;
 use Modules\Orders\Policies\InvoicePolicy;
 use Modules\Orders\Policies\JobServicePolicy;
 use Modules\Orders\Policies\PaymentPolicy;
@@ -53,7 +53,7 @@ class OrdersServiceProvider extends ModuleServiceProvider
     {
         parent::boot();
 
-        Gate::policy(Bank::class,         BankPolicy::class);
+        Gate::policy(PaymentType::class,   PaymentTypePolicy::class);
         Gate::policy(Customer::class,     CustomerPolicy::class);
         Gate::policy(Invoice::class,      InvoicePolicy::class);
         Gate::policy(JobService::class,   JobServicePolicy::class);

@@ -67,7 +67,7 @@ class InvoiceController extends Controller
 
     public function update(UpdateInvoiceRequest $request, Invoice $invoice): JsonResponse
     {
-        $invoice->loadMissing(['customer:id,name,email', 'jobs.service:id,name', 'jobs.product:id,name', 'payments.bank:id,name', 'createdBy:id,name']);
+        $invoice->loadMissing(['customer:id,name,email', 'jobs.service:id,name', 'jobs.product:id,name', 'payments.paymentType:id,name', 'createdBy:id,name']);
         $oldValues = $this->snapshot($invoice);
 
         $updated = $this->manager->update($invoice, $request->validated());
@@ -78,7 +78,7 @@ class InvoiceController extends Controller
 
     public function destroy(Invoice $invoice): JsonResponse
     {
-        $invoice->load(['customer:id,name,email', 'jobs.service:id,name', 'jobs.product:id,name', 'payments.bank:id,name', 'createdBy:id,name']);
+        $invoice->load(['customer:id,name,email', 'jobs.service:id,name', 'jobs.product:id,name', 'payments.paymentType:id,name', 'createdBy:id,name']);
         $this->auditDeleted($invoice, $this->snapshot($invoice));
         $this->manager->delete($invoice);
 
@@ -91,7 +91,7 @@ class InvoiceController extends Controller
             'customer:id,name,email',
             'jobs.service:id,name',
             'jobs.product:id,name',
-            'payments.bank:id,name',
+            'payments.paymentType:id,name',
             'createdBy:id,name',
         ]);
 
@@ -113,7 +113,7 @@ class InvoiceController extends Controller
                 'note'          => $j->note,
             ])->toArray(),
             'payments'   => $invoice->payments->map(fn($p) => [
-                'bank'         => $p->bank?->name,
+                'payment_type' => $p->paymentType?->name,
                 'stage'        => $stageMap[$p->stage]   ?? 'Unknown',
                 'amount'       => $p->amount,
                 'payment_date' => $p->payment_date?->toDateString(),

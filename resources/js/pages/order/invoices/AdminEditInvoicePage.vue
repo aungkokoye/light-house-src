@@ -175,17 +175,17 @@
                                     </button>
                                 </div>
 
-                                <!-- Bank + Stage -->
+                                <!-- Payment Type + Stage -->
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label class="block text-xs font-medium text-gray-600 mb-1.5">Bank <span class="text-red-400">*</span></label>
-                                        <select v-model.number="pmt.bank_id"
+                                        <label class="block text-xs font-medium text-gray-600 mb-1.5">Payment Type <span class="text-red-400">*</span></label>
+                                        <select v-model.number="pmt.payment_type_id"
                                             class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
-                                            :class="pmtError(i,'bank_id') ? 'border-red-300' : 'border-gray-300'">
-                                            <option value="">Select bank</option>
-                                            <option v-for="b in banks" :key="b.id" :value="b.id">{{ b.name }}</option>
+                                            :class="pmtError(i,'payment_type_id') ? 'border-red-300' : 'border-gray-300'">
+                                            <option value="">Select payment type</option>
+                                            <option v-for="b in paymentTypes" :key="b.id" :value="b.id">{{ b.name }}</option>
                                         </select>
-                                        <p v-if="pmtError(i,'bank_id')" class="mt-1 text-xs text-red-500">{{ pmtError(i,'bank_id') }}</p>
+                                        <p v-if="pmtError(i,'payment_type_id')" class="mt-1 text-xs text-red-500">{{ pmtError(i,'payment_type_id') }}</p>
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1.5">Stage <span class="text-red-400">*</span></label>
@@ -297,7 +297,7 @@ const errors = ref({})
 const generalError = ref('')
 const invoice = ref(null)
 const can = ref({})
-const banks = ref([])
+const paymentTypes = ref([])
 const products = ref([])
 const services = ref([])
 const paymentMeta = ref(null)
@@ -338,7 +338,7 @@ function removeJob(i) { form.value.jobs.splice(i, 1) }
 function jobError(i, field) { return errors.value[`jobs.${i}.${field}`] }
 
 function newPayment() {
-    return { _key: ++_pmtKey, id: null, bank_id: '', stage: '', amount: 0, payment_date: '', note: '' }
+    return { _key: ++_pmtKey, id: null, payment_type_id: '', stage: '', amount: 0, payment_date: '', note: '' }
 }
 function addPayment() { payments.value.push(newPayment()) }
 function removePayment(i) {
@@ -381,8 +381,8 @@ async function submit() {
         await axios.put(`/api/order/invoices/${route.params.id}`, {
             ...form.value,
             payments: payments.value.map(p => ({
-                id:           p.id || undefined,
-                bank_id:      p.bank_id || null,
+                id:               p.id || undefined,
+                payment_type_id:  p.payment_type_id || null,
                 stage:        p.stage,
                 amount:       p.amount,
                 payment_date: p.payment_date,
@@ -401,16 +401,16 @@ async function submit() {
 onMounted(async () => {
     if (!localStorage.getItem('token')) { router.push('/login'); return }
     try {
-        const [invoiceRes, bankRes, metaRes, productRes, serviceRes] = await Promise.all([
+        const [invoiceRes, paymentTypeRes, metaRes, productRes, serviceRes] = await Promise.all([
             axios.get(`/api/order/invoices/${route.params.id}`),
-            axios.get('/api/order/banks'),
+            axios.get('/api/order/payment-types'),
             axios.get('/api/order/payments/meta'),
             axios.get('/api/order/products', { params: { per_page: 100, sort_by: 'name', sort_dir: 'asc' } }),
             axios.get('/api/order/services', { params: { per_page: 100, sort_by: 'name', sort_dir: 'asc' } }),
         ])
-        invoice.value     = invoiceRes.data
-        can.value         = invoiceRes.data.can ?? {}
-        banks.value       = bankRes.data.data ?? []
+        invoice.value      = invoiceRes.data
+        can.value          = invoiceRes.data.can ?? {}
+        paymentTypes.value = paymentTypeRes.data.data ?? []
         products.value    = productRes.data.data ?? []
         services.value    = serviceRes.data.data ?? []
         paymentMeta.value = metaRes.data
@@ -432,9 +432,9 @@ onMounted(async () => {
 
 
         payments.value = (invoice.value.payments ?? []).map(p => ({
-            _key:         ++_pmtKey,
-            id:           p.id,
-            bank_id:      p.bank_id ?? '',
+            _key:             ++_pmtKey,
+            id:               p.id,
+            payment_type_id:  p.payment_type_id ?? '',
             stage:        p.stage,
             amount:       p.amount,
             payment_date: (p.payment_date ?? '').slice(0, 10),

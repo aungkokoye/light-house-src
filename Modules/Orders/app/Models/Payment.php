@@ -13,7 +13,7 @@ class Payment extends Model
 
     protected $fillable = [
         'invoice_id',
-        'bank_id',
+        'payment_type_id',
         'stage',
         'amount',
         'note',
@@ -41,9 +41,9 @@ class Payment extends Model
         return $this->belongsTo(Invoice::class);
     }
 
-    public function bank(): BelongsTo
+    public function paymentType(): BelongsTo
     {
-        return $this->belongsTo(Bank::class);
+        return $this->belongsTo(PaymentType::class);
     }
 
     public function createdBy(): BelongsTo

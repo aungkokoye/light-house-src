@@ -39,7 +39,7 @@ class InvoiceManager
             'customer:id,name,email',
             'jobs.service:id,name',
             'jobs.product:id,name',
-            'payments.bank:id,name',
+            'payments.paymentType:id,name',
             'createdBy:id,name',
         ]);
 
@@ -52,7 +52,7 @@ class InvoiceManager
             'customer:id,name,email',
             'jobs.service:id,name',
             'jobs.product:id,name',
-            'payments.bank:id,name',
+            'payments.paymentType:id,name',
             'payments.createdBy:id,name',
             'createdBy:id,name',
         ]);
@@ -78,7 +78,7 @@ class InvoiceManager
             $p = $data['payment'];
             Payment::create([
                 'invoice_id'   => $invoice->id,
-                'bank_id'      => $p['bank_id'],
+                'payment_type_id' => $p['payment_type_id'],
                 'stage'        => $p['stage'],
                 'amount'       => (int) $p['amount'],
                 'payment_date' => $p['payment_date'],
@@ -90,7 +90,7 @@ class InvoiceManager
                 'customer:id,name,email',
                 'jobs.service:id,name',
                 'jobs.product:id,name',
-                'payments.bank:id,name',
+                'payments.paymentType:id,name',
                 'createdBy:id,name',
             ]);
         });
@@ -125,7 +125,7 @@ class InvoiceManager
             foreach ($data['payments'] ?? [] as $p) {
                 if (!empty($p['id'])) {
                     $existingPayments[(int) $p['id']]?->update([
-                        'bank_id'      => $p['bank_id'],
+                        'payment_type_id' => $p['payment_type_id'],
                         'stage'        => $p['stage'],
                         'amount'       => (int) $p['amount'],
                         'payment_date' => $p['payment_date'],
@@ -134,7 +134,7 @@ class InvoiceManager
                 } else {
                     Payment::create([
                         'invoice_id'   => $invoice->id,
-                        'bank_id'      => $p['bank_id'],
+                        'payment_type_id' => $p['payment_type_id'],
                         'stage'        => $p['stage'],
                         'amount'       => (int) $p['amount'],
                         'payment_date' => $p['payment_date'],
@@ -148,7 +148,7 @@ class InvoiceManager
                 'customer:id,name,email',
                 'jobs.service:id,name',
                 'jobs.product:id,name',
-                'payments.bank:id,name',
+                'payments.paymentType:id,name',
                 'createdBy:id,name',
             ]);
         });

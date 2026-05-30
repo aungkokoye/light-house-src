@@ -14,15 +14,15 @@
                         </svg>
                     </RouterLink>
                     <div class="flex-1">
-                        <h1 class="text-3xl font-bold text-gray-900">Banks</h1>
-                        <p class="text-sm text-gray-500 mt-0.5">Manage payment banks.</p>
+                        <h1 class="text-3xl font-bold text-gray-900">Payment Types</h1>
+                        <p class="text-sm text-gray-500 mt-0.5">Manage payment types.</p>
                     </div>
-                    <RouterLink v-if="can.create" to="/order/banks/create"
+                    <RouterLink v-if="can.create" to="/order/payment-types/create"
                         class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                         </svg>
-                        New Bank
+                        New Payment Type
                     </RouterLink>
                 </div>
 
@@ -32,7 +32,7 @@
                         <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
                         </svg>
-                        <input v-model="search" @input="debouncedFetch" type="text" placeholder="Search bank name…"
+                        <input v-model="search" @input="debouncedFetch" type="text" placeholder="Search payment type name…"
                             class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50" />
                     </div>
 
@@ -45,10 +45,10 @@
                 <!-- Table -->
                 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                     <div class="px-6 py-4 border-b border-gray-50 flex items-center justify-between">
-                        <h2 class="font-semibold text-gray-900">All Banks</h2>
+                        <h2 class="font-semibold text-gray-900">All Payment Types</h2>
                         <div class="flex items-center gap-3">
                             <span class="text-xs text-gray-400">{{ meta.total ?? 0 }} total</span>
-                            <select v-model="perPage" @change="fetchBanks(1)"
+                            <select v-model="perPage" @change="fetchPaymentTypes(1)"
                                 class="text-xs border border-gray-300 rounded-lg px-2 py-1 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-gray-600">
                                 <option :value="10">10 / page</option>
                                 <option :value="20">20 / page</option>
@@ -57,15 +57,15 @@
                         </div>
                     </div>
 
-                    <div v-if="banksLoading" class="flex items-center justify-center py-12">
+                    <div v-if="paymentTypesLoading" class="flex items-center justify-center py-12">
                         <svg class="w-5 h-5 animate-spin text-indigo-400" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v8H4z" />
                         </svg>
                     </div>
 
-                    <div v-else-if="banks.length === 0" class="px-6 py-12 text-center text-sm text-gray-400">
-                        No banks found.
+                    <div v-else-if="paymentTypes.length === 0" class="px-6 py-12 text-center text-sm text-gray-400">
+                        No payment types found.
                     </div>
 
                     <div v-else class="overflow-x-auto">
@@ -103,34 +103,34 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-50">
-                                <tr v-for="bank in banks" :key="bank.id" class="hover:bg-gray-50/50 transition-colors">
-                                    <td class="px-6 py-3.5 text-xs font-mono text-gray-400">{{ bank.id }}</td>
-                                    <td class="px-6 py-3.5 font-medium text-gray-900">{{ bank.name }}</td>
-                                    <td class="px-6 py-3.5 text-xs text-gray-400">{{ formatDate(bank.created_at) }}</td>
+                                <tr v-for="paymentType in paymentTypes" :key="paymentType.id" class="hover:bg-gray-50/50 transition-colors">
+                                    <td class="px-6 py-3.5 text-xs font-mono text-gray-400">{{ paymentType.id }}</td>
+                                    <td class="px-6 py-3.5 font-medium text-gray-900">{{ paymentType.name }}</td>
+                                    <td class="px-6 py-3.5 text-xs text-gray-400">{{ formatDate(paymentType.created_at) }}</td>
                                     <td class="px-6 py-3.5">
                                         <div class="flex items-center gap-1">
-                                            <RouterLink v-if="can.view" :to="`/order/banks/${bank.id}`"
+                                            <RouterLink v-if="can.view" :to="`/order/payment-types/${paymentType.id}`"
                                                 class="p-1.5 text-indigo-600 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
                                                 </svg>
                                             </RouterLink>
-                                            <RouterLink v-if="can.edit" :to="`/order/banks/${bank.id}/edit`"
+                                            <RouterLink v-if="can.edit" :to="`/order/payment-types/${paymentType.id}/edit`"
                                                 class="p-1.5 text-indigo-600 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931z" />
                                                 </svg>
                                             </RouterLink>
                                             <span v-if="can.delete" class="relative group">
-                                                <a href="#" @click.prevent="bank.payments_count ? null : confirmDelete(bank)"
-                                                    :class="bank.payments_count ? 'opacity-40 cursor-not-allowed' : ''"
+                                                <a href="#" @click.prevent="paymentType.payments_count ? null : confirmDelete(paymentType)"
+                                                    :class="paymentType.payments_count ? 'opacity-40 cursor-not-allowed' : ''"
                                                     class="p-1.5 text-red-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                                                     </svg>
                                                 </a>
-                                                <span v-if="bank.payments_count" class="pointer-events-none absolute bottom-full right-0 mb-1 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity">In use — cannot delete</span>
+                                                <span v-if="paymentType.payments_count" class="pointer-events-none absolute bottom-full right-0 mb-1 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity">In use — cannot delete</span>
                                             </span>
                                         </div>
                                     </td>
@@ -145,19 +145,19 @@
                             Showing {{ meta.from }}–{{ meta.to }} of {{ meta.total }}
                         </p>
                         <div class="flex items-center gap-1">
-                            <button @click="fetchBanks(currentPage - 1)" :disabled="currentPage === 1"
+                            <button @click="fetchPaymentTypes(currentPage - 1)" :disabled="currentPage === 1"
                                 class="px-3 py-1.5 text-xs rounded-lg border border-gray-100 text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
                                 Prev
                             </button>
                             <template v-for="page in visiblePages" :key="page">
                                 <span v-if="page === '...'" class="px-2 text-xs text-gray-300">…</span>
-                                <button v-else @click="fetchBanks(page)"
+                                <button v-else @click="fetchPaymentTypes(page)"
                                     class="px-3 py-1.5 text-xs rounded-lg border transition-colors"
                                     :class="page === currentPage ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-gray-100 text-gray-500 hover:bg-gray-50'">
                                     {{ page }}
                                 </button>
                             </template>
-                            <button @click="fetchBanks(currentPage + 1)" :disabled="currentPage === meta.last_page"
+                            <button @click="fetchPaymentTypes(currentPage + 1)" :disabled="currentPage === meta.last_page"
                                 class="px-3 py-1.5 text-xs rounded-lg border border-gray-100 text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
                                 Next
                             </button>
@@ -168,8 +168,8 @@
         </div>
     </div>
 
-    <DeleteModal :show="!!deleteTarget" @confirm="deleteBank" @cancel="deleteTarget = null; deleteError = null"
-        title="Delete Bank" message="Are you sure you want to delete this bank?" :error="deleteError" />
+    <DeleteModal :show="!!deleteTarget" @confirm="deletePaymentType" @cancel="deleteTarget = null; deleteError = null"
+        title="Delete Payment Type" message="Are you sure you want to delete this payment type?" :error="deleteError" />
 </template>
 
 <script setup>
@@ -186,8 +186,8 @@ const route = useRoute()
 const { formatDate } = useFormatDate()
 
 const loading = ref(true)
-const banksLoading = ref(false)
-const banks = ref([])
+const paymentTypesLoading = ref(false)
+const paymentTypes = ref([])
 const search = ref('')
 const sortBy = ref('name')
 const sortDir = ref('asc')
@@ -223,7 +223,7 @@ function resetFilters() {
     sortBy.value = 'name'
     sortDir.value = 'asc'
     router.replace({ query: {} })
-    fetchBanks(1)
+    fetchPaymentTypes(1)
 }
 
 function toggleSort(col) {
@@ -233,47 +233,47 @@ function toggleSort(col) {
         sortBy.value = col
         sortDir.value = 'asc'
     }
-    fetchBanks(1)
+    fetchPaymentTypes(1)
 }
 
 let searchTimer = null
 function debouncedFetch() {
     clearTimeout(searchTimer)
-    searchTimer = setTimeout(() => fetchBanks(1), 350)
+    searchTimer = setTimeout(() => fetchPaymentTypes(1), 350)
 }
 
-function confirmDelete(bank) {
-    deleteTarget.value = bank
+function confirmDelete(paymentType) {
+    deleteTarget.value = paymentType
 }
 
-async function deleteBank() {
+async function deletePaymentType() {
     deleteError.value = null
     try {
-        await axios.delete(`/api/order/banks/${deleteTarget.value.id}`)
+        await axios.delete(`/api/order/payment-types/${deleteTarget.value.id}`)
         deleteTarget.value = null
-        fetchBanks(currentPage.value)
+        fetchPaymentTypes(currentPage.value)
     } catch (e) {
-        deleteError.value = e?.response?.data?.message ?? 'Failed to delete bank.'
+        deleteError.value = e?.response?.data?.message ?? 'Failed to delete payment type.'
     }
 }
 
-async function fetchBanks(page = 1) {
-    banksLoading.value = true
+async function fetchPaymentTypes(page = 1) {
+    paymentTypesLoading.value = true
     try {
         const params = { page, per_page: perPage.value, sort_by: sortBy.value, sort_dir: sortDir.value }
         if (search.value) params.search = search.value
-        const { data } = await axios.get('/api/order/banks', { params })
-        banks.value = data.data
+        const { data } = await axios.get('/api/order/payment-types', { params })
+        paymentTypes.value = data.data
         can.value   = data.can ?? {}
         meta.value = { total: data.total, from: data.from, to: data.to, last_page: data.last_page }
         currentPage.value = data.current_page
         const finalParams = { ...params, page: data.current_page }
         router.replace({ query: finalParams })
-        sessionStorage.setItem('bank-list-back', '/order/banks?' + new URLSearchParams(finalParams).toString())
+        sessionStorage.setItem('payment-type-list-back', '/order/payment-types?' + new URLSearchParams(finalParams).toString())
     } catch (e) {
         if (e?.response?.status === 401) router.push('/login')
     } finally {
-        banksLoading.value = false
+        paymentTypesLoading.value = false
     }
 }
 
@@ -283,7 +283,7 @@ onMounted(async () => {
     if (route.query.sort_by)  sortBy.value  = route.query.sort_by
     if (route.query.sort_dir) sortDir.value = route.query.sort_dir
     if (route.query.per_page) perPage.value = Number(route.query.per_page)
-    await fetchBanks(Number(route.query.page) || 1)
+    await fetchPaymentTypes(Number(route.query.page) || 1)
     loading.value = false
 })
 </script>

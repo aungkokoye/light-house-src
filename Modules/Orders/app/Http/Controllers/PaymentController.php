@@ -39,7 +39,7 @@ class PaymentController extends Controller
 
     public function update(UpdatePaymentRequest $request, Payment $payment): JsonResponse
     {
-        $payment->load('bank:id,name', 'createdBy:id,name');
+        $payment->load('paymentType:id,name', 'createdBy:id,name');
         $oldValues = $this->snapshot($payment);
 
         $updated = $this->paymentManager->update($payment, $request->validated());
@@ -53,7 +53,7 @@ class PaymentController extends Controller
         $payment->loadMissing([
             'invoice:id,invoice_no,total,customer_id',
             'invoice.customer:id,name,email,company_name',
-            'bank:id,name',
+            'paymentType:id,name',
             'createdBy:id,name',
         ]);
 
@@ -70,7 +70,7 @@ class PaymentController extends Controller
 
     public function destroy(Payment $payment): JsonResponse
     {
-        $payment->load('bank:id,name', 'createdBy:id,name');
+        $payment->load('paymentType:id,name', 'createdBy:id,name');
         $this->auditDeleted($payment, $this->snapshot($payment));
         $this->paymentManager->delete($payment);
 
@@ -81,11 +81,11 @@ class PaymentController extends Controller
     {
         $attrs = $this->filterAuditValues($payment->getAttributes());
 
-        unset($attrs['bank_id'], $attrs['created_by']);
+        unset($attrs['payment_type_id'], $attrs['created_by']);
 
         return array_merge($attrs, [
-            'bank'       => ['id' => $payment->bank?->id,      'name' => $payment->bank?->name],
-            'created_by' => ['id' => $payment->createdBy?->id, 'name' => $payment->createdBy?->name],
+            'payment_type' => ['id' => $payment->paymentType?->id,  'name' => $payment->paymentType?->name],
+            'created_by'   => ['id' => $payment->createdBy?->id,    'name' => $payment->createdBy?->name],
         ]);
     }
 }

@@ -60,11 +60,11 @@ import AdminCreateCustomerPage from '../pages/order/customers/AdminCreateCustome
 import AdminEditCustomerPage from '../pages/order/customers/AdminEditCustomerPage.vue';
 import AdminViewCustomerPage from '../pages/order/customers/AdminViewCustomerPage.vue';
 
-// Order — Banks
-import AdminBanksPage from '../pages/order/banks/AdminBanksPage.vue';
-import AdminCreateBankPage from '../pages/order/banks/AdminCreateBankPage.vue';
-import AdminEditBankPage from '../pages/order/banks/AdminEditBankPage.vue';
-import AdminViewBankPage from '../pages/order/banks/AdminViewBankPage.vue';
+// Order — Payment Types
+import AdminPaymentTypesPage from '../pages/order/payment-types/AdminPaymentTypesPage.vue';
+import AdminCreatePaymentTypePage from '../pages/order/payment-types/AdminCreatePaymentTypePage.vue';
+import AdminEditPaymentTypePage from '../pages/order/payment-types/AdminEditPaymentTypePage.vue';
+import AdminViewPaymentTypePage from '../pages/order/payment-types/AdminViewPaymentTypePage.vue';
 
 // Order — Services
 import AdminServicesPage from '../pages/order/services/AdminServicesPage.vue';
@@ -140,10 +140,10 @@ const routes = [
     { path: '/order/invoices/create',      component: AdminCreateInvoicePage },
     { path: '/order/invoices/:id',         component: AdminViewInvoicePage },
     { path: '/order/invoices/:id/edit',    component: AdminEditInvoicePage },
-    { path: '/order/banks',            component: AdminBanksPage },
-    { path: '/order/banks/create',     component: AdminCreateBankPage },
-    { path: '/order/banks/:id',        component: AdminViewBankPage },
-    { path: '/order/banks/:id/edit',   component: AdminEditBankPage },
+    { path: '/order/payment-types',            component: AdminPaymentTypesPage },
+    { path: '/order/payment-types/create',     component: AdminCreatePaymentTypePage },
+    { path: '/order/payment-types/:id',        component: AdminViewPaymentTypePage },
+    { path: '/order/payment-types/:id/edit',   component: AdminEditPaymentTypePage },
     { path: '/order/services',             component: AdminServicesPage },
     { path: '/order/services/create',      component: AdminCreateServicePage },
     { path: '/order/services/:id',         component: AdminViewServicePage },

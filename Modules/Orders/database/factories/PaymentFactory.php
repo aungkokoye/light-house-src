@@ -13,7 +13,7 @@ class PaymentFactory extends Factory
     {
         return [
             'invoice_id'   => null,
-            'bank_id'      => null,
+            'payment_type_id' => null,
             'stage'        => Payment::STAGE_ADVANCE,
             'amount'       => 0,
             'note'         => fake()->optional(0.4)->sentence(),

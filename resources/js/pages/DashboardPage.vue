@@ -58,8 +58,8 @@
                         </div>
                     </RouterLink>
 
-                    <!-- Banks -->
-                    <RouterLink v-if="can.banks" to="/order/banks"
+                    <!-- Payment Types -->
+                    <RouterLink v-if="can.payment_types" to="/order/payment-types"
                         class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col items-center gap-4 hover:shadow-md hover:border-amber-100 transition-all">
                         <div class="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center group-hover:bg-amber-100 transition-colors">
                             <svg class="w-7 h-7 text-amber-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -67,8 +67,8 @@
                             </svg>
                         </div>
                         <div class="text-center">
-                            <p class="font-semibold text-gray-900">Banks</p>
-                            <p class="text-xs text-gray-400 mt-0.5">Manage payment banks</p>
+                            <p class="font-semibold text-gray-900">Payment Types</p>
+                            <p class="text-xs text-gray-400 mt-0.5">Manage payment types</p>
                         </div>
                     </RouterLink>
 
