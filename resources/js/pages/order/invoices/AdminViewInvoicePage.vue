@@ -1,6 +1,23 @@
 <template>
     <AppHeader />
 
+    <!-- Flash message -->
+    <Teleport to="body">
+        <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0 translate-y-2" enter-to-class="opacity-100 translate-y-0"
+                    leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 translate-y-2">
+            <div v-if="flash.text" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-5 py-3 rounded-xl shadow-lg text-sm font-medium"
+                :class="flash.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'">
+                <svg v-if="flash.type === 'success'" class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                </svg>
+                <svg v-else class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z" />
+                </svg>
+                {{ flash.text }}
+            </div>
+        </Transition>
+    </Teleport>
+
     <div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 pt-24 pb-12 px-4">
         <div class="max-w-4xl mx-auto">
             <LoadingSpinner v-if="loading" />
@@ -549,6 +566,14 @@ function printInvoice() {
 const sendingInvoice = ref(false)
 const receiptPayment = ref(null)
 const sendingReceiptId = ref(null)
+const flash = ref({ type: '', text: '' })
+let flashTimer = null
+
+function showFlash(type, text) {
+    clearTimeout(flashTimer)
+    flash.value = { type, text }
+    flashTimer = setTimeout(() => { flash.value = { type: '', text: '' } }, 4000)
+}
 
 async function printReceipt(pmt) {
     receiptPayment.value = pmt
@@ -560,9 +585,10 @@ async function printReceipt(pmt) {
 async function sendReceipt(pmt) {
     sendingReceiptId.value = pmt.id
     try {
-        await axios.post(`/api/order/payments/${pmt.id}/send-receipt`)
+        const { data } = await axios.post(`/api/order/payments/${pmt.id}/send-receipt`)
+        showFlash('success', data.message ?? 'Receipt sent successfully.')
     } catch (e) {
-        console.error('Failed to send receipt', e)
+        showFlash('error', e?.response?.data?.message ?? 'Failed to send receipt.')
     } finally {
         sendingReceiptId.value = null
     }
@@ -571,9 +597,10 @@ async function sendReceipt(pmt) {
 async function sendInvoice() {
     sendingInvoice.value = true
     try {
-        await axios.post(`/api/order/invoices/${invoice.value.id}/send`)
+        const { data } = await axios.post(`/api/order/invoices/${invoice.value.id}/send`)
+        showFlash('success', data.message ?? 'Invoice sent successfully.')
     } catch (e) {
-        console.error('Failed to send invoice', e)
+        showFlash('error', e?.response?.data?.message ?? 'Failed to send invoice.')
     } finally {
         sendingInvoice.value = false
     }
