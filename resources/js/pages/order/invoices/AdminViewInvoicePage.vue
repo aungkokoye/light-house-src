@@ -84,6 +84,7 @@
                                     <th class="px-6 py-3 font-medium">Unit Price</th>
                                     <th class="px-6 py-3 font-medium">Delivery Date</th>
                                     <th class="px-6 py-3 font-medium">Total</th>
+                                    <th class="px-6 py-3"></th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-50">
@@ -95,19 +96,34 @@
                                     <td class="px-6 py-3.5 text-gray-900">{{ job.unit_price.toLocaleString() }}</td>
                                     <td class="px-6 py-3.5 text-xs text-gray-500">{{ formatDate(job.delivery_date) }}</td>
                                     <td class="px-6 py-3.5 font-medium text-gray-900">{{ job.total.toLocaleString() }}</td>
+                                    <td class="px-6 py-3.5">
+                                        <span class="relative group">
+                                            <button type="button" @click="job.note ? noteModal = job.note : null"
+                                                :class="job.note ? 'text-gray-400 hover:text-indigo-600 hover:bg-gray-100' : 'opacity-30 cursor-not-allowed'"
+                                                class="p-1 rounded transition-colors">
+                                                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+                                                </svg>
+                                            </button>
+                                            <span v-if="!job.note"
+                                                class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                                                No note
+                                            </span>
+                                        </span>
+                                    </td>
                                 </tr>
                             </tbody>
                             <tfoot>
                                 <tr class="border-t border-gray-100 bg-gray-50/50">
-                                    <td colspan="6" class="px-6 py-3 text-right text-xs text-gray-400">Subtotal</td>
+                                    <td colspan="7" class="px-6 py-3 text-right text-xs text-gray-400">Subtotal</td>
                                     <td class="px-6 py-3 font-medium text-gray-900">{{ subtotal.toLocaleString() }}</td>
                                 </tr>
                                 <tr v-if="invoice.discount > 0" class="bg-gray-50/50">
-                                    <td colspan="6" class="px-6 py-2 text-right text-xs text-gray-400">Discount</td>
+                                    <td colspan="7" class="px-6 py-2 text-right text-xs text-gray-400">Discount</td>
                                     <td class="px-6 py-2 text-gray-700">- {{ invoice.discount.toLocaleString() }}</td>
                                 </tr>
                                 <tr class="bg-indigo-50/50">
-                                    <td colspan="6" class="px-6 py-3 text-right text-sm font-semibold text-gray-700">Total</td>
+                                    <td colspan="7" class="px-6 py-3 text-right text-sm font-semibold text-gray-700">Total</td>
                                     <td class="px-6 py-3 text-base font-bold text-indigo-700">{{ invoice.total.toLocaleString() }}</td>
                                 </tr>
                             </tfoot>
