@@ -27,7 +27,7 @@ return new class extends Migration
 
         Schema::create('invoices', function (Blueprint $table) {
             $table->id();
-            $table->string('invoice_no', 8)->unique();
+            $table->string('invoice_no', 20)->unique()->nullable();
             $table->foreignId('customer_id')->constrained('customers')->cascadeOnDelete();
             $table->unsignedBigInteger('discount')->default(0);
             $table->unsignedBigInteger('total');

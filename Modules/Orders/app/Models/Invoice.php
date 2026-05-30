@@ -12,25 +12,12 @@ class Invoice extends Model
 {
     protected static function booted(): void
     {
-        static::creating(function (Invoice $invoice) {
-            if (empty($invoice->invoice_no)) {
-                $invoice->invoice_no = static::generateInvoiceNo();
-            }
+        static::created(function (Invoice $invoice) {
+            $prefix = env('INVOICE_PREFIX', 'LHPI');
+            $invoice->updateQuietly([
+                'invoice_no' => $prefix . '-' . str_pad($invoice->id, 6, '0', STR_PAD_LEFT),
+            ]);
         });
-    }
-
-    private static function generateInvoiceNo(): string
-    {
-        $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-
-        do {
-            $no = '';
-            for ($i = 0; $i < 8; $i++) {
-                $no .= $chars[random_int(0, strlen($chars) - 1)];
-            }
-        } while (static::where('invoice_no', $no)->exists());
-
-        return $no;
     }
 
     protected $fillable = [
