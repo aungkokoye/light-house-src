@@ -56,7 +56,7 @@
                     <!-- Invoice jobs -->
                     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                         <div class="px-6 py-4 border-b border-gray-50 flex items-center justify-between">
-                            <h2 class="font-semibold text-gray-900">Invoice Items</h2>
+                            <h2 class="font-semibold text-gray-900">Jobs</h2>
                             <button type="button" @click="addJob"
                                 class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
