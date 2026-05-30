@@ -62,6 +62,7 @@ class InvoiceController extends Controller
         return response()->json(array_merge($this->manager->show($invoice)->toArray(), [
             'can' => array_merge($this->resourceAbilities($invoice), [
                 'add_payment' => Gate::allows('create', Payment::class),
+                'add_refund'  => auth()->user()?->hasRole('admin'),
             ]),
         ]));
     }

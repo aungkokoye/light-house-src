@@ -17,12 +17,12 @@ class StorePaymentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'invoice_id'   => ['required', 'integer', 'exists:invoices,id'],
+            'invoice_id'      => ['required', 'integer', 'exists:invoices,id'],
             'payment_type_id' => ['required', 'integer', 'exists:payment_types,id'],
-            'stage'        => ['required', 'integer', 'in:' . implode(',', [Payment::STAGE_ADVANCE, Payment::STAGE_FINAL])],
-            'amount'       => ['required', 'integer', 'min:0'],
-            'note'         => ['nullable', 'string', 'max:5000'],
-            'payment_date' => ['required', 'date'],
+            'stage'           => ['required', 'integer', 'in:' . implode(',', [Payment::STAGE_ADVANCE, Payment::STAGE_FINAL, Payment::STAGE_REFUND])],
+            'amount'          => ['required', 'integer', 'min:1'],
+            'note'            => ['nullable', 'string', 'max:5000'],
+            'payment_date'    => ['required', 'date'],
         ];
     }
 
@@ -32,20 +32,40 @@ class StorePaymentRequest extends FormRequest
             $invoice = Invoice::find($this->input('invoice_id'));
             if (! $invoice) return;
 
-            $amount       = (int) $this->input('amount', 0);
-            $stage        = (int) $this->input('stage', 0);
-            $invoiceTotal = $invoice->total;
+            $amount = (int) $this->input('amount', 0);
+            $stage  = (int) $this->input('stage', 0);
 
             $invoice->loadMissing('payments');
+
+            if ($stage === Payment::STAGE_REFUND) {
+                if (! $this->user()->hasRole('admin')) {
+                    $v->errors()->add('stage', 'Only admins can create refund payments.');
+                    return;
+                }
+
+                $effectivePaid = $invoice->payments->reduce(
+                    fn($carry, $p) => $carry + ($p->stage === Payment::STAGE_REFUND ? -$p->amount : $p->amount),
+                    0
+                );
+
+                if ($amount > $effectivePaid) {
+                    $v->errors()->add('amount', "Refund amount ({$amount}) cannot exceed total paid ({$effectivePaid}).");
+                }
+                return;
+            }
+
+            $invoiceTotal = $invoice->total;
 
             if ($invoice->payments->contains('stage', Payment::STAGE_FINAL)) {
                 $v->errors()->add('invoice_id', 'This invoice already has a final payment and cannot accept more payments.');
                 return;
             }
 
-            $alreadyPaid = $invoice->payments->sum('amount');
-            $totalAfter  = $alreadyPaid + $amount;
-            $hasFinal    = $stage === Payment::STAGE_FINAL;
+            $alreadyPaid = $invoice->payments
+                ->where('stage', '!=', Payment::STAGE_REFUND)
+                ->sum('amount');
+            $totalAfter = $alreadyPaid + $amount;
+            $hasFinal   = $stage === Payment::STAGE_FINAL;
 
             if ($amount > $invoiceTotal) {
                 $v->errors()->add('amount', "Payment amount must not exceed the invoice total ({$invoiceTotal}).");

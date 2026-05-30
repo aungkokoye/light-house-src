@@ -154,7 +154,7 @@
                         <h2 class="font-semibold text-gray-900">Payments</h2>
                         <div class="flex items-center gap-3">
                             <span class="text-xs text-gray-400">Paid: {{ totalPaid.toLocaleString() }} / {{ invoice.total.toLocaleString() }}</span>
-                            <button v-if="can.add_payment && !hasFinalPayment" type="button" @click="openAddPayment"
+                            <button v-if="can.add_payment && (!hasFinalPayment || can.add_refund)" type="button" @click="openAddPayment"
                                 class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -188,7 +188,9 @@
                                             {{ stageMap[pmt.stage] }}
                                         </span>
                                     </td>
-                                    <td class="px-3 py-2.5 font-medium text-gray-900">{{ pmt.amount.toLocaleString() }}</td>
+                                    <td class="px-3 py-2.5 font-medium" :class="pmt.stage === paymentMeta?.stage_refund ? 'text-red-600' : 'text-gray-900'">
+                                        {{ pmt.stage === paymentMeta?.stage_refund ? '−' : '' }}{{ pmt.amount.toLocaleString() }}
+                                    </td>
                                     <td class="px-3 py-2.5 text-xs text-gray-500">{{ formatDate(pmt.payment_date) }}</td>
                                     <td class="px-3 py-2.5">
                                         <div class="flex items-center gap-1">
@@ -521,7 +523,7 @@ const can = ref({})
 const paymentTypes = ref([])
 const paymentMeta = ref(null)
 
-const STAGE_CLS = { 1: 'bg-amber-50 text-amber-700', 2: 'bg-indigo-50 text-indigo-700' }
+const STAGE_CLS = { 1: 'bg-amber-50 text-amber-700', 2: 'bg-indigo-50 text-indigo-700', 3: 'bg-red-50 text-red-700' }
 const stageMap = computed(() => Object.fromEntries((paymentMeta.value?.stages ?? []).map(s => [s.id, s.name])))
 
 // add-payment modal state
@@ -611,7 +613,8 @@ const subtotal = computed(() =>
 )
 
 const totalPaid = computed(() =>
-    (invoice.value?.payments ?? []).reduce((sum, p) => sum + p.amount, 0)
+    (invoice.value?.payments ?? []).reduce((sum, p) =>
+        sum + (p.stage === paymentMeta.value?.stage_refund ? -p.amount : p.amount), 0)
 )
 
 const hasFinalPayment = computed(() =>

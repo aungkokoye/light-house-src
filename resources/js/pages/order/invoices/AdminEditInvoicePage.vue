@@ -147,7 +147,7 @@
                     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                         <div class="px-6 py-4 border-b border-gray-50 flex items-center justify-between">
                             <h2 class="font-semibold text-gray-900">Payments</h2>
-                            <button v-if="!hasFinalPayment" type="button" @click="addPayment"
+                            <button v-if="!hasFinalPayment || can.add_refund" type="button" @click="addPayment"
                                 class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -387,7 +387,7 @@ function pmtError(i, field) {
 }
 
 const anyAmountError  = computed(() => !!errors.value.payments)
-const hasFinalPayment = computed(() => payments.value.some(p => p.stage === (paymentMeta.value?.stage_final ?? 2)))
+const hasFinalPayment = computed(() => payments.value.some(p => p.stage === (paymentMeta.value?.stage_final ?? 2) && p.stage !== (paymentMeta.value?.stage_refund ?? 3)))
 
 const today = new Date().toISOString().slice(0, 10)
 
@@ -395,7 +395,8 @@ const subtotal = computed(() =>
     form.value.jobs.reduce((sum, j) => sum + (j.quantity || 0) * (j.unit_price || 0), 0)
 )
 const grandTotal  = computed(() => Math.max(0, subtotal.value - (form.value.discount || 0)))
-const totalPaid   = computed(() => payments.value.reduce((sum, p) => sum + (p.amount || 0), 0))
+const totalPaid   = computed(() => payments.value.reduce((sum, p) =>
+    sum + ((p.stage === (paymentMeta.value?.stage_refund ?? 3) ? -1 : 1) * (p.amount || 0)), 0))
 const balance     = computed(() => grandTotal.value - totalPaid.value)
 
 async function submit() {

@@ -10,6 +10,7 @@ class Payment extends Model
 {
     const STAGE_ADVANCE = 1;
     const STAGE_FINAL   = 2;
+    const STAGE_REFUND  = 3;
 
     protected $fillable = [
         'invoice_id',
@@ -33,6 +34,7 @@ class Payment extends Model
         return [
             ['id' => self::STAGE_ADVANCE, 'name' => 'Advance / Deposit'],
             ['id' => self::STAGE_FINAL,   'name' => 'Final Payment'],
+            ['id' => self::STAGE_REFUND,  'name' => 'Refund'],
         ];
     }
 
