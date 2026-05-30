@@ -15,12 +15,12 @@ class Invoice extends Model
         static::created(function (Invoice $invoice) {
             $prefix = env('INVOICE_PREFIX', 'LHPI');
             $no = $prefix . '-' . str_pad($invoice->id, 8, '0', STR_PAD_LEFT);
-            $invoice->invoice_no = $no;
-            $invoice->saveQuietly();
+            $invoice->updateQuietly(['invoice_no' => $no]);
         });
     }
 
     protected $fillable = [
+        'invoice_no',
         'customer_id',
         'discount',
         'total',
