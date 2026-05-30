@@ -3,15 +3,11 @@
 namespace Modules\Orders\Services;
 
 use App\Concerns\DispatchesAuditEvents;
-use App\Models\User;
-use App\Notifications\CustomerCredentialsNotification;
-use App\Services\UserManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Modules\Orders\Filters\InvoiceFilter;
 use Modules\Orders\Models\Invoice;
 use Modules\Orders\Models\InvoiceJob;
@@ -20,36 +16,6 @@ use Modules\Orders\Models\Payment;
 class InvoiceManager
 {
     use DispatchesAuditEvents;
-
-    public function __construct(private readonly UserManager $userManager) {}
-
-    public function registerCustomer(array $data): User
-    {
-        $password = Str::password(12);
-        $token    = Str::random(64);
-
-        $customer = $this->userManager->create(
-            name:           $data['name'],
-            email:          $data['email'],
-            password:       $password,
-            role:           'customer',
-            companyProfile: $data['company_profile'],
-        );
-
-        $customer->forceFill([
-            'email_verification_token'      => $token,
-            'email_verification_expires_at' => now()->addHours(24),
-        ])->save();
-
-        $this->auditCreated($customer, array_merge(
-            $this->filterAuditValues($customer->getAttributes()),
-            ['company_profile' => $customer->companyProfile?->only(['name', 'role', 'phone', 'address'])]
-        ));
-
-        $customer->notify(new CustomerCredentialsNotification($password, $token));
-
-        return $customer;
-    }
 
     public function list(Request $request, int $perPage): LengthAwarePaginator
     {
@@ -62,6 +28,10 @@ class InvoiceManager
 
         return InvoiceFilter::for($query)
             ->search($request->input('search'))
+            ->customer($request->integer('customer_id') ?: null)
+            ->status($request->input('status'))
+            ->createdFrom($request->input('date_from'))
+            ->createdTo($request->input('date_to'))
             ->sort($request->input('sort_by', 'created_at'), $request->input('sort_dir', 'desc'))
             ->query()
             ->paginate($perPage);
@@ -71,10 +41,9 @@ class InvoiceManager
     {
         $invoice->loadMissing([
             'customer:id,name,email',
-            'customer.companyProfile:user_id,name',
             'jobs.service:id,name',
             'jobs.product:id,name',
-            'payments.bank:id,name',
+            'payments.paymentType:id,name',
             'createdBy:id,name',
         ]);
 
@@ -84,11 +53,10 @@ class InvoiceManager
     public function show(Invoice $invoice): Invoice
     {
         return $invoice->load([
-            'customer:id,name,email,email_verified_at',
-            'customer.companyProfile:user_id,name',
+            'customer:id,name,email',
             'jobs.service:id,name',
             'jobs.product:id,name',
-            'payments.bank:id,name',
+            'payments.paymentType:id,name',
             'payments.createdBy:id,name',
             'createdBy:id,name',
         ]);
@@ -114,8 +82,7 @@ class InvoiceManager
             $p = $data['payment'];
             Payment::create([
                 'invoice_id'   => $invoice->id,
-                'type_id'      => $p['type_id'],
-                'bank_id'      => $p['bank_id'] ?? null,
+                'payment_type_id' => $p['payment_type_id'],
                 'stage'        => $p['stage'],
                 'amount'       => (int) $p['amount'],
                 'payment_date' => $p['payment_date'],
@@ -127,7 +94,7 @@ class InvoiceManager
                 'customer:id,name,email',
                 'jobs.service:id,name',
                 'jobs.product:id,name',
-                'payments.bank:id,name',
+                'payments.paymentType:id,name',
                 'createdBy:id,name',
             ]);
         });
@@ -162,8 +129,7 @@ class InvoiceManager
             foreach ($data['payments'] ?? [] as $p) {
                 if (!empty($p['id'])) {
                     $existingPayments[(int) $p['id']]?->update([
-                        'type_id'      => $p['type_id'],
-                        'bank_id'      => $p['type_id'] == Payment::TYPE_BANK ? ($p['bank_id'] ?? null) : null,
+                        'payment_type_id' => $p['payment_type_id'],
                         'stage'        => $p['stage'],
                         'amount'       => (int) $p['amount'],
                         'payment_date' => $p['payment_date'],
@@ -172,8 +138,7 @@ class InvoiceManager
                 } else {
                     Payment::create([
                         'invoice_id'   => $invoice->id,
-                        'type_id'      => $p['type_id'],
-                        'bank_id'      => $p['type_id'] == Payment::TYPE_BANK ? ($p['bank_id'] ?? null) : null,
+                        'payment_type_id' => $p['payment_type_id'],
                         'stage'        => $p['stage'],
                         'amount'       => (int) $p['amount'],
                         'payment_date' => $p['payment_date'],
@@ -187,7 +152,7 @@ class InvoiceManager
                 'customer:id,name,email',
                 'jobs.service:id,name',
                 'jobs.product:id,name',
-                'payments.bank:id,name',
+                'payments.paymentType:id,name',
                 'createdBy:id,name',
             ]);
         });
@@ -219,6 +184,7 @@ class InvoiceManager
             'unit_price'    => (int) $job['unit_price'],
             'total'         => (int) $job['quantity'] * (int) $job['unit_price'],
             'delivery_date' => Carbon::parse($job['delivery_date'])->format('Y-m-d'),
+            'note'          => $job['note'] ?? null,
             'created_by'    => Auth::id(),
             'created_at'    => $now,
             'updated_at'    => $now,

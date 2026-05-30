@@ -3,22 +3,22 @@
 namespace Modules\Orders\Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Modules\Orders\Models\Bank;
+use Modules\Orders\Models\Customer;
 use Modules\Orders\Models\Invoice;
 use Modules\Orders\Models\InvoiceJob;
 use Modules\Orders\Models\JobService;
 use Modules\Orders\Models\Payment;
+use Modules\Orders\Models\PaymentType;
 use Modules\Orders\Models\Product;
-use App\Models\User;
 
 class InvoiceSeeder extends Seeder
 {
     public function run(): void
     {
-        $customers  = User::role('customer')->whereHas('companyProfile')->pluck('id');
+        $customers  = Customer::pluck('id');
         $serviceIds = JobService::pluck('id');
         $productIds = Product::pluck('id');
-        $bankIds    = Bank::pluck('id');
+        $paymentTypeIds = PaymentType::pluck('id');
 
         for ($i = 0; $i < 50; $i++) {
             $discount = fake()->randomElement([0, 0, 0, 5000, 10000, 20000, 50000]);
@@ -48,6 +48,7 @@ class InvoiceSeeder extends Seeder
                     'unit_price'    => $unitPrice,
                     'total'         => $total,
                     'delivery_date' => fake()->dateTimeBetween('now', '+3 months')->format('Y-m-d'),
+                    'note'          => fake()->optional(0.3)->sentence(),
                     'created_by'    => 1,
                 ]);
             }
@@ -94,13 +95,9 @@ class InvoiceSeeder extends Seeder
                     $amount = max(1, (int) ($maxAmount * fake()->randomFloat(2, 0.2, 0.7)));
                 }
 
-                $typeId = fake()->randomElement([Payment::TYPE_CASH, Payment::TYPE_BANK, Payment::TYPE_OTHER]);
-                $bankId = $typeId === Payment::TYPE_BANK ? $bankIds->random() : null;
-
                 Payment::create([
                     'invoice_id'   => $invoice->id,
-                    'type_id'      => $typeId,
-                    'bank_id'      => $bankId,
+                    'payment_type_id' => $paymentTypeIds->random(),
                     'stage'        => $stage,
                     'amount'       => $amount,
                     'note'         => fake()->optional(0.4)->sentence(),

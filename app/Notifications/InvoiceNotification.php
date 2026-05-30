@@ -18,10 +18,10 @@ class InvoiceNotification extends Notification
     public function toMail($notifiable): MailMessage
     {
         $this->invoice->loadMissing([
-            'customer.companyProfile:user_id,name',
+            'customer:id,name,email,company_name',
             'jobs.service:id,name',
             'jobs.product:id,name',
-            'payments.bank:id,name',
+            'payments.paymentType:id,name',
             'createdBy:id,name',
         ]);
 

@@ -2,30 +2,29 @@
 
 namespace Modules\Orders\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Notifications\Notifiable;
 use App\Models\User;
-use Modules\Orders\Database\Factories\BankFactory;
 
-class Bank extends Model
+class Customer extends Model
 {
-    use HasFactory;
-
-    protected static function newFactory(): BankFactory
-    {
-        return BankFactory::new();
-    }
+    use Notifiable;
 
     protected $fillable = [
         'name',
+        'email',
+        'company_name',
+        'title',
+        'phone',
+        'address',
         'created_by',
     ];
 
-    public function payments(): HasMany
+    public function invoices(): HasMany
     {
-        return $this->hasMany(Payment::class);
+        return $this->hasMany(Invoice::class);
     }
 
     public function createdBy(): BelongsTo

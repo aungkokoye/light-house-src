@@ -44,8 +44,22 @@
                         </div>
                     </RouterLink>
 
-                    <!-- Banks -->
-                    <RouterLink v-if="can.banks" to="/order/banks"
+                    <!-- Customers -->
+                    <RouterLink v-if="can.customers" to="/order/customers"
+                        class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col items-center gap-4 hover:shadow-md hover:border-cyan-100 transition-all">
+                        <div class="w-14 h-14 rounded-2xl bg-cyan-50 flex items-center justify-center group-hover:bg-cyan-100 transition-colors">
+                            <svg class="w-7 h-7 text-cyan-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0z" />
+                            </svg>
+                        </div>
+                        <div class="text-center">
+                            <p class="font-semibold text-gray-900">Customers</p>
+                            <p class="text-xs text-gray-400 mt-0.5">Manage customer records</p>
+                        </div>
+                    </RouterLink>
+
+                    <!-- Payment Types -->
+                    <RouterLink v-if="can.payment_types" to="/order/payment-types"
                         class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col items-center gap-4 hover:shadow-md hover:border-amber-100 transition-all">
                         <div class="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center group-hover:bg-amber-100 transition-colors">
                             <svg class="w-7 h-7 text-amber-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -53,8 +67,8 @@
                             </svg>
                         </div>
                         <div class="text-center">
-                            <p class="font-semibold text-gray-900">Banks</p>
-                            <p class="text-xs text-gray-400 mt-0.5">Manage payment banks</p>
+                            <p class="font-semibold text-gray-900">Payment Types</p>
+                            <p class="text-xs text-gray-400 mt-0.5">Manage payment types</p>
                         </div>
                     </RouterLink>
 

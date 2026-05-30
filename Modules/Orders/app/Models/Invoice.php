@@ -6,33 +6,21 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\User;
+use Modules\Orders\Models\Customer;
 
 class Invoice extends Model
 {
     protected static function booted(): void
     {
-        static::creating(function (Invoice $invoice) {
-            if (empty($invoice->invoice_no)) {
-                $invoice->invoice_no = static::generateInvoiceNo();
-            }
+        static::created(function (Invoice $invoice) {
+            $prefix = env('INVOICE_PREFIX', 'LHPI');
+            $no = $prefix . '-' . str_pad($invoice->id, 8, '0', STR_PAD_LEFT);
+            $invoice->updateQuietly(['invoice_no' => $no]);
         });
     }
 
-    private static function generateInvoiceNo(): string
-    {
-        $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-
-        do {
-            $no = '';
-            for ($i = 0; $i < 8; $i++) {
-                $no .= $chars[random_int(0, strlen($chars) - 1)];
-            }
-        } while (static::where('invoice_no', $no)->exists());
-
-        return $no;
-    }
-
     protected $fillable = [
+        'invoice_no',
         'customer_id',
         'discount',
         'total',
@@ -49,7 +37,7 @@ class Invoice extends Model
 
     public function customer(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'customer_id');
+        return $this->belongsTo(Customer::class, 'customer_id');
     }
 
     public function jobs(): HasMany

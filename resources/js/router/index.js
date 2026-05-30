@@ -54,11 +54,17 @@ import AdminChatKnowledgeCategoriesPage from '../pages/admin/chat-knowledge-cate
 import AdminCreateChatKnowledgeCategoryPage from '../pages/admin/chat-knowledge-categories/AdminCreateChatKnowledgeCategoryPage.vue';
 import AdminEditChatKnowledgeCategoryPage from '../pages/admin/chat-knowledge-categories/AdminEditChatKnowledgeCategoryPage.vue';
 
-// Order — Banks
-import AdminBanksPage from '../pages/order/banks/AdminBanksPage.vue';
-import AdminCreateBankPage from '../pages/order/banks/AdminCreateBankPage.vue';
-import AdminEditBankPage from '../pages/order/banks/AdminEditBankPage.vue';
-import AdminViewBankPage from '../pages/order/banks/AdminViewBankPage.vue';
+// Order — Customers
+import AdminCustomersPage from '../pages/order/customers/AdminCustomersPage.vue';
+import AdminCreateCustomerPage from '../pages/order/customers/AdminCreateCustomerPage.vue';
+import AdminEditCustomerPage from '../pages/order/customers/AdminEditCustomerPage.vue';
+import AdminViewCustomerPage from '../pages/order/customers/AdminViewCustomerPage.vue';
+
+// Order — Payment Types
+import AdminPaymentTypesPage from '../pages/order/payment-types/AdminPaymentTypesPage.vue';
+import AdminCreatePaymentTypePage from '../pages/order/payment-types/AdminCreatePaymentTypePage.vue';
+import AdminEditPaymentTypePage from '../pages/order/payment-types/AdminEditPaymentTypePage.vue';
+import AdminViewPaymentTypePage from '../pages/order/payment-types/AdminViewPaymentTypePage.vue';
 
 // Order — Services
 import AdminServicesPage from '../pages/order/services/AdminServicesPage.vue';
@@ -126,14 +132,18 @@ const routes = [
     { path: '/admin/users/:id/staff-roles/create',             component: AdminUserCreateStaffRolePage },
     { path: '/admin/users/:id/staff-roles/:roleId',            component: AdminUserViewStaffRolePage },
     { path: '/admin/users/:id/staff-roles/:roleId/edit',       component: AdminUserEditStaffRolePage },
+    { path: '/order/customers',             component: AdminCustomersPage },
+    { path: '/order/customers/create',     component: AdminCreateCustomerPage },
+    { path: '/order/customers/:id',        component: AdminViewCustomerPage },
+    { path: '/order/customers/:id/edit',   component: AdminEditCustomerPage },
     { path: '/order/invoices',             component: AdminInvoicesPage },
     { path: '/order/invoices/create',      component: AdminCreateInvoicePage },
     { path: '/order/invoices/:id',         component: AdminViewInvoicePage },
     { path: '/order/invoices/:id/edit',    component: AdminEditInvoicePage },
-    { path: '/order/banks',            component: AdminBanksPage },
-    { path: '/order/banks/create',     component: AdminCreateBankPage },
-    { path: '/order/banks/:id',        component: AdminViewBankPage },
-    { path: '/order/banks/:id/edit',   component: AdminEditBankPage },
+    { path: '/order/payment-types',            component: AdminPaymentTypesPage },
+    { path: '/order/payment-types/create',     component: AdminCreatePaymentTypePage },
+    { path: '/order/payment-types/:id',        component: AdminViewPaymentTypePage },
+    { path: '/order/payment-types/:id/edit',   component: AdminEditPaymentTypePage },
     { path: '/order/services',             component: AdminServicesPage },
     { path: '/order/services/create',      component: AdminCreateServicePage },
     { path: '/order/services/:id',         component: AdminViewServicePage },

@@ -8,17 +8,13 @@ use App\Models\User;
 
 class Payment extends Model
 {
-    const TYPE_CASH  = 1;
-    const TYPE_BANK  = 2;
-    const TYPE_OTHER = 3;
-
     const STAGE_ADVANCE = 1;
     const STAGE_FINAL   = 2;
+    const STAGE_REFUND  = 3;
 
     protected $fillable = [
         'invoice_id',
-        'type_id',
-        'bank_id',
+        'payment_type_id',
         'stage',
         'amount',
         'note',
@@ -33,20 +29,12 @@ class Payment extends Model
         ];
     }
 
-    public static function typeOptions(): array
-    {
-        return [
-            ['id' => self::TYPE_CASH,  'name' => 'Cash'],
-            ['id' => self::TYPE_BANK,  'name' => 'Bank'],
-            ['id' => self::TYPE_OTHER, 'name' => 'Other'],
-        ];
-    }
-
     public static function stageOptions(): array
     {
         return [
             ['id' => self::STAGE_ADVANCE, 'name' => 'Advance / Deposit'],
             ['id' => self::STAGE_FINAL,   'name' => 'Final Payment'],
+            ['id' => self::STAGE_REFUND,  'name' => 'Refund'],
         ];
     }
 
@@ -55,9 +43,9 @@ class Payment extends Model
         return $this->belongsTo(Invoice::class);
     }
 
-    public function bank(): BelongsTo
+    public function paymentType(): BelongsTo
     {
-        return $this->belongsTo(Bank::class);
+        return $this->belongsTo(PaymentType::class);
     }
 
     public function createdBy(): BelongsTo

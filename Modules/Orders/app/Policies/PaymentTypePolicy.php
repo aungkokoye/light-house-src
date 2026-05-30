@@ -4,9 +4,9 @@ namespace Modules\Orders\Policies;
 
 use App\Models\User;
 use App\Policies\AppPolicy;
-use Modules\Orders\Models\Bank;
+use Modules\Orders\Models\PaymentType;
 
-class BankPolicy extends OrderPolicy
+class PaymentTypePolicy extends OrderPolicy
 {
     public function viewAny(User $user): bool
     {
@@ -14,7 +14,7 @@ class BankPolicy extends OrderPolicy
             || $this->adminPolicyCheck($user, AppPolicy::LIST_ALLOW_PERMISSIONS);
     }
 
-    public function view(User $user, Bank $bank): bool
+    public function view(User $user, PaymentType $paymentType): bool
     {
         return $this->userPolicyCheck($user, OrderPolicy::VIEW_ALLOW_PERMISSIONS)
             || $this->adminPolicyCheck($user, AppPolicy::VIEW_ALLOW_PERMISSIONS);
@@ -25,12 +25,12 @@ class BankPolicy extends OrderPolicy
         return $this->adminPolicyCheck($user, AppPolicy::CREATE_ALLOW_PERMISSIONS);
     }
 
-    public function update(User $user, Bank $bank): bool
+    public function update(User $user, PaymentType $paymentType): bool
     {
         return $this->adminPolicyCheck($user, AppPolicy::UPDATE_ALLOW_PERMISSIONS);
     }
 
-    public function delete(User $user, Bank $bank): bool
+    public function delete(User $user, PaymentType $paymentType): bool
     {
         return $this->adminPolicyCheck($user, AppPolicy::DELETE_ALLOW_PERMISSIONS);
     }

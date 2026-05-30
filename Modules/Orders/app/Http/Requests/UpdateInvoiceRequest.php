@@ -17,7 +17,7 @@ class UpdateInvoiceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'customer_id'              => ['required', 'integer', 'exists:users,id'],
+            'customer_id'              => ['required', 'integer', 'exists:customers,id'],
             'discount'                 => ['nullable', 'integer', 'min:0'],
             'note'                     => ['nullable', 'string', 'max:5000'],
             'jobs'                     => ['required', 'array', 'min:1'],
@@ -26,15 +26,34 @@ class UpdateInvoiceRequest extends FormRequest
             'jobs.*.quantity'          => ['required', 'integer', 'min:1'],
             'jobs.*.unit_price'        => ['required', 'integer', 'min:0'],
             'jobs.*.delivery_date'     => ['required', 'date'],
+            'jobs.*.note'              => ['nullable', 'string', 'max:1000'],
 
             'payments'                 => ['nullable', 'array'],
             'payments.*.id'            => ['nullable', 'integer', 'exists:payments,id'],
-            'payments.*.type_id'       => ['required', 'integer', 'in:' . implode(',', [Payment::TYPE_CASH, Payment::TYPE_BANK, Payment::TYPE_OTHER])],
-            'payments.*.bank_id'       => ['nullable', 'integer', 'exists:banks,id', 'required_if:payments.*.type_id,' . Payment::TYPE_BANK],
-            'payments.*.stage'         => ['required', 'integer', 'in:' . implode(',', [Payment::STAGE_ADVANCE, Payment::STAGE_FINAL])],
-            'payments.*.amount'        => ['required', 'integer', 'min:0'],
+            'payments.*.payment_type_id' => ['required', 'integer', 'exists:payment_types,id'],
+            'payments.*.stage'         => ['required', 'integer', 'in:' . implode(',', [Payment::STAGE_ADVANCE, Payment::STAGE_FINAL, Payment::STAGE_REFUND])],
+            'payments.*.amount'        => ['required', 'integer'],
             'payments.*.payment_date'  => ['required', 'date'],
             'payments.*.note'          => ['nullable', 'string', 'max:5000'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'jobs.*.product_id.required'             => 'Product is required.',
+            'jobs.*.service_id.required'             => 'Service is required.',
+            'jobs.*.quantity.required'               => 'Quantity is required.',
+            'jobs.*.unit_price.required'             => 'Unit price is required.',
+            'jobs.*.delivery_date.required'          => 'Delivery date is required.',
+            'jobs.*.delivery_date.date'              => 'Delivery date must be a valid date.',
+            'jobs.*.delivery_date.after_or_equal'    => 'Delivery date should be today or later.',
+            'payments.*.payment_type_id.required'    => 'Payment type is required.',
+            'payments.*.stage.required'              => 'Payment stage is required.',
+            'payments.*.amount.required'             => 'Payment amount is required.',
+            'payments.*.payment_date.required'       => 'Payment date is required.',
+            'payments.*.payment_date.date'           => 'Payment date must be a valid date.',
+            'payments.*.payment_date.after_or_equal' => 'Payment date should be today or later.',
         ];
     }
 
@@ -49,9 +68,25 @@ class UpdateInvoiceRequest extends FormRequest
             ));
             $invoiceTotal = max(0, $subtotal - $discount);
 
+            $today = now()->toDateString();
+
+            // New jobs: delivery_date must be today or later
+            foreach ($jobs as $idx => $job) {
+                if (empty($job['id']) && !empty($job['delivery_date']) && $job['delivery_date'] < $today) {
+                    $v->errors()->add("jobs.{$idx}.delivery_date", 'Delivery date should be today or later.');
+                }
+            }
+
             $invoice    = $this->route('invoice');
             $invoice->loadMissing('payments');
             $pmtInputs  = $this->input('payments', []);
+
+            // New payments: payment_date must be today or later
+            foreach ($pmtInputs as $idx => $p) {
+                if (empty($p['id']) && !empty($p['payment_date']) && $p['payment_date'] < $today) {
+                    $v->errors()->add("payments.{$idx}.payment_date", 'Payment date should be today or later.');
+                }
+            }
 
             // Reject payment IDs that don't belong to this invoice
             foreach ($pmtInputs as $idx => $p) {
@@ -69,36 +104,71 @@ class UpdateInvoiceRequest extends FormRequest
                 }
             }
 
-            $totalAfter = 0;
-            $hasFinal   = false;
+            $netTotal = 0;
+            $hasFinal = false;
+            $hasRefund = false;
 
             // Existing payments with updates applied
             foreach ($invoice->payments as $ep) {
                 if (isset($submittedById[$ep->id])) {
-                    $u           = $submittedById[$ep->id];
-                    $totalAfter += (int) ($u['amount'] ?? $ep->amount);
-                    $stage       = (int) ($u['stage']  ?? $ep->stage);
+                    $u      = $submittedById[$ep->id];
+                    $amt    = (int) ($u['amount'] ?? $ep->amount);
+                    $stage  = (int) ($u['stage']  ?? $ep->stage);
                 } else {
-                    $totalAfter += $ep->amount;
-                    $stage       = $ep->stage;
+                    $amt   = $ep->amount;
+                    $stage = $ep->stage;
                 }
 
-                if ($stage === Payment::STAGE_FINAL) $hasFinal = true;
+                // Validate refund requires admin
+                if ($stage === Payment::STAGE_REFUND) {
+                    $hasRefund = true;
+                    if (! $this->user()->hasRole('admin')) {
+                        $v->errors()->add('payments', 'Only admins can set refund payments.');
+                        return;
+                    }
+                    // amount must be negative for refund
+                    if ($amt >= 0) {
+                        $v->errors()->add('payments', 'Refund payment amount must be negative.');
+                        return;
+                    }
+                } else {
+                    if ($stage === Payment::STAGE_FINAL) $hasFinal = true;
+                }
+
+                $netTotal += $amt;
             }
 
             // New payments (no id)
             foreach ($pmtInputs as $p) {
                 if (!empty($p['id'])) continue;
-                $totalAfter += (int) ($p['amount'] ?? 0);
-                if ((int) ($p['stage'] ?? 0) === Payment::STAGE_FINAL) $hasFinal = true;
+                $amt   = (int) ($p['amount'] ?? 0);
+                $stage = (int) ($p['stage']  ?? 0);
+
+                if ($stage === Payment::STAGE_REFUND) {
+                    $hasRefund = true;
+                    if (! $this->user()->hasRole('admin')) {
+                        $v->errors()->add('payments', 'Only admins can add refund payments.');
+                        return;
+                    }
+                    if ($amt >= 0) {
+                        $v->errors()->add('payments', 'Refund payment amount must be negative.');
+                        return;
+                    }
+                } else {
+                    if ($stage === Payment::STAGE_FINAL) $hasFinal = true;
+                }
+
+                $netTotal += $amt;
             }
 
-            if ($totalAfter > $invoiceTotal) {
-                $v->errors()->add('payments', "Total payments ({$totalAfter}) would exceed the invoice total ({$invoiceTotal}).");
-            } elseif ($hasFinal && $totalAfter !== $invoiceTotal) {
-                $v->errors()->add('payments', "Final payment must bring total payments to exactly {$invoiceTotal}.");
-            } elseif (! $hasFinal && $totalAfter >= $invoiceTotal) {
-                $v->errors()->add('payments', "Total payments must be less than the invoice total ({$invoiceTotal}) when there is no final payment.");
+            if ($hasRefund && $netTotal < 0) {
+                $v->errors()->add('payments', 'Total refunds cannot exceed total payments made.');
+            } elseif ($netTotal > $invoiceTotal) {
+                $v->errors()->add('payments', "Net paid ({$netTotal}) would exceed the invoice total ({$invoiceTotal}).");
+            } elseif ($hasFinal && $netTotal !== $invoiceTotal) {
+                $v->errors()->add('payments', "Final payment must bring net paid to exactly {$invoiceTotal}.");
+            } elseif (! $hasFinal && $netTotal >= $invoiceTotal) {
+                $v->errors()->add('payments', "Net paid must be less than the invoice total ({$invoiceTotal}) when there is no final payment.");
             }
         });
     }

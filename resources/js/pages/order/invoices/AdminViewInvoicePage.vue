@@ -1,6 +1,23 @@
 <template>
     <AppHeader />
 
+    <!-- Flash message -->
+    <Teleport to="body">
+        <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0 translate-y-2" enter-to-class="opacity-100 translate-y-0"
+                    leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 translate-y-2">
+            <div v-if="flash.text" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-5 py-3 rounded-xl shadow-lg text-sm font-medium"
+                :class="flash.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'">
+                <svg v-if="flash.type === 'success'" class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                </svg>
+                <svg v-else class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z" />
+                </svg>
+                {{ flash.text }}
+            </div>
+        </Transition>
+    </Teleport>
+
     <div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 pt-24 pb-12 px-4">
         <div class="max-w-4xl mx-auto">
             <LoadingSpinner v-if="loading" />
@@ -18,14 +35,14 @@
                     </div>
                     <span class="relative group">
                         <a href="#" @click.prevent="sendInvoice"
-                            :class="[sendingInvoice || !invoice.customer?.email_verified_at ? 'opacity-50 pointer-events-none' : '']"
+                            :class="[sendingInvoice || !invoice.customer?.email ? 'opacity-50 pointer-events-none' : '']"
                             class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
                             {{ sendingInvoice ? 'Sending…' : 'Send Invoice' }}
                         </a>
-                        <span v-if="!invoice.customer?.email_verified_at"
+                        <span v-if="!invoice.customer?.email"
                             class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                            Unverified customer email
+                            Customer has no email address
                         </span>
                     </span>
                     <a href="#" @click.prevent="printInvoice"
@@ -71,7 +88,7 @@
                 <!-- Jobs table -->
                 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
                     <div class="px-6 py-4 border-b border-gray-50">
-                        <h2 class="font-semibold text-gray-900">Invoice Items</h2>
+                        <h2 class="font-semibold text-gray-900">Jobs</h2>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
@@ -84,6 +101,7 @@
                                     <th class="px-6 py-3 font-medium">Unit Price</th>
                                     <th class="px-6 py-3 font-medium">Delivery Date</th>
                                     <th class="px-6 py-3 font-medium">Total</th>
+                                    <th class="px-6 py-3"></th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-50">
@@ -95,19 +113,34 @@
                                     <td class="px-6 py-3.5 text-gray-900">{{ job.unit_price.toLocaleString() }}</td>
                                     <td class="px-6 py-3.5 text-xs text-gray-500">{{ formatDate(job.delivery_date) }}</td>
                                     <td class="px-6 py-3.5 font-medium text-gray-900">{{ job.total.toLocaleString() }}</td>
+                                    <td class="px-6 py-3.5">
+                                        <span class="relative group">
+                                            <button type="button" @click="job.note ? noteModal = job.note : null"
+                                                :class="job.note ? 'text-gray-400 hover:text-indigo-600 hover:bg-gray-100' : 'opacity-30 cursor-not-allowed'"
+                                                class="p-1 rounded transition-colors">
+                                                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+                                                </svg>
+                                            </button>
+                                            <span v-if="!job.note"
+                                                class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                                                No note
+                                            </span>
+                                        </span>
+                                    </td>
                                 </tr>
                             </tbody>
                             <tfoot>
                                 <tr class="border-t border-gray-100 bg-gray-50/50">
-                                    <td colspan="6" class="px-6 py-3 text-right text-xs text-gray-400">Subtotal</td>
+                                    <td colspan="7" class="px-6 py-3 text-right text-xs text-gray-400">Subtotal</td>
                                     <td class="px-6 py-3 font-medium text-gray-900">{{ subtotal.toLocaleString() }}</td>
                                 </tr>
                                 <tr v-if="invoice.discount > 0" class="bg-gray-50/50">
-                                    <td colspan="6" class="px-6 py-2 text-right text-xs text-gray-400">Discount</td>
+                                    <td colspan="7" class="px-6 py-2 text-right text-xs text-gray-400">Discount</td>
                                     <td class="px-6 py-2 text-gray-700">- {{ invoice.discount.toLocaleString() }}</td>
                                 </tr>
                                 <tr class="bg-indigo-50/50">
-                                    <td colspan="6" class="px-6 py-3 text-right text-sm font-semibold text-gray-700">Total</td>
+                                    <td colspan="7" class="px-6 py-3 text-right text-sm font-semibold text-gray-700">Total</td>
                                     <td class="px-6 py-3 text-base font-bold text-indigo-700">{{ invoice.total.toLocaleString() }}</td>
                                 </tr>
                             </tfoot>
@@ -121,7 +154,7 @@
                         <h2 class="font-semibold text-gray-900">Payments</h2>
                         <div class="flex items-center gap-3">
                             <span class="text-xs text-gray-400">Paid: {{ totalPaid.toLocaleString() }} / {{ invoice.total.toLocaleString() }}</span>
-                            <button v-if="can.add_payment && !hasFinalPayment" type="button" @click="openAddPayment"
+                            <button v-if="can.add_payment && (!hasFinalPayment || can.add_refund)" type="button" @click="openAddPayment"
                                 class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -135,8 +168,7 @@
                             <thead>
                                 <tr class="text-left text-xs text-gray-400 border-b border-gray-50">
                                     <th class="px-3 py-2 font-medium">#</th>
-                                    <th class="px-3 py-2 font-medium">Type</th>
-                                    <th class="px-3 py-2 font-medium">Bank</th>
+                                    <th class="px-3 py-2 font-medium">Payment Type</th>
                                     <th class="px-3 py-2 font-medium">Stage</th>
                                     <th class="px-3 py-2 font-medium">Amount</th>
                                     <th class="px-3 py-2 font-medium">Date</th>
@@ -145,48 +177,51 @@
                             </thead>
                             <tbody class="divide-y divide-gray-50">
                                 <tr v-if="!invoice.payments?.length">
-                                    <td colspan="7" class="px-3 py-6 text-center text-sm text-gray-400">No payments yet.</td>
+                                    <td colspan="6" class="px-3 py-6 text-center text-sm text-gray-400">No payments yet.</td>
                                 </tr>
                                 <tr v-else v-for="(pmt, i) in invoice.payments" :key="pmt.id" class="hover:bg-gray-50/50">
                                     <td class="px-3 py-2.5 text-xs font-mono text-gray-400">{{ i + 1 }}</td>
-                                    <td class="px-3 py-2.5">
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
-                                            :class="TYPE_CLS[pmt.type_id]">
-                                            {{ typeMap[pmt.type_id] }}
-                                        </span>
-                                    </td>
-                                    <td class="px-3 py-2.5 text-gray-500">{{ pmt.bank?.name ?? '—' }}</td>
+                                    <td class="px-3 py-2.5 text-gray-500">{{ pmt.payment_type?.name ?? '—' }}</td>
                                     <td class="px-3 py-2.5">
                                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
                                             :class="STAGE_CLS[pmt.stage]">
                                             {{ stageMap[pmt.stage] }}
                                         </span>
                                     </td>
-                                    <td class="px-3 py-2.5 font-medium text-gray-900">{{ pmt.amount.toLocaleString() }}</td>
+                                    <td class="px-3 py-2.5 font-medium" :class="pmt.amount < 0 ? 'text-red-600' : 'text-gray-900'">
+                                        {{ pmt.amount.toLocaleString() }}
+                                    </td>
                                     <td class="px-3 py-2.5 text-xs text-gray-500">{{ formatDate(pmt.payment_date) }}</td>
                                     <td class="px-3 py-2.5">
                                         <div class="flex items-center gap-1">
                                             <span class="relative group">
                                                 <button @click="sendReceipt(pmt)" type="button"
-                                                    :class="[sendingReceiptId === pmt.id || !invoice.customer?.email_verified_at ? 'opacity-50 pointer-events-none' : '']"
+                                                    :class="[sendingReceiptId === pmt.id || !invoice.customer?.email ? 'opacity-50 pointer-events-none' : '']"
                                                     class="p-1 rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
                                                 </button>
-                                                <span v-if="!invoice.customer?.email_verified_at"
+                                                <span v-if="!invoice.customer?.email"
                                                     class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    Unverified customer email
+                                                    Customer has no email address
                                                 </span>
                                             </span>
                                             <button @click="printReceipt(pmt)" type="button"
                                                 class="p-1 rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0 1 10.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0 .229 2.523a1.125 1.125 0 0 1-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0 0 21 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 0 0-1.913-.247M6.34 18H5.25A2.25 2.25 0 0 1 3 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 0 1 1.913-.247m10.5 0a48.536 48.536 0 0 0-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5Zm-3 0h.008v.008H15V10.5Z" /></svg>
                                             </button>
-                                            <button v-if="pmt.note" @click="noteModal = pmt.note" type="button"
-                                                class="p-1 rounded text-gray-400 hover:text-indigo-600 hover:bg-gray-100 transition-colors">
-                                                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
-                                                </svg>
-                                            </button>
+                                            <span class="relative group">
+                                                <button type="button" @click="pmt.note ? noteModal = pmt.note : null"
+                                                    :class="pmt.note ? 'text-gray-400 hover:text-indigo-600 hover:bg-gray-100' : 'opacity-30 cursor-not-allowed'"
+                                                    class="p-1 rounded transition-colors">
+                                                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+                                                    </svg>
+                                                </button>
+                                                <span v-if="!pmt.note"
+                                                    class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    No note
+                                                </span>
+                                            </span>
                                         </div>
                                     </td>
                                 </tr>
@@ -225,14 +260,14 @@
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-medium text-gray-600 mb-1.5">Type <span class="text-red-400">*</span></label>
-                        <select v-model.number="pmtForm.type_id"
+                        <label class="block text-xs font-medium text-gray-600 mb-1.5">Payment Type <span class="text-red-400">*</span></label>
+                        <select v-model.number="pmtForm.payment_type_id"
                             class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
-                            :class="pmtErrors.type_id ? 'border-red-300' : 'border-gray-300'">
-                            <option value="">Select type</option>
-                            <option v-for="t in paymentMeta?.types" :key="t.id" :value="t.id">{{ t.name }}</option>
+                            :class="pmtErrors.payment_type_id ? 'border-red-300' : 'border-gray-300'">
+                            <option value="">Select payment type</option>
+                            <option v-for="b in paymentTypes" :key="b.id" :value="b.id">{{ b.name }}</option>
                         </select>
-                        <p v-if="pmtErrors.type_id" class="mt-1 text-xs text-red-500">{{ pmtErrors.type_id[0] }}</p>
+                        <p v-if="pmtErrors.payment_type_id" class="mt-1 text-xs text-red-500">{{ pmtErrors.payment_type_id[0] }}</p>
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1.5">Stage <span class="text-red-400">*</span></label>
@@ -246,23 +281,14 @@
                     </div>
                 </div>
 
-                <div v-if="pmtForm.type_id === paymentMeta?.type_bank">
-                    <label class="block text-xs font-medium text-gray-600 mb-1.5">Bank <span class="text-red-400">*</span></label>
-                    <select v-model.number="pmtForm.bank_id"
-                        class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
-                        :class="pmtErrors.bank_id ? 'border-red-300' : 'border-gray-300'">
-                        <option value="">Select bank</option>
-                        <option v-for="b in banks" :key="b.id" :value="b.id">{{ b.name }}</option>
-                    </select>
-                    <p v-if="pmtErrors.bank_id" class="mt-1 text-xs text-red-500">{{ pmtErrors.bank_id[0] }}</p>
-                </div>
-
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1.5">Amount <span class="text-red-400">*</span></label>
-                        <input v-model.number="pmtForm.amount" type="number" min="0" placeholder="0"
+                        <input v-model.number="pmtForm.amount" type="number"
+                            :placeholder="pmtForm.stage === paymentMeta?.stage_refund ? 'e.g. -1000' : '0'"
                             class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
                             :class="pmtErrors.amount ? 'border-red-300' : 'border-gray-300'" />
+                        <p v-if="pmtForm.stage === paymentMeta?.stage_refund && !pmtErrors.amount" class="mt-1 text-xs text-amber-600">For refund, enter a negative value (e.g. -1000).</p>
                         <p v-if="pmtErrors.amount" class="mt-1 text-xs text-red-500">{{ pmtErrors.amount[0] }}</p>
                     </div>
                     <div>
@@ -348,8 +374,8 @@
                 </div>
             </div>
 
-            <!-- Invoice Items -->
-            <div class="print-section-title" style="margin-top:24px;">Invoice Items</div>
+            <!-- Jobs -->
+            <div class="print-section-title" style="margin-top:24px;">Jobs</div>
             <table class="print-table">
                 <thead>
                     <tr>
@@ -437,12 +463,11 @@
             <div class="print-section-title" style="margin-top:24px;">Payment Details</div>
             <table class="print-table">
                 <thead>
-                    <tr><th>Type</th><th>Bank</th><th>Stage</th><th>Amount</th><th>Date</th></tr>
+                    <tr><th>Payment Type</th><th>Stage</th><th>Amount</th><th>Date</th></tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>{{ typeMap[receiptPayment?.type_id] }}</td>
-                        <td>{{ receiptPayment?.bank?.name ?? '—' }}</td>
+                        <td>{{ receiptPayment?.payment_type?.name ?? '—' }}</td>
                         <td>{{ stageMap[receiptPayment?.stage] }}</td>
                         <td>{{ receiptPayment?.amount?.toLocaleString() }}</td>
                         <td>{{ formatDate(receiptPayment?.payment_date) }}</td>
@@ -497,22 +522,20 @@ const loading = ref(true)
 const invoice = ref(null)
 const noteModal = ref(null)
 const can = ref({})
-const banks = ref([])
+const paymentTypes = ref([])
 const paymentMeta = ref(null)
 
-const TYPE_CLS  = { 1: 'bg-green-50 text-green-700', 2: 'bg-blue-50 text-blue-700', 3: 'bg-gray-50 text-gray-600' }
-const STAGE_CLS = { 1: 'bg-amber-50 text-amber-700', 2: 'bg-indigo-50 text-indigo-700' }
-const typeMap  = computed(() => Object.fromEntries((paymentMeta.value?.types  ?? []).map(t => [t.id, t.name])))
+const STAGE_CLS = { 1: 'bg-amber-50 text-amber-700', 2: 'bg-indigo-50 text-indigo-700', 3: 'bg-red-50 text-red-700' }
 const stageMap = computed(() => Object.fromEntries((paymentMeta.value?.stages ?? []).map(s => [s.id, s.name])))
 
 // add-payment modal state
 const showAddPayment = ref(false)
 const addingPayment = ref(false)
 const pmtErrors = ref({})
-const pmtForm = ref({ type_id: '', bank_id: '', stage: '', amount: 0, payment_date: '', note: '' })
+const pmtForm = ref({ payment_type_id: '', stage: '', amount: 0, payment_date: '', note: '' })
 
 function openAddPayment() {
-    pmtForm.value = { type_id: '', bank_id: '', stage: '', amount: 0, payment_date: '', note: '' }
+    pmtForm.value = { payment_type_id: '', stage: '', amount: 0, payment_date: '', note: '' }
     pmtErrors.value = {}
     showAddPayment.value = true
 }
@@ -523,9 +546,8 @@ async function submitPayment() {
     addingPayment.value = true
     try {
         const { data: newPayment } = await axios.post('/api/order/payments', {
-            invoice_id:   invoice.value.id,
-            type_id:      pmtForm.value.type_id,
-            bank_id:      pmtForm.value.type_id === paymentMeta.value?.type_bank ? (pmtForm.value.bank_id || null) : null,
+            invoice_id:      invoice.value.id,
+            payment_type_id: pmtForm.value.payment_type_id || null,
             stage:        pmtForm.value.stage,
             amount:       pmtForm.value.amount,
             payment_date: pmtForm.value.payment_date,
@@ -548,6 +570,14 @@ function printInvoice() {
 const sendingInvoice = ref(false)
 const receiptPayment = ref(null)
 const sendingReceiptId = ref(null)
+const flash = ref({ type: '', text: '' })
+let flashTimer = null
+
+function showFlash(type, text) {
+    clearTimeout(flashTimer)
+    flash.value = { type, text }
+    flashTimer = setTimeout(() => { flash.value = { type: '', text: '' } }, 4000)
+}
 
 async function printReceipt(pmt) {
     receiptPayment.value = pmt
@@ -559,9 +589,10 @@ async function printReceipt(pmt) {
 async function sendReceipt(pmt) {
     sendingReceiptId.value = pmt.id
     try {
-        await axios.post(`/api/order/payments/${pmt.id}/send-receipt`)
+        const { data } = await axios.post(`/api/order/payments/${pmt.id}/send-receipt`)
+        showFlash('success', data.message ?? 'Receipt sent successfully.')
     } catch (e) {
-        console.error('Failed to send receipt', e)
+        showFlash('error', e?.response?.data?.message ?? 'Failed to send receipt.')
     } finally {
         sendingReceiptId.value = null
     }
@@ -570,9 +601,10 @@ async function sendReceipt(pmt) {
 async function sendInvoice() {
     sendingInvoice.value = true
     try {
-        await axios.post(`/api/order/invoices/${invoice.value.id}/send`)
+        const { data } = await axios.post(`/api/order/invoices/${invoice.value.id}/send`)
+        showFlash('success', data.message ?? 'Invoice sent successfully.')
     } catch (e) {
-        console.error('Failed to send invoice', e)
+        showFlash('error', e?.response?.data?.message ?? 'Failed to send invoice.')
     } finally {
         sendingInvoice.value = false
     }
@@ -595,14 +627,14 @@ const balance = computed(() => (invoice.value?.total ?? 0) - totalPaid.value)
 onMounted(async () => {
     if (!localStorage.getItem('token')) { router.push('/login'); return }
     try {
-        const [invoiceRes, bankRes, metaRes] = await Promise.all([
+        const [invoiceRes, paymentTypeRes, metaRes] = await Promise.all([
             axios.get(`/api/order/invoices/${route.params.id}`),
-            axios.get('/api/order/banks'),
+            axios.get('/api/order/payment-types'),
             axios.get('/api/order/payments/meta'),
         ])
-        invoice.value = invoiceRes.data
-        can.value     = invoiceRes.data.can ?? {}
-        banks.value   = bankRes.data.data ?? []
+        invoice.value      = invoiceRes.data
+        can.value          = invoiceRes.data.can ?? {}
+        paymentTypes.value = paymentTypeRes.data.data ?? []
         paymentMeta.value = metaRes.data
     } catch { router.push('/login') }
     finally { loading.value = false }

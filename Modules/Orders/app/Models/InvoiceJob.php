@@ -16,6 +16,7 @@ class InvoiceJob extends Model
         'unit_price',
         'total',
         'delivery_date',
+        'note',
         'created_by',
     ];
 

@@ -36,7 +36,7 @@
                                 v-model="form.customer_id"
                                 :options="customerOptions"
                                 :on-search="searchCustomers"
-                                placeholder="Start typing to search by customer name, email or company name"
+                                placeholder="Search by customer name or company…"
                                 :has-error="!!errors.customer_id"
                                 @update:modelValue="newlyRegistered = false" />
                             <p v-if="newlyRegistered" class="mt-1 text-xs text-indigo-500">Newly registered customer</p>
@@ -44,7 +44,7 @@
 
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1.5">Discount</label>
-                            <input v-model.number="form.discount" type="number" min="0" placeholder="0"
+                            <input v-model.number="form.discount" type="number" placeholder="0"
                                 class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
                                 :class="errors.discount ? 'border-red-300' : 'border-gray-300'" />
                             <p v-if="errors.discount" class="mt-1 text-xs text-red-500">{{ errors.discount[0] }}</p>
@@ -62,7 +62,7 @@
                     <!-- Invoice jobs -->
                     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                         <div class="px-6 py-4 border-b border-gray-50 flex items-center justify-between">
-                            <h2 class="font-semibold text-gray-900">Invoice Items</h2>
+                            <h2 class="font-semibold text-gray-900">Jobs</h2>
                             <button type="button" @click="addJob"
                                 class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -91,23 +91,23 @@
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1.5">Product <span class="text-red-400">*</span></label>
-                                        <SearchableSelect
-                                            v-model="job.product_id"
-                                            :options="[]"
-                                            :on-search="searchProducts"
-                                            placeholder="Search product…"
-                                            :has-error="!!jobError(i,'product_id')" />
-                                        <p v-if="jobError(i,'product_id')" class="mt-1 text-xs text-red-500">Required</p>
+                                        <select v-model="job.product_id"
+                                            class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
+                                            :class="jobError(i,'product_id') ? 'border-red-300' : 'border-gray-300'">
+                                            <option value="">— Select product —</option>
+                                            <option v-for="p in products" :key="p.id" :value="p.id">{{ p.name }}{{ p.current_price != null ? ` (${Number(p.current_price).toLocaleString()})` : '' }}</option>
+                                        </select>
+                                        <p v-if="jobError(i,'product_id')" class="mt-1 text-xs text-red-500">{{ jobError(i,'product_id')[0] }}</p>
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1.5">Service <span class="text-red-400">*</span></label>
-                                        <SearchableSelect
-                                            v-model="job.service_id"
-                                            :options="[]"
-                                            :on-search="searchServices"
-                                            placeholder="Search service…"
-                                            :has-error="!!jobError(i,'service_id')" />
-                                        <p v-if="jobError(i,'service_id')" class="mt-1 text-xs text-red-500">Required</p>
+                                        <select v-model="job.service_id"
+                                            class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
+                                            :class="jobError(i,'service_id') ? 'border-red-300' : 'border-gray-300'">
+                                            <option value="">— Select service —</option>
+                                            <option v-for="s in services" :key="s.id" :value="s.id">{{ s.name }}</option>
+                                        </select>
+                                        <p v-if="jobError(i,'service_id')" class="mt-1 text-xs text-red-500">{{ jobError(i,'service_id')[0] }}</p>
                                     </div>
                                 </div>
 
@@ -115,24 +115,24 @@
                                 <div class="grid grid-cols-4 gap-4">
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1.5">Qty <span class="text-red-400">*</span></label>
-                                        <input v-model.number="job.quantity" type="number" min="1" placeholder="1"
+                                        <input v-model.number="job.quantity" type="number" placeholder="1"
                                             class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
                                             :class="jobError(i,'quantity') ? 'border-red-300' : 'border-gray-300'" />
-                                        <p v-if="jobError(i,'quantity')" class="mt-1 text-xs text-red-500">Required</p>
+                                        <p v-if="jobError(i,'quantity')" class="mt-1 text-xs text-red-500">{{ jobError(i,'quantity')[0] }}</p>
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1.5">Unit Price <span class="text-red-400">*</span></label>
-                                        <input v-model.number="job.unit_price" type="number" min="0" placeholder="0"
+                                        <input v-model.number="job.unit_price" type="number" placeholder="0"
                                             class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
                                             :class="jobError(i,'unit_price') ? 'border-red-300' : 'border-gray-300'" />
-                                        <p v-if="jobError(i,'unit_price')" class="mt-1 text-xs text-red-500">Required</p>
+                                        <p v-if="jobError(i,'unit_price')" class="mt-1 text-xs text-red-500">{{ jobError(i,'unit_price')[0] }}</p>
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1.5">Delivery Date <span class="text-red-400">*</span></label>
                                         <input v-model="job.delivery_date" type="date"
                                             class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
                                             :class="jobError(i,'delivery_date') ? 'border-red-300' : 'border-gray-300'" />
-                                        <p v-if="jobError(i,'delivery_date')" class="mt-1 text-xs text-red-500">Required</p>
+                                        <p v-if="jobError(i,'delivery_date')" class="mt-1 text-xs text-red-500">{{ jobError(i,'delivery_date')[0] }}</p>
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1.5">Total</label>
@@ -140,6 +140,13 @@
                                             {{ ((job.quantity || 0) * (job.unit_price || 0)).toLocaleString() }}
                                         </div>
                                     </div>
+                                </div>
+
+                                <!-- Note -->
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1.5">Note</label>
+                                    <textarea v-model="job.note" rows="3" placeholder="Optional job note…"
+                                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white resize-none"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -153,14 +160,14 @@
                         <div class="p-6 space-y-4">
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-xs font-medium text-gray-600 mb-1.5">Type <span class="text-red-400">*</span></label>
-                                    <select v-model.number="form.payment.type_id"
+                                    <label class="block text-xs font-medium text-gray-600 mb-1.5">Payment Type <span class="text-red-400">*</span></label>
+                                    <select v-model.number="form.payment.payment_type_id"
                                         class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
-                                        :class="errors['payment.type_id'] ? 'border-red-300' : 'border-gray-300'">
-                                        <option value="">Select type…</option>
-                                        <option v-for="t in paymentMeta?.types" :key="t.id" :value="t.id">{{ t.name }}</option>
+                                        :class="errors['payment.payment_type_id'] ? 'border-red-300' : 'border-gray-300'">
+                                        <option value="">Select payment type…</option>
+                                        <option v-for="b in paymentTypes" :key="b.id" :value="b.id">{{ b.name }}</option>
                                     </select>
-                                    <p v-if="errors['payment.type_id']" class="mt-1 text-xs text-red-500">{{ errors['payment.type_id'][0] }}</p>
+                                    <p v-if="errors['payment.payment_type_id']" class="mt-1 text-xs text-red-500">{{ errors['payment.payment_type_id'][0] }}</p>
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-gray-600 mb-1.5">Stage <span class="text-red-400">*</span></label>
@@ -168,27 +175,16 @@
                                         class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
                                         :class="errors['payment.stage'] ? 'border-red-300' : 'border-gray-300'">
                                         <option value="">Select stage…</option>
-                                        <option v-for="s in paymentMeta?.stages" :key="s.id" :value="s.id">{{ s.name }}</option>
+                                        <option v-for="s in paymentMeta?.stages?.filter(s => s.id !== paymentMeta?.stage_refund)" :key="s.id" :value="s.id">{{ s.name }}</option>
                                     </select>
                                     <p v-if="errors['payment.stage']" class="mt-1 text-xs text-red-500">{{ errors['payment.stage'][0] }}</p>
                                 </div>
                             </div>
 
-                            <div v-if="form.payment.type_id === paymentMeta?.type_bank">
-                                <label class="block text-xs font-medium text-gray-600 mb-1.5">Bank <span class="text-red-400">*</span></label>
-                                <select v-model.number="form.payment.bank_id"
-                                    class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
-                                    :class="errors['payment.bank_id'] ? 'border-red-300' : 'border-gray-300'">
-                                    <option value="">Select bank…</option>
-                                    <option v-for="b in banks" :key="b.id" :value="b.id">{{ b.name }}</option>
-                                </select>
-                                <p v-if="errors['payment.bank_id']" class="mt-1 text-xs text-red-500">{{ errors['payment.bank_id'][0] }}</p>
-                            </div>
-
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-xs font-medium text-gray-600 mb-1.5">Amount <span class="text-red-400">*</span></label>
-                                    <input v-model.number="form.payment.amount" type="number" min="0" placeholder="0"
+                                    <input v-model.number="form.payment.amount" type="number" placeholder="0"
                                         class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
                                         :class="errors['payment.amount'] ? 'border-red-300' : 'border-gray-300'" />
                                     <p v-if="errors['payment.amount']" class="mt-1 text-xs text-red-500">{{ errors['payment.amount'][0] }}</p>
@@ -261,9 +257,7 @@
 
                 <!-- Modal body -->
                 <div class="px-6 py-5 space-y-4 max-h-[70vh] overflow-y-auto">
-                    <!-- Account -->
                     <div class="space-y-3">
-                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Account</p>
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1.5">Name <span class="text-red-400">*</span></label>
                             <input v-model="newCustomer.name" type="text" placeholder="Full name"
@@ -272,46 +266,41 @@
                             <p v-if="newCustomerErrors.name" class="mt-1 text-xs text-red-500">{{ newCustomerErrors.name[0] }}</p>
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Email <span class="text-red-400">*</span></label>
+                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Phone <span class="text-red-400">*</span></label>
+                            <input v-model="newCustomer.phone" type="text" placeholder="+95 9 xxx xxx xxx"
+                                class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
+                                :class="newCustomerErrors.phone ? 'border-red-300' : 'border-gray-300'" />
+                            <p v-if="newCustomerErrors.phone" class="mt-1 text-xs text-red-500">{{ newCustomerErrors.phone[0] }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Email</label>
                             <input v-model="newCustomer.email" type="email" placeholder="email@example.com"
                                 class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
                                 :class="newCustomerErrors.email ? 'border-red-300' : 'border-gray-300'" />
                             <p v-if="newCustomerErrors.email" class="mt-1 text-xs text-red-500">{{ newCustomerErrors.email[0] }}</p>
                         </div>
-                    </div>
-
-                    <!-- Company -->
-                    <div class="space-y-3">
-                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Company</p>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-xs font-medium text-gray-600 mb-1.5">Company Name <span class="text-red-400">*</span></label>
-                                <input v-model="newCustomer.company_profile.name" type="text" placeholder="Company name"
+                                <label class="block text-xs font-medium text-gray-600 mb-1.5">Company Name</label>
+                                <input v-model="newCustomer.company_name" type="text" placeholder="Company name"
                                     class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
-                                    :class="newCustomerErrors['company_profile.name'] ? 'border-red-300' : 'border-gray-300'" />
-                                <p v-if="newCustomerErrors['company_profile.name']" class="mt-1 text-xs text-red-500">{{ newCustomerErrors['company_profile.name'][0] }}</p>
+                                    :class="newCustomerErrors.company_name ? 'border-red-300' : 'border-gray-300'" />
+                                <p v-if="newCustomerErrors.company_name" class="mt-1 text-xs text-red-500">{{ newCustomerErrors.company_name[0] }}</p>
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-gray-600 mb-1.5">Title / Role <span class="text-red-400">*</span></label>
-                                <input v-model="newCustomer.company_profile.role" type="text" placeholder="e.g. Manager"
+                                <label class="block text-xs font-medium text-gray-600 mb-1.5">Title / Role</label>
+                                <input v-model="newCustomer.title" type="text" placeholder="e.g. Manager"
                                     class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
-                                    :class="newCustomerErrors['company_profile.role'] ? 'border-red-300' : 'border-gray-300'" />
-                                <p v-if="newCustomerErrors['company_profile.role']" class="mt-1 text-xs text-red-500">{{ newCustomerErrors['company_profile.role'][0] }}</p>
+                                    :class="newCustomerErrors.title ? 'border-red-300' : 'border-gray-300'" />
+                                <p v-if="newCustomerErrors.title" class="mt-1 text-xs text-red-500">{{ newCustomerErrors.title[0] }}</p>
                             </div>
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Phone <span class="text-red-400">*</span></label>
-                            <input v-model="newCustomer.company_profile.phone" type="text" placeholder="+95 9 xxx xxx xxx"
-                                class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
-                                :class="newCustomerErrors['company_profile.phone'] ? 'border-red-300' : 'border-gray-300'" />
-                            <p v-if="newCustomerErrors['company_profile.phone']" class="mt-1 text-xs text-red-500">{{ newCustomerErrors['company_profile.phone'][0] }}</p>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Address <span class="text-red-400">*</span></label>
-                            <textarea v-model="newCustomer.company_profile.address" rows="2" placeholder="Company address"
+                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Address</label>
+                            <textarea v-model="newCustomer.address" rows="2" placeholder="Customer address"
                                 class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50 resize-none"
-                                :class="newCustomerErrors['company_profile.address'] ? 'border-red-300' : 'border-gray-300'"></textarea>
-                            <p v-if="newCustomerErrors['company_profile.address']" class="mt-1 text-xs text-red-500">{{ newCustomerErrors['company_profile.address'][0] }}</p>
+                                :class="newCustomerErrors.address ? 'border-red-300' : 'border-gray-300'"></textarea>
+                            <p v-if="newCustomerErrors.address" class="mt-1 text-xs text-red-500">{{ newCustomerErrors.address[0] }}</p>
                         </div>
                     </div>
 
@@ -329,6 +318,14 @@
             </div>
         </div>
     </Teleport>
+
+    <DeleteModal
+        :show="deleteJobModal.show"
+        title="Remove Job"
+        message="Are you sure you want to remove this job?"
+        @confirm="confirmDeleteJob"
+        @cancel="deleteJobModal.show = false"
+    />
 </template>
 
 <script setup>
@@ -337,6 +334,7 @@ import { useRouter } from 'vue-router'
 import axios from 'axios'
 import AppHeader from '../../../components/AppHeader.vue'
 import LoadingSpinner from '../../../components/LoadingSpinner.vue'
+import DeleteModal from '../../../components/DeleteModal.vue'
 import SearchableSelect from '../../../components/SearchableSelect.vue'
 import { useGoBack } from '../../../composables/useGoBack'
 const router = useRouter()
@@ -345,7 +343,9 @@ const loading = ref(true)
 const submitting = ref(false)
 const errors = ref({})
 const generalError = ref('')
-const banks = ref([])
+const paymentTypes = ref([])
+const products = ref([])
+const services = ref([])
 const paymentMeta = ref(null)
 const customerOptions    = ref([])
 const showNewCustomer    = ref(false)
@@ -354,15 +354,14 @@ const savingCustomer = ref(false)
 const newCustomerErrors = ref({})
 const newCustomerGeneralError = ref('')
 const newCustomer = ref({
-    name: '', email: '',
-    company_profile: { name: '', role: '', phone: '', address: '' },
+    name: '', phone: '', email: '', company_name: '', title: '', address: '',
 })
 
 function closeNewCustomer() {
     showNewCustomer.value = false
     newCustomerErrors.value = {}
     newCustomerGeneralError.value = ''
-    newCustomer.value = { name: '', email: '', company_profile: { name: '', role: '', phone: '', address: '' } }
+    newCustomer.value = { name: '', phone: '', email: '', company_name: '', title: '', address: '' }
 }
 
 async function submitNewCustomer() {
@@ -373,8 +372,8 @@ async function submitNewCustomer() {
         const { data } = await axios.post('/api/order/customers', newCustomer.value)
         customerOptions.value = [{
             value: data.id,
-            label: data.company_name ? `${data.name} (${data.company_name})` : data.name,
-            sub:   data.email,
+            label: [data.name, data.company_name].filter(Boolean).join(' — '),
+            sub:   data.phone,
         }]
         form.value.customer_id = data.id
         newlyRegistered.value = true
@@ -389,48 +388,40 @@ async function submitNewCustomer() {
 
 async function searchCustomers(q) {
     if (!q || q.length < 2) return []
-    const { data } = await axios.get('/api/order/customers', { params: { search: q } })
+    const { data } = await axios.get('/api/order/customers/search', { params: { search: q } })
     return data.map(c => ({
         value: c.id,
-        label: c.company_profile?.name ? `${c.name} (${c.company_profile.name})` : c.name,
-        sub:   c.email,
+        label: [c.name, c.company_name].filter(Boolean).join(' — '),
+        sub:   c.phone,
     }))
 }
 
-async function searchServices(q) {
-    if (!q || q.length < 3) return []
-    const { data } = await axios.get('/api/order/services', { params: { search: q, per_page: 15, sort_by: 'name', sort_dir: 'asc' } })
-    return data.data.map(s => ({ value: s.id, label: s.name }))
-}
-
-async function searchProducts(q) {
-    if (!q || q.length < 3) return []
-    const { data } = await axios.get('/api/order/products', { params: { search: q, per_page: 15, sort_by: 'name', sort_dir: 'asc' } })
-    return data.data.map(p => ({
-        value:   p.id,
-        label:   p.name,
-        display: p.current_price != null ? `${p.name} (${Number(p.current_price).toLocaleString()})` : p.name,
-    }))
-}
 
 const form = ref({
     customer_id: '',
     discount: 0,
     note: '',
     jobs: [newJob()],
-    payment: { type_id: '', bank_id: '', stage: '', amount: 0, payment_date: '', note: '' },
+    payment: { payment_type_id: '', stage: '', amount: 0, payment_date: '', note: '' },
 })
 
 function newJob() {
-    return { service_id: '', product_id: '', quantity: 1, unit_price: 0, delivery_date: '' }
+    return { service_id: '', product_id: '', quantity: 1, unit_price: 0, delivery_date: '', note: '' }
 }
 
 function addJob() { form.value.jobs.push(newJob()) }
-function removeJob(i) { form.value.jobs.splice(i, 1) }
+const deleteJobModal = ref({ show: false, index: null })
+function removeJob(i) { deleteJobModal.value = { show: true, index: i } }
+function confirmDeleteJob() {
+    form.value.jobs.splice(deleteJobModal.value.index, 1)
+    deleteJobModal.value = { show: false, index: null }
+}
 
 function jobError(i, field) {
     return errors.value[`jobs.${i}.${field}`]
 }
+
+const today = new Date().toISOString().slice(0, 10)
 
 const subtotal = computed(() =>
     form.value.jobs.reduce((sum, j) => sum + (j.quantity || 0) * (j.unit_price || 0), 0)
@@ -455,11 +446,15 @@ async function submit() {
 onMounted(async () => {
     if (!localStorage.getItem('token')) { router.push('/login'); return }
     try {
-        const [bankRes, metaRes] = await Promise.all([
-            axios.get('/api/order/banks'),
+        const [paymentTypeRes, metaRes, productRes, serviceRes] = await Promise.all([
+            axios.get('/api/order/payment-types'),
             axios.get('/api/order/payments/meta'),
+            axios.get('/api/order/products', { params: { per_page: 100, sort_by: 'name', sort_dir: 'asc' } }),
+            axios.get('/api/order/services', { params: { per_page: 100, sort_by: 'name', sort_dir: 'asc' } }),
         ])
-        banks.value       = bankRes.data.data ?? []
+        paymentTypes.value = paymentTypeRes.data.data ?? []
+        products.value    = productRes.data.data ?? []
+        services.value    = serviceRes.data.data ?? []
         paymentMeta.value = metaRes.data
         loading.value     = false
     } catch {

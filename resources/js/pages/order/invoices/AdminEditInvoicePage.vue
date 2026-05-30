@@ -38,7 +38,7 @@
 
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1.5">Discount</label>
-                            <input v-model.number="form.discount" type="number" min="0" placeholder="0"
+                            <input v-model.number="form.discount" type="number" placeholder="0"
                                 class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
                                 :class="errors.discount ? 'border-red-300' : 'border-gray-300'" />
                             <p v-if="errors.discount" class="mt-1 text-xs text-red-500">{{ errors.discount[0] }}</p>
@@ -56,7 +56,7 @@
                     <!-- Invoice jobs -->
                     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                         <div class="px-6 py-4 border-b border-gray-50 flex items-center justify-between">
-                            <h2 class="font-semibold text-gray-900">Invoice Items</h2>
+                            <h2 class="font-semibold text-gray-900">Jobs</h2>
                             <button type="button" @click="addJob"
                                 class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -74,7 +74,7 @@
 
                                 <div class="flex items-center justify-between">
                                     <span class="text-xs font-medium text-gray-400">Item {{ i + 1 }}</span>
-                                    <button v-if="can.delete" type="button" @click="removeJob(i)" :disabled="form.jobs.length === 1"
+                                    <button type="button" @click="removeJob(i)" :disabled="form.jobs.length === 1"
                                         class="p-1 text-red-400 hover:text-red-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
                                     </button>
@@ -83,47 +83,47 @@
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1.5">Product <span class="text-red-400">*</span></label>
-                                        <SearchableSelect
-                                            v-model="job.product_id"
-                                            :options="jobProductSeeds[i] ?? []"
-                                            :on-search="searchProducts"
-                                            placeholder="Search product…"
-                                            :has-error="!!jobError(i,'product_id')" />
-                                        <p v-if="jobError(i,'product_id')" class="mt-1 text-xs text-red-500">Required</p>
+                                        <select v-model="job.product_id"
+                                            class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
+                                            :class="jobError(i,'product_id') ? 'border-red-300' : 'border-gray-300'">
+                                            <option value="">— Select product —</option>
+                                            <option v-for="p in products" :key="p.id" :value="p.id">{{ p.name }}{{ p.current_price != null ? ` (${Number(p.current_price).toLocaleString()})` : '' }}</option>
+                                        </select>
+                                        <p v-if="jobError(i,'product_id')" class="mt-1 text-xs text-red-500">{{ jobError(i,'product_id')[0] }}</p>
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1.5">Service <span class="text-red-400">*</span></label>
-                                        <SearchableSelect
-                                            v-model="job.service_id"
-                                            :options="jobServiceSeeds[i] ?? []"
-                                            :on-search="searchServices"
-                                            placeholder="Search service…"
-                                            :has-error="!!jobError(i,'service_id')" />
-                                        <p v-if="jobError(i,'service_id')" class="mt-1 text-xs text-red-500">Required</p>
+                                        <select v-model="job.service_id"
+                                            class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
+                                            :class="jobError(i,'service_id') ? 'border-red-300' : 'border-gray-300'">
+                                            <option value="">— Select service —</option>
+                                            <option v-for="s in services" :key="s.id" :value="s.id">{{ s.name }}</option>
+                                        </select>
+                                        <p v-if="jobError(i,'service_id')" class="mt-1 text-xs text-red-500">{{ jobError(i,'service_id')[0] }}</p>
                                     </div>
                                 </div>
 
                                 <div class="grid grid-cols-4 gap-4">
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1.5">Qty <span class="text-red-400">*</span></label>
-                                        <input v-model.number="job.quantity" type="number" min="1" placeholder="1"
+                                        <input v-model.number="job.quantity" type="number" placeholder="1"
                                             class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
                                             :class="jobError(i,'quantity') ? 'border-red-300' : 'border-gray-300'" />
-                                        <p v-if="jobError(i,'quantity')" class="mt-1 text-xs text-red-500">Required</p>
+                                        <p v-if="jobError(i,'quantity')" class="mt-1 text-xs text-red-500">{{ jobError(i,'quantity')[0] }}</p>
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1.5">Unit Price <span class="text-red-400">*</span></label>
-                                        <input v-model.number="job.unit_price" type="number" min="0" placeholder="0"
+                                        <input v-model.number="job.unit_price" type="number" placeholder="0"
                                             class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
                                             :class="jobError(i,'unit_price') ? 'border-red-300' : 'border-gray-300'" />
-                                        <p v-if="jobError(i,'unit_price')" class="mt-1 text-xs text-red-500">Required</p>
+                                        <p v-if="jobError(i,'unit_price')" class="mt-1 text-xs text-red-500">{{ jobError(i,'unit_price')[0] }}</p>
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1.5">Delivery Date <span class="text-red-400">*</span></label>
                                         <input v-model="job.delivery_date" type="date"
                                             class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
                                             :class="jobError(i,'delivery_date') ? 'border-red-300' : 'border-gray-300'" />
-                                        <p v-if="jobError(i,'delivery_date')" class="mt-1 text-xs text-red-500">Required</p>
+                                        <p v-if="jobError(i,'delivery_date')" class="mt-1 text-xs text-red-500">{{ jobError(i,'delivery_date')[0] }}</p>
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1.5">Total</label>
@@ -131,6 +131,13 @@
                                             {{ ((job.quantity || 0) * (job.unit_price || 0)).toLocaleString() }}
                                         </div>
                                     </div>
+                                </div>
+
+                                <!-- Note -->
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1.5">Note</label>
+                                    <textarea v-model="job.note" rows="3" placeholder="Optional job note…"
+                                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white resize-none"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -140,7 +147,7 @@
                     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                         <div class="px-6 py-4 border-b border-gray-50 flex items-center justify-between">
                             <h2 class="font-semibold text-gray-900">Payments</h2>
-                            <button v-if="!hasFinalPayment" type="button" @click="addPayment"
+                            <button v-if="!hasFinalPayment || can.add_refund" type="button" @click="addPayment"
                                 class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -162,23 +169,24 @@
                                 <!-- Card header -->
                                 <div class="flex items-center justify-between">
                                     <span class="text-xs font-medium text-gray-400">Payment {{ i + 1 }}</span>
-                                    <button v-if="can.delete && !(hasFinalPayment && balance === 0)" type="button" @click="removePayment(i)"
-                                        class="p-1 text-red-400 hover:text-red-600 transition-colors">
+                                    <button type="button" @click="removePayment(i)"
+                                        :disabled="payments.length === 1"
+                                        class="p-1 text-red-400 hover:text-red-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
                                     </button>
                                 </div>
 
-                                <!-- Row 1: Type + Stage -->
+                                <!-- Payment Type + Stage -->
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label class="block text-xs font-medium text-gray-600 mb-1.5">Type <span class="text-red-400">*</span></label>
-                                        <select v-model.number="pmt.type_id"
+                                        <label class="block text-xs font-medium text-gray-600 mb-1.5">Payment Type <span class="text-red-400">*</span></label>
+                                        <select v-model.number="pmt.payment_type_id"
                                             class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
-                                            :class="pmtError(i,'type_id') ? 'border-red-300' : 'border-gray-300'">
-                                            <option value="">Select type</option>
-                                            <option v-for="t in paymentMeta?.types" :key="t.id" :value="t.id">{{ t.name }}</option>
+                                            :class="pmtError(i,'payment_type_id') ? 'border-red-300' : 'border-gray-300'">
+                                            <option value="">Select payment type</option>
+                                            <option v-for="b in paymentTypes" :key="b.id" :value="b.id">{{ b.name }}</option>
                                         </select>
-                                        <p v-if="pmtError(i,'type_id')" class="mt-1 text-xs text-red-500">{{ pmtError(i,'type_id') }}</p>
+                                        <p v-if="pmtError(i,'payment_type_id')" class="mt-1 text-xs text-red-500">{{ pmtError(i,'payment_type_id') }}</p>
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1.5">Stage <span class="text-red-400">*</span></label>
@@ -192,25 +200,15 @@
                                     </div>
                                 </div>
 
-                                <!-- Bank (only when type = Bank) -->
-                                <div v-if="pmt.type_id === paymentMeta?.type_bank">
-                                    <label class="block text-xs font-medium text-gray-600 mb-1.5">Bank <span class="text-red-400">*</span></label>
-                                    <select v-model.number="pmt.bank_id"
-                                        class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
-                                        :class="pmtError(i,'bank_id') ? 'border-red-300' : 'border-gray-300'">
-                                        <option value="">Select bank</option>
-                                        <option v-for="b in banks" :key="b.id" :value="b.id">{{ b.name }}</option>
-                                    </select>
-                                    <p v-if="pmtError(i,'bank_id')" class="mt-1 text-xs text-red-500">{{ pmtError(i,'bank_id') }}</p>
-                                </div>
-
                                 <!-- Amount + Date -->
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1.5">Amount <span class="text-red-400">*</span></label>
-                                        <input v-model.number="pmt.amount" type="number" min="0" placeholder="0"
+                                        <input v-model.number="pmt.amount" type="number"
+                                            :placeholder="pmt.stage === (paymentMeta?.stage_refund ?? 3) ? 'e.g. -1000' : '0'"
                                             class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
                                             :class="anyAmountError ? 'border-red-300' : 'border-gray-300'" />
+                                        <p v-if="pmt.stage === (paymentMeta?.stage_refund ?? 3) && !pmtError(i,'amount')" class="mt-1 text-xs text-amber-600">For refund, enter a negative value (e.g. -1000).</p>
                                         <p v-if="pmtError(i,'amount')" class="mt-1 text-xs text-red-500">{{ pmtError(i,'amount') }}</p>
                                     </div>
                                     <div>
@@ -276,6 +274,14 @@
     </div>
 
     <DeleteModal
+        :show="deleteJobModal.show"
+        title="Remove Job"
+        message="Are you sure you want to remove this job?"
+        @confirm="confirmDeleteJob"
+        @cancel="deleteJobModal.show = false"
+    />
+
+    <DeleteModal
         :show="deletePaymentModal.show"
         title="Delete Payment"
         message="Are you sure you want to delete this payment?"
@@ -290,7 +296,6 @@ import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
 import AppHeader from '../../../components/AppHeader.vue'
 import LoadingSpinner from '../../../components/LoadingSpinner.vue'
-import SearchableSelect from '../../../components/SearchableSelect.vue'
 import DeleteModal from '../../../components/DeleteModal.vue'
 import { useGoBack } from '../../../composables/useGoBack'
 
@@ -303,48 +308,31 @@ const errors = ref({})
 const generalError = ref('')
 const invoice = ref(null)
 const can = ref({})
-const banks = ref([])
+const paymentTypes = ref([])
+const products = ref([])
+const services = ref([])
 const paymentMeta = ref(null)
-
-// Per-job seed options so existing selections show their labels on load
-const jobServiceSeeds = ref([])
-const jobProductSeeds = ref([])
 
 const selectedCustomerOption = computed(() => {
     const c = invoice.value?.customer
     if (!c) return []
     return [{
         value: c.id,
-        label: c.company_profile?.name ? `${c.name} (${c.company_profile.name})` : c.name,
-        sub:   c.email,
+        label: [c.name, c.company_name].filter(Boolean).join(' — '),
+        sub:   c.phone,
     }]
 })
 
 async function searchCustomers(q) {
     if (!q || q.length < 2) return []
-    const { data } = await axios.get('/api/order/customers', { params: { search: q } })
+    const { data } = await axios.get('/api/order/customers/search', { params: { search: q } })
     return data.map(c => ({
         value: c.id,
-        label: c.company_profile?.name ? `${c.name} (${c.company_profile.name})` : c.name,
-        sub:   c.email,
+        label: [c.name, c.company_name].filter(Boolean).join(' — '),
+        sub:   c.phone,
     }))
 }
 
-async function searchServices(q) {
-    if (!q || q.length < 3) return []
-    const { data } = await axios.get('/api/order/services', { params: { search: q, per_page: 15, sort_by: 'name', sort_dir: 'asc' } })
-    return data.data.map(s => ({ value: s.id, label: s.name }))
-}
-
-async function searchProducts(q) {
-    if (!q || q.length < 3) return []
-    const { data } = await axios.get('/api/order/products', { params: { search: q, per_page: 15, sort_by: 'name', sort_dir: 'asc' } })
-    return data.data.map(p => ({
-        value:   p.id,
-        label:   p.name,
-        display: p.current_price != null ? `${p.name} (${Number(p.current_price).toLocaleString()})` : p.name,
-    }))
-}
 
 const form = ref({ customer_id: '', discount: 0, note: '', jobs: [] })
 
@@ -352,24 +340,31 @@ const form = ref({ customer_id: '', discount: 0, note: '', jobs: [] })
 let _pmtKey = 0
 const payments = ref([])
 const deletePaymentModal = ref({ show: false, index: null })
+const deleteJobModal = ref({ show: false, index: null })
 
 function newJob() {
-    return { service_id: '', product_id: '', quantity: 1, unit_price: 0, delivery_date: '' }
+    return { id: null, service_id: '', product_id: '', quantity: 1, unit_price: 0, delivery_date: '', note: '' }
 }
-function addJob() {
-    form.value.jobs.push(newJob())
-    jobServiceSeeds.value.push([])
-    jobProductSeeds.value.push([])
-}
-function removeJob(i) {
+function addJob() { form.value.jobs.push(newJob()) }
+function removeJob(i) { deleteJobModal.value = { show: true, index: i } }
+async function confirmDeleteJob() {
+    const i = deleteJobModal.value.index
+    deleteJobModal.value = { show: false, index: null }
+    const job = form.value.jobs[i]
+    if (job.id) {
+        try {
+            await axios.delete(`/api/order/invoices/${route.params.id}/jobs/${job.id}`)
+        } catch (e) {
+            generalError.value = e?.response?.data?.message ?? 'Failed to delete job. Please try again.'
+            return
+        }
+    }
     form.value.jobs.splice(i, 1)
-    jobServiceSeeds.value.splice(i, 1)
-    jobProductSeeds.value.splice(i, 1)
 }
 function jobError(i, field) { return errors.value[`jobs.${i}.${field}`] }
 
 function newPayment() {
-    return { _key: ++_pmtKey, id: null, type_id: '', bank_id: '', stage: '', amount: 0, payment_date: '', note: '' }
+    return { _key: ++_pmtKey, id: null, payment_type_id: '', stage: '', amount: 0, payment_date: '', note: '' }
 }
 function addPayment() { payments.value.push(newPayment()) }
 function removePayment(i) {
@@ -394,7 +389,9 @@ function pmtError(i, field) {
 }
 
 const anyAmountError  = computed(() => !!errors.value.payments)
-const hasFinalPayment = computed(() => payments.value.some(p => p.stage === (paymentMeta.value?.stage_final ?? 2)))
+const hasFinalPayment = computed(() => payments.value.some(p => p.stage === (paymentMeta.value?.stage_final ?? 2) && p.stage !== (paymentMeta.value?.stage_refund ?? 3)))
+
+const today = new Date().toISOString().slice(0, 10)
 
 const subtotal = computed(() =>
     form.value.jobs.reduce((sum, j) => sum + (j.quantity || 0) * (j.unit_price || 0), 0)
@@ -412,9 +409,8 @@ async function submit() {
         await axios.put(`/api/order/invoices/${route.params.id}`, {
             ...form.value,
             payments: payments.value.map(p => ({
-                id:           p.id || undefined,
-                type_id:      p.type_id,
-                bank_id:      p.type_id === paymentMeta.value?.type_bank ? (p.bank_id || null) : null,
+                id:               p.id || undefined,
+                payment_type_id:  p.payment_type_id || null,
                 stage:        p.stage,
                 amount:       p.amount,
                 payment_date: p.payment_date,
@@ -433,45 +429,41 @@ async function submit() {
 onMounted(async () => {
     if (!localStorage.getItem('token')) { router.push('/login'); return }
     try {
-        const [invoiceRes, bankRes, metaRes] = await Promise.all([
+        const [invoiceRes, paymentTypeRes, metaRes, productRes, serviceRes] = await Promise.all([
             axios.get(`/api/order/invoices/${route.params.id}`),
-            axios.get('/api/order/banks'),
+            axios.get('/api/order/payment-types'),
             axios.get('/api/order/payments/meta'),
+            axios.get('/api/order/products', { params: { per_page: 100, sort_by: 'name', sort_dir: 'asc' } }),
+            axios.get('/api/order/services', { params: { per_page: 100, sort_by: 'name', sort_dir: 'asc' } }),
         ])
-        invoice.value = invoiceRes.data
-        can.value     = invoiceRes.data.can ?? {}
-        banks.value   = bankRes.data.data ?? []
+        invoice.value      = invoiceRes.data
+        can.value          = invoiceRes.data.can ?? {}
+        paymentTypes.value = paymentTypeRes.data.data ?? []
+        products.value    = productRes.data.data ?? []
+        services.value    = serviceRes.data.data ?? []
         paymentMeta.value = metaRes.data
 
         form.value.customer_id = invoice.value.customer_id
         form.value.discount    = invoice.value.discount
         form.value.note        = invoice.value.note ?? ''
         form.value.jobs        = invoice.value.jobs.map(j => ({
+            id:            j.id,
             service_id:    j.service_id,
             product_id:    j.product_id,
             quantity:      j.quantity,
             unit_price:    j.unit_price,
             delivery_date: (j.delivery_date ?? '').slice(0, 10),
+            note:          j.note ?? '',
         }))
         if (!form.value.jobs.length) {
             form.value.jobs.push(newJob())
         }
 
-        jobServiceSeeds.value = invoice.value.jobs.map(j =>
-            j.service ? [{ value: j.service.id, label: j.service.name }] : []
-        )
-        if (!jobServiceSeeds.value.length) jobServiceSeeds.value.push([])
-
-        jobProductSeeds.value = invoice.value.jobs.map(j =>
-            j.product ? [{ value: j.product.id, label: j.product.name, display: j.product.name }] : []
-        )
-        if (!jobProductSeeds.value.length) jobProductSeeds.value.push([])
 
         payments.value = (invoice.value.payments ?? []).map(p => ({
-            _key:         ++_pmtKey,
-            id:           p.id,
-            type_id:      p.type_id,
-            bank_id:      p.bank_id ?? '',
+            _key:             ++_pmtKey,
+            id:               p.id,
+            payment_type_id:  p.payment_type_id ?? '',
             stage:        p.stage,
             amount:       p.amount,
             payment_date: (p.payment_date ?? '').slice(0, 10),

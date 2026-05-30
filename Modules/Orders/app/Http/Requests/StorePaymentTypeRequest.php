@@ -4,7 +4,7 @@ namespace Modules\Orders\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreBankRequest extends FormRequest
+class StorePaymentTypeRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -14,7 +14,7 @@ class StoreBankRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:50', 'unique:banks,name'],
+            'name' => ['required', 'string', 'max:50', 'unique:payment_types,name'],
         ];
     }
 }

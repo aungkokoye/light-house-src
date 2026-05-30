@@ -26,8 +26,18 @@
                     </RouterLink>
                 </div>
 
-                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-4">
-                    <div class="relative">
+                <!-- Status tabs -->
+                <div class="flex items-center gap-1 mb-4">
+                    <button v-for="s in [['all','All'],['paid','Paid'],['credit','Credit']]" :key="s[0]"
+                        @click="status = s[0]; fetchInvoices(1)"
+                        class="px-4 py-1.5 text-sm rounded-lg font-medium transition-colors"
+                        :class="status === s[0] ? 'bg-indigo-600 text-white' : 'bg-white border border-gray-200 text-gray-500 hover:border-indigo-300'">
+                        {{ s[1] }}
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-4 space-y-3">
+                    <div v-if="!customerId" class="relative">
                         <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
                         </svg>
@@ -35,7 +45,20 @@
                             class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50" />
                     </div>
 
-                    <div v-if="hasActiveFilters" class="mt-3 flex items-center justify-between">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">From</label>
+                            <input v-model="dateFrom" @change="fetchInvoices(1)" type="date"
+                                class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50" />
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">To</label>
+                            <input v-model="dateTo" @change="fetchInvoices(1)" type="date"
+                                class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50" />
+                        </div>
+                    </div>
+
+                    <div v-if="hasActiveFilters" class="flex items-center justify-between pt-1">
                         <p class="text-xs text-gray-400">Filters applied</p>
                         <a href="#" @click.prevent="resetFilters" class="text-xs text-indigo-600 hover:text-indigo-700 font-medium transition-colors">Clear all</a>
                     </div>
@@ -190,9 +213,13 @@ const loading = ref(true)
 const listLoading = ref(false)
 const invoices = ref([])
 const meta = ref({})
-const search  = ref(route.query.search   ?? '')
-const sortBy  = ref(route.query.sort_by  ?? 'created_at')
-const sortDir = ref(route.query.sort_dir ?? 'desc')
+const search     = ref(route.query.search      ?? '')
+const status     = ref(route.query.status     ?? 'all')
+const dateFrom   = ref(route.query.date_from   ?? '')
+const dateTo     = ref(route.query.date_to     ?? '')
+const customerId = ref(route.query.customer_id ?? '')
+const sortBy   = ref(route.query.sort_by   ?? 'created_at')
+const sortDir  = ref(route.query.sort_dir  ?? 'desc')
 const currentPage = ref(Number(route.query.page)     || 1)
 const perPage     = ref(Number(route.query.per_page) || 15)
 const deleteTarget = ref(null)
@@ -208,13 +235,18 @@ const visiblePages = computed(() => {
 })
 
 const hasActiveFilters = computed(() =>
-    search.value !== '' || sortBy.value !== 'created_at' || sortDir.value !== 'desc'
+    search.value !== '' || status.value !== 'all' || dateFrom.value !== '' || dateTo.value !== '' ||
+    customerId.value !== '' || sortBy.value !== 'created_at' || sortDir.value !== 'desc'
 )
 
 function resetFilters() {
-    search.value = ''
-    sortBy.value = 'created_at'
-    sortDir.value = 'desc'
+    search.value     = ''
+    status.value     = 'all'
+    dateFrom.value   = ''
+    dateTo.value     = ''
+    customerId.value = ''
+    sortBy.value     = 'created_at'
+    sortDir.value    = 'desc'
     router.replace({ query: {} })
     fetchInvoices(1)
 }
@@ -235,6 +267,10 @@ async function fetchInvoices(page = 1) {
     listLoading.value = true
     const query = { sort_by: sortBy.value, sort_dir: sortDir.value, page, per_page: perPage.value }
     if (search.value.trim()) query.search = search.value.trim()
+    if (status.value && status.value !== 'all') query.status = status.value
+    if (dateFrom.value)   query.date_from   = dateFrom.value
+    if (dateTo.value)     query.date_to     = dateTo.value
+    if (customerId.value) query.customer_id = customerId.value
     router.replace({ query })
     sessionStorage.setItem('invoice-list-back', '/order/invoices?' + new URLSearchParams(query).toString())
     try {

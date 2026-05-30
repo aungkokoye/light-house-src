@@ -7,14 +7,14 @@
 
             <template v-else>
                 <div class="mb-8 flex items-center gap-3">
-                    <RouterLink to="/order/banks" @click.prevent="goBack('/order/banks', 'bank-list-back')" class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+                    <RouterLink to="/order/payment-types" @click.prevent="goBack('/order/payment-types', 'payment-type-list-back')" class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                         </svg>
                     </RouterLink>
                     <div>
-                        <h1 class="text-3xl font-bold text-gray-900">Edit Bank</h1>
-                        <p class="text-sm text-gray-500 mt-0.5">Update bank details.</p>
+                        <h1 class="text-3xl font-bold text-gray-900">Edit Payment Type</h1>
+                        <p class="text-sm text-gray-500 mt-0.5">Update payment type details.</p>
                     </div>
                 </div>
 
@@ -31,7 +31,7 @@
                         <p v-if="generalError" class="text-xs text-red-500">{{ generalError }}</p>
 
                         <div class="flex items-center justify-end gap-3 pt-2">
-                            <button type="button" @click="goBack('/order/banks', 'bank-list-back')" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors">Cancel</button>
+                            <button type="button" @click="goBack('/order/payment-types', 'payment-type-list-back')" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors">Cancel</button>
                             <button type="submit" :disabled="submitting"
                                 class="px-5 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors">
                                 {{ submitting ? 'Saving…' : 'Save Changes' }}
@@ -68,8 +68,8 @@ async function submit() {
     generalError.value = ''
     submitting.value = true
     try {
-        await axios.put(`/api/order/banks/${route.params.id}`, form.value)
-        router.push(`/order/banks/${route.params.id}`)
+        await axios.put(`/api/order/payment-types/${route.params.id}`, form.value)
+        router.push(`/order/payment-types/${route.params.id}`)
     } catch (e) {
         if (e?.response?.status === 422) errors.value = e.response.data.errors ?? {}
         else generalError.value = 'Something went wrong. Please try again.'
@@ -82,11 +82,11 @@ onMounted(async () => {
     const me = await requireAdmin()
     if (!me) return
     try {
-        const { data } = await axios.get(`/api/order/banks/${route.params.id}`)
+        const { data } = await axios.get(`/api/order/payment-types/${route.params.id}`)
         form.value = { name: data.name }
         loading.value = false
     } catch (e) {
-        if (!e?.response) router.push('/order/banks')
+        if (!e?.response) router.push('/order/payment-types')
     }
 })
 </script>

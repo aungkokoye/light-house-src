@@ -12,9 +12,10 @@ class OrdersDatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            BankSeeder::class,
+            PaymentTypeSeeder::class,
             JobServiceSeeder::class,
             ProductSeeder::class,
+            CustomerSeeder::class,
             InvoiceSeeder::class,
         ]);
     }

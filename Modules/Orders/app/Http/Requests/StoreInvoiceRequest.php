@@ -17,7 +17,7 @@ class StoreInvoiceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'customer_id'              => ['required', 'integer', 'exists:users,id'],
+            'customer_id'              => ['required', 'integer', 'exists:customers,id'],
             'discount'                 => ['nullable', 'integer', 'min:0'],
             'note'                     => ['nullable', 'string', 'max:5000'],
             'jobs'                     => ['required', 'array', 'min:1'],
@@ -25,14 +25,33 @@ class StoreInvoiceRequest extends FormRequest
             'jobs.*.product_id'        => ['required', 'integer', 'exists:products,id'],
             'jobs.*.quantity'          => ['required', 'integer', 'min:1'],
             'jobs.*.unit_price'        => ['required', 'integer', 'min:0'],
-            'jobs.*.delivery_date'     => ['required', 'date'],
+            'jobs.*.delivery_date'     => ['required', 'date', 'after_or_equal:today'],
+            'jobs.*.note'              => ['nullable', 'string', 'max:1000'],
             'payment'                  => ['required', 'array'],
-            'payment.type_id'          => ['required', 'integer', 'in:' . implode(',', [Payment::TYPE_CASH, Payment::TYPE_BANK, Payment::TYPE_OTHER])],
-            'payment.bank_id'          => ['nullable', 'integer', 'exists:banks,id', 'required_if:payment.type_id,' . Payment::TYPE_BANK],
+            'payment.payment_type_id'  => ['required', 'integer', 'exists:payment_types,id'],
             'payment.stage'            => ['required', 'integer', 'in:' . implode(',', [Payment::STAGE_ADVANCE, Payment::STAGE_FINAL])],
             'payment.amount'           => ['required', 'integer', 'min:0'],
-            'payment.payment_date'     => ['required', 'date'],
+            'payment.payment_date'     => ['required', 'date', 'after_or_equal:today'],
             'payment.note'             => ['nullable', 'string', 'max:5000'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'jobs.*.product_id.required'           => 'Product is required.',
+            'jobs.*.service_id.required'           => 'Service is required.',
+            'jobs.*.quantity.required'             => 'Quantity is required.',
+            'jobs.*.unit_price.required'           => 'Unit price is required.',
+            'jobs.*.delivery_date.required'        => 'Delivery date is required.',
+            'jobs.*.delivery_date.date'            => 'Delivery date must be a valid date.',
+            'jobs.*.delivery_date.after_or_equal'  => 'Delivery date should be today or later.',
+            'payment.payment_type_id.required'     => 'Payment type is required.',
+            'payment.stage.required'               => 'Payment stage is required.',
+            'payment.amount.required'              => 'Payment amount is required.',
+            'payment.payment_date.required'        => 'Payment date is required.',
+            'payment.payment_date.date'            => 'Payment date must be a valid date.',
+            'payment.payment_date.after_or_equal'  => 'Payment date should be today or later.',
         ];
     }
 

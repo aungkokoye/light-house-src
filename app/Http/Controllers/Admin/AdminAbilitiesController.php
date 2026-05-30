@@ -13,7 +13,8 @@ use App\Policies\SitePolicy;
 use App\Policies\StaffPositionPolicy;
 use App\Policies\UserPolicy;
 use Illuminate\Http\JsonResponse;
-use Modules\Orders\Policies\BankPolicy;
+use Modules\Orders\Policies\CustomerPolicy;
+use Modules\Orders\Policies\PaymentTypePolicy;
 use Modules\Orders\Policies\InvoicePolicy;
 use Modules\Orders\Policies\JobServicePolicy;
 use Modules\Orders\Policies\ProductPolicy;
@@ -36,8 +37,9 @@ class AdminAbilitiesController extends Controller
                 'chat_knowledge'            => (new ChatKnowledgePolicy)->viewAny($user),
                 'chat_knowledge_categories' => (new ChatKnowledgeCategoryPolicy)->viewAny($user),
                 'audit_logs'                => (new AuditLogPolicy)->viewAny($user),
+                'customers'                 => (new CustomerPolicy)->viewAny($user),
                 'invoices'                  => (new InvoicePolicy)->viewAny($user),
-                'banks'                     => (new BankPolicy)->viewAny($user),
+                'payment_types'             => (new PaymentTypePolicy)->viewAny($user),
                 'products'                  => (new ProductPolicy)->viewAny($user),
                 'services'                  => (new JobServicePolicy)->viewAny($user),
             ],

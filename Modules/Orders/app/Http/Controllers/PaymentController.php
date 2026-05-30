@@ -19,10 +19,9 @@ class PaymentController extends Controller
     public function meta(): JsonResponse
     {
         return response()->json([
-            'types'       => Payment::typeOptions(),
-            'stages'      => Payment::stageOptions(),
-            'type_bank'   => Payment::TYPE_BANK,
-            'stage_final' => Payment::STAGE_FINAL,
+            'stages'        => Payment::stageOptions(),
+            'stage_final'   => Payment::STAGE_FINAL,
+            'stage_refund'  => Payment::STAGE_REFUND,
         ]);
     }
 
@@ -41,7 +40,7 @@ class PaymentController extends Controller
 
     public function update(UpdatePaymentRequest $request, Payment $payment): JsonResponse
     {
-        $payment->load('bank:id,name', 'createdBy:id,name');
+        $payment->load('paymentType:id,name', 'createdBy:id,name');
         $oldValues = $this->snapshot($payment);
 
         $updated = $this->paymentManager->update($payment, $request->validated());
@@ -54,16 +53,15 @@ class PaymentController extends Controller
     {
         $payment->loadMissing([
             'invoice:id,invoice_no,total,customer_id',
-            'invoice.customer:id,name,email,email_verified_at',
-            'invoice.customer.companyProfile:user_id,name',
-            'bank:id,name',
+            'invoice.customer:id,name,email,company_name',
+            'paymentType:id,name',
             'createdBy:id,name',
         ]);
 
         $customer = $payment->invoice?->customer;
 
-        if (! $customer || ! $customer->email_verified_at) {
-            return response()->json(['message' => 'Customer email is not verified.'], 422);
+        if (! $customer?->email) {
+            return response()->json(['message' => 'Customer has no email address.'], 422);
         }
 
         $customer->notify(new \App\Notifications\PaymentReceiptNotification($payment));
@@ -73,7 +71,7 @@ class PaymentController extends Controller
 
     public function destroy(Payment $payment): JsonResponse
     {
-        $payment->load('bank:id,name', 'createdBy:id,name');
+        $payment->load('paymentType:id,name', 'createdBy:id,name');
         $this->auditDeleted($payment, $this->snapshot($payment));
         $this->paymentManager->delete($payment);
 
@@ -84,11 +82,11 @@ class PaymentController extends Controller
     {
         $attrs = $this->filterAuditValues($payment->getAttributes());
 
-        unset($attrs['bank_id'], $attrs['created_by']);
+        unset($attrs['payment_type_id'], $attrs['created_by']);
 
         return array_merge($attrs, [
-            'bank'       => ['id' => $payment->bank?->id,      'name' => $payment->bank?->name],
-            'created_by' => ['id' => $payment->createdBy?->id, 'name' => $payment->createdBy?->name],
+            'payment_type' => ['id' => $payment->paymentType?->id,  'name' => $payment->paymentType?->name],
+            'created_by'   => ['id' => $payment->createdBy?->id,    'name' => $payment->createdBy?->name],
         ]);
     }
 }
