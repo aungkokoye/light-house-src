@@ -18,14 +18,14 @@
                     </div>
                     <span class="relative group">
                         <a href="#" @click.prevent="sendInvoice"
-                            :class="[sendingInvoice || !invoice.customer?.email_verified_at ? 'opacity-50 pointer-events-none' : '']"
+                            :class="[sendingInvoice || !invoice.customer?.email ? 'opacity-50 pointer-events-none' : '']"
                             class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
                             {{ sendingInvoice ? 'Sending…' : 'Send Invoice' }}
                         </a>
-                        <span v-if="!invoice.customer?.email_verified_at"
+                        <span v-if="!invoice.customer?.email"
                             class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                            Unverified customer email
+                            Customer has no email address
                         </span>
                     </span>
                     <a href="#" @click.prevent="printInvoice"
@@ -168,13 +168,13 @@
                                         <div class="flex items-center gap-1">
                                             <span class="relative group">
                                                 <button @click="sendReceipt(pmt)" type="button"
-                                                    :class="[sendingReceiptId === pmt.id || !invoice.customer?.email_verified_at ? 'opacity-50 pointer-events-none' : '']"
+                                                    :class="[sendingReceiptId === pmt.id || !invoice.customer?.email ? 'opacity-50 pointer-events-none' : '']"
                                                     class="p-1 rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
                                                 </button>
-                                                <span v-if="!invoice.customer?.email_verified_at"
+                                                <span v-if="!invoice.customer?.email"
                                                     class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    Unverified customer email
+                                                    Customer has no email address
                                                 </span>
                                             </span>
                                             <button @click="printReceipt(pmt)" type="button"

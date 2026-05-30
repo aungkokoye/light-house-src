@@ -54,16 +54,15 @@ class PaymentController extends Controller
     {
         $payment->loadMissing([
             'invoice:id,invoice_no,total,customer_id',
-            'invoice.customer:id,name,email,email_verified_at',
-            'invoice.customer.companyProfile:user_id,name',
+            'invoice.customer:id,name,email,company_name',
             'bank:id,name',
             'createdBy:id,name',
         ]);
 
         $customer = $payment->invoice?->customer;
 
-        if (! $customer || ! $customer->email_verified_at) {
-            return response()->json(['message' => 'Customer email is not verified.'], 422);
+        if (! $customer?->email) {
+            return response()->json(['message' => 'Customer has no email address.'], 422);
         }
 
         $customer->notify(new \App\Notifications\PaymentReceiptNotification($payment));
