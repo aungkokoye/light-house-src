@@ -145,8 +145,8 @@
                                 <!-- Note -->
                                 <div>
                                     <label class="block text-xs font-medium text-gray-600 mb-1.5">Note</label>
-                                    <input v-model="job.note" type="text" placeholder="Optional job note…"
-                                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white" />
+                                    <textarea v-model="job.note" rows="3" placeholder="Optional job note…"
+                                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white resize-none"></textarea>
                                 </div>
                             </div>
                         </div>
