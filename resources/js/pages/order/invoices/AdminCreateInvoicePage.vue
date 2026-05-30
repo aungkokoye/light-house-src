@@ -95,7 +95,7 @@
                                             class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
                                             :class="jobError(i,'product_id') ? 'border-red-300' : 'border-gray-300'">
                                             <option value="">— Select product —</option>
-                                            <option v-for="p in products" :key="p.id" :value="p.id">{{ p.name }}</option>
+                                            <option v-for="p in products" :key="p.id" :value="p.id">{{ p.name }}{{ p.current_price != null ? ` — ${Number(p.current_price).toLocaleString()}` : '' }}</option>
                                         </select>
                                         <p v-if="jobError(i,'product_id')" class="mt-1 text-xs text-red-500">Required</p>
                                     </div>
