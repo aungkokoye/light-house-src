@@ -14,9 +14,9 @@ class Invoice extends Model
     {
         static::created(function (Invoice $invoice) {
             $prefix = env('INVOICE_PREFIX', 'LHPI');
-            $invoice->updateQuietly([
-                'invoice_no' => $prefix . '-' . str_pad($invoice->id, 8, '0', STR_PAD_LEFT),
-            ]);
+            $no = $prefix . '-' . str_pad($invoice->id, 8, '0', STR_PAD_LEFT);
+            $invoice->invoice_no = $no;
+            $invoice->saveQuietly();
         });
     }
 
