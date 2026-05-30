@@ -19,8 +19,7 @@ class PaymentReceiptNotification extends Notification
     {
         $this->payment->loadMissing([
             'invoice:id,invoice_no,customer_id',
-            'invoice.customer:id,name,email',
-            'invoice.customer.companyProfile:user_id,name',
+            'invoice.customer:id,name,email,company_name',
             'bank:id,name',
             'createdBy:id,name',
         ]);

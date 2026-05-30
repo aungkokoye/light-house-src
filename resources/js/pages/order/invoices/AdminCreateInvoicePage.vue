@@ -261,9 +261,7 @@
 
                 <!-- Modal body -->
                 <div class="px-6 py-5 space-y-4 max-h-[70vh] overflow-y-auto">
-                    <!-- Account -->
                     <div class="space-y-3">
-                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Account</p>
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1.5">Name <span class="text-red-400">*</span></label>
                             <input v-model="newCustomer.name" type="text" placeholder="Full name"
@@ -272,46 +270,41 @@
                             <p v-if="newCustomerErrors.name" class="mt-1 text-xs text-red-500">{{ newCustomerErrors.name[0] }}</p>
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Email <span class="text-red-400">*</span></label>
+                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Phone <span class="text-red-400">*</span></label>
+                            <input v-model="newCustomer.phone" type="text" placeholder="+95 9 xxx xxx xxx"
+                                class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
+                                :class="newCustomerErrors.phone ? 'border-red-300' : 'border-gray-300'" />
+                            <p v-if="newCustomerErrors.phone" class="mt-1 text-xs text-red-500">{{ newCustomerErrors.phone[0] }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Email</label>
                             <input v-model="newCustomer.email" type="email" placeholder="email@example.com"
                                 class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
                                 :class="newCustomerErrors.email ? 'border-red-300' : 'border-gray-300'" />
                             <p v-if="newCustomerErrors.email" class="mt-1 text-xs text-red-500">{{ newCustomerErrors.email[0] }}</p>
                         </div>
-                    </div>
-
-                    <!-- Company -->
-                    <div class="space-y-3">
-                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Company</p>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-xs font-medium text-gray-600 mb-1.5">Company Name <span class="text-red-400">*</span></label>
-                                <input v-model="newCustomer.company_profile.name" type="text" placeholder="Company name"
+                                <label class="block text-xs font-medium text-gray-600 mb-1.5">Company Name</label>
+                                <input v-model="newCustomer.company_name" type="text" placeholder="Company name"
                                     class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
-                                    :class="newCustomerErrors['company_profile.name'] ? 'border-red-300' : 'border-gray-300'" />
-                                <p v-if="newCustomerErrors['company_profile.name']" class="mt-1 text-xs text-red-500">{{ newCustomerErrors['company_profile.name'][0] }}</p>
+                                    :class="newCustomerErrors.company_name ? 'border-red-300' : 'border-gray-300'" />
+                                <p v-if="newCustomerErrors.company_name" class="mt-1 text-xs text-red-500">{{ newCustomerErrors.company_name[0] }}</p>
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-gray-600 mb-1.5">Title / Role <span class="text-red-400">*</span></label>
-                                <input v-model="newCustomer.company_profile.role" type="text" placeholder="e.g. Manager"
+                                <label class="block text-xs font-medium text-gray-600 mb-1.5">Title / Role</label>
+                                <input v-model="newCustomer.title" type="text" placeholder="e.g. Manager"
                                     class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
-                                    :class="newCustomerErrors['company_profile.role'] ? 'border-red-300' : 'border-gray-300'" />
-                                <p v-if="newCustomerErrors['company_profile.role']" class="mt-1 text-xs text-red-500">{{ newCustomerErrors['company_profile.role'][0] }}</p>
+                                    :class="newCustomerErrors.title ? 'border-red-300' : 'border-gray-300'" />
+                                <p v-if="newCustomerErrors.title" class="mt-1 text-xs text-red-500">{{ newCustomerErrors.title[0] }}</p>
                             </div>
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Phone <span class="text-red-400">*</span></label>
-                            <input v-model="newCustomer.company_profile.phone" type="text" placeholder="+95 9 xxx xxx xxx"
-                                class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
-                                :class="newCustomerErrors['company_profile.phone'] ? 'border-red-300' : 'border-gray-300'" />
-                            <p v-if="newCustomerErrors['company_profile.phone']" class="mt-1 text-xs text-red-500">{{ newCustomerErrors['company_profile.phone'][0] }}</p>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Address <span class="text-red-400">*</span></label>
-                            <textarea v-model="newCustomer.company_profile.address" rows="2" placeholder="Company address"
+                            <label class="block text-xs font-medium text-gray-600 mb-1.5">Address</label>
+                            <textarea v-model="newCustomer.address" rows="2" placeholder="Customer address"
                                 class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50 resize-none"
-                                :class="newCustomerErrors['company_profile.address'] ? 'border-red-300' : 'border-gray-300'"></textarea>
-                            <p v-if="newCustomerErrors['company_profile.address']" class="mt-1 text-xs text-red-500">{{ newCustomerErrors['company_profile.address'][0] }}</p>
+                                :class="newCustomerErrors.address ? 'border-red-300' : 'border-gray-300'"></textarea>
+                            <p v-if="newCustomerErrors.address" class="mt-1 text-xs text-red-500">{{ newCustomerErrors.address[0] }}</p>
                         </div>
                     </div>
 
@@ -354,15 +347,14 @@ const savingCustomer = ref(false)
 const newCustomerErrors = ref({})
 const newCustomerGeneralError = ref('')
 const newCustomer = ref({
-    name: '', email: '',
-    company_profile: { name: '', role: '', phone: '', address: '' },
+    name: '', phone: '', email: '', company_name: '', title: '', address: '',
 })
 
 function closeNewCustomer() {
     showNewCustomer.value = false
     newCustomerErrors.value = {}
     newCustomerGeneralError.value = ''
-    newCustomer.value = { name: '', email: '', company_profile: { name: '', role: '', phone: '', address: '' } }
+    newCustomer.value = { name: '', phone: '', email: '', company_name: '', title: '', address: '' }
 }
 
 async function submitNewCustomer() {
@@ -389,10 +381,10 @@ async function submitNewCustomer() {
 
 async function searchCustomers(q) {
     if (!q || q.length < 2) return []
-    const { data } = await axios.get('/api/order/customers', { params: { search: q } })
+    const { data } = await axios.get('/api/order/customers/search', { params: { search: q } })
     return data.map(c => ({
         value: c.id,
-        label: c.company_profile?.name ? `${c.name} (${c.company_profile.name})` : c.name,
+        label: c.company_name ? `${c.name} (${c.company_name})` : c.name,
         sub:   c.email,
     }))
 }

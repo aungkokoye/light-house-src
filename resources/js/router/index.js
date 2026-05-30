@@ -54,6 +54,12 @@ import AdminChatKnowledgeCategoriesPage from '../pages/admin/chat-knowledge-cate
 import AdminCreateChatKnowledgeCategoryPage from '../pages/admin/chat-knowledge-categories/AdminCreateChatKnowledgeCategoryPage.vue';
 import AdminEditChatKnowledgeCategoryPage from '../pages/admin/chat-knowledge-categories/AdminEditChatKnowledgeCategoryPage.vue';
 
+// Order — Customers
+import AdminCustomersPage from '../pages/order/customers/AdminCustomersPage.vue';
+import AdminCreateCustomerPage from '../pages/order/customers/AdminCreateCustomerPage.vue';
+import AdminEditCustomerPage from '../pages/order/customers/AdminEditCustomerPage.vue';
+import AdminViewCustomerPage from '../pages/order/customers/AdminViewCustomerPage.vue';
+
 // Order — Banks
 import AdminBanksPage from '../pages/order/banks/AdminBanksPage.vue';
 import AdminCreateBankPage from '../pages/order/banks/AdminCreateBankPage.vue';
@@ -126,6 +132,10 @@ const routes = [
     { path: '/admin/users/:id/staff-roles/create',             component: AdminUserCreateStaffRolePage },
     { path: '/admin/users/:id/staff-roles/:roleId',            component: AdminUserViewStaffRolePage },
     { path: '/admin/users/:id/staff-roles/:roleId/edit',       component: AdminUserEditStaffRolePage },
+    { path: '/order/customers',             component: AdminCustomersPage },
+    { path: '/order/customers/create',     component: AdminCreateCustomerPage },
+    { path: '/order/customers/:id',        component: AdminViewCustomerPage },
+    { path: '/order/customers/:id/edit',   component: AdminEditCustomerPage },
     { path: '/order/invoices',             component: AdminInvoicesPage },
     { path: '/order/invoices/create',      component: AdminCreateInvoicePage },
     { path: '/order/invoices/:id',         component: AdminViewInvoicePage },

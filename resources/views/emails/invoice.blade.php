@@ -78,8 +78,8 @@
                                 <td style="vertical-align:top;width:50%;">
                                     <p style="margin:0 0 6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#9ca3af;">Bill To</p>
                                     <p style="margin:0;font-size:14px;font-weight:600;color:#111827;">{{ $invoice->customer->name }}</p>
-                                    @if($invoice->customer->companyProfile?->name)
-                                    <p style="margin:3px 0 0;font-size:12px;color:#374151;">{{ $invoice->customer->companyProfile->name }}</p>
+                                    @if($invoice->customer->company_name)
+                                    <p style="margin:3px 0 0;font-size:12px;color:#374151;">{{ $invoice->customer->company_name }}</p>
                                     @endif
                                     <p style="margin:3px 0 0;font-size:11px;color:#6b7280;">{{ $invoice->customer->email }}</p>
                                 </td>

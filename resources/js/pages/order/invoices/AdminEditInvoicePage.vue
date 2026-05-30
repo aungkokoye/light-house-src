@@ -315,17 +315,17 @@ const selectedCustomerOption = computed(() => {
     if (!c) return []
     return [{
         value: c.id,
-        label: c.company_profile?.name ? `${c.name} (${c.company_profile.name})` : c.name,
+        label: c.company_name ? `${c.name} (${c.company_name})` : c.name,
         sub:   c.email,
     }]
 })
 
 async function searchCustomers(q) {
     if (!q || q.length < 2) return []
-    const { data } = await axios.get('/api/order/customers', { params: { search: q } })
+    const { data } = await axios.get('/api/order/customers/search', { params: { search: q } })
     return data.map(c => ({
         value: c.id,
-        label: c.company_profile?.name ? `${c.name} (${c.company_profile.name})` : c.name,
+        label: c.company_name ? `${c.name} (${c.company_name})` : c.name,
         sub:   c.email,
     }))
 }

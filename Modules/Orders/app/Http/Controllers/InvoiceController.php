@@ -4,12 +4,10 @@ namespace Modules\Orders\Http\Controllers;
 
 use App\Concerns\AuditableCrud;
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use App\Concerns\HasAbilities;
-use Modules\Orders\Http\Requests\StoreCustomerRequest;
 use Modules\Orders\Http\Requests\StoreInvoiceRequest;
 use Modules\Orders\Http\Requests\UpdateInvoiceRequest;
 use Modules\Orders\Models\Invoice;
@@ -25,44 +23,6 @@ class InvoiceController extends Controller
 
     public function __construct(private readonly InvoiceManager $manager) {}
 
-    public function registerCustomer(StoreCustomerRequest $request): JsonResponse
-    {
-        $customer = $this->manager->registerCustomer($request->validated());
-
-        $customer->loadMissing('companyProfile:user_id,name');
-
-        return response()->json([
-            'id'           => $customer->id,
-            'name'         => $customer->name,
-            'email'        => $customer->email,
-            'company_name' => $customer->companyProfile?->name,
-        ], 201);
-    }
-
-    public function customers(Request $request): JsonResponse
-    {
-        $search = trim($request->input('search', ''));
-
-        if (strlen($search) < 2) {
-            return response()->json([]);
-        }
-
-        $customers = User::role('customer')
-            ->whereHas('companyProfile')
-            ->with('companyProfile:user_id,name')
-            ->select('id', 'name', 'email')
-            ->where(function ($q) use ($search) {
-                $q->where('name', 'like', $search . '%')
-                  ->orWhere('email', 'like', $search . '%')
-                  ->orWhereHas('companyProfile', fn($q2) => $q2->where('name', 'like', $search . '%'));
-            })
-            ->orderBy('name')
-            ->limit(20)
-            ->get();
-
-        return response()->json($customers);
-    }
-
     public function index(Request $request): JsonResponse
     {
         $perPage   = in_array((int) $request->input('per_page'), self::PER_PAGE_LIST)
@@ -77,10 +37,10 @@ class InvoiceController extends Controller
 
     public function send(Invoice $invoice): JsonResponse
     {
-        $invoice->loadMissing('customer:id,name,email,email_verified_at');
+        $invoice->loadMissing('customer:id,name,email');
 
-        if (! $invoice->customer || ! $invoice->customer->email_verified_at) {
-            return response()->json(['message' => 'Customer email is not verified.'], 422);
+        if (! $invoice->customer?->email) {
+            return response()->json(['message' => 'Customer has no email address.'], 422);
         }
 
         $this->manager->sendToCustomer($invoice);
@@ -100,8 +60,8 @@ class InvoiceController extends Controller
     {
         return response()->json(array_merge($this->manager->show($invoice)->toArray(), [
             'can' => array_merge($this->resourceAbilities($invoice), [
-            'add_payment' => Gate::allows('create', Payment::class),
-        ]),
+                'add_payment' => Gate::allows('create', Payment::class),
+            ]),
         ]));
     }
 
