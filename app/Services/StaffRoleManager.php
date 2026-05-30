@@ -24,7 +24,8 @@ class StaffRoleManager
         $query = StaffRoleFilter::for($this->repo->queryForUser($user->id))
             ->sort($request->input('sort_by', ''), $request->input('sort_dir', 'desc'))
             ->query()
-            ->with(['position', 'site']);
+            ->with(['position', 'site', 'createdBy:id,name,email']);
+
 
         return $this->repo->paginate($query, $perPage);
     }

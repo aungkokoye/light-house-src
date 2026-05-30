@@ -17,6 +17,14 @@ class PaymentReceiptNotification extends Notification
 
     public function toMail($notifiable): MailMessage
     {
+        $this->payment->loadMissing([
+            'invoice:id,invoice_no,customer_id',
+            'invoice.customer:id,name,email',
+            'invoice.customer.companyProfile:user_id,name',
+            'bank:id,name',
+            'createdBy:id,name',
+        ]);
+
         return (new MailMessage)
             ->subject('Payment Receipt — ' . $this->payment->invoice->invoice_no . ' from ' . env('VITE_COMPANY_NAME'))
             ->view('emails.payment-receipt', [

@@ -10,7 +10,7 @@ class AuditLogRepository
 {
     public function query(): Builder
     {
-        return AuditLog::query();
+        return AuditLog::query()->with('user:id,name,email');
     }
 
     public function paginate(Builder $query, int $perPage): LengthAwarePaginator
