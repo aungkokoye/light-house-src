@@ -28,6 +28,9 @@ class InvoiceManager
 
         return InvoiceFilter::for($query)
             ->search($request->input('search'))
+            ->status($request->input('status'))
+            ->createdFrom($request->input('date_from'))
+            ->createdTo($request->input('date_to'))
             ->sort($request->input('sort_by', 'created_at'), $request->input('sort_dir', 'desc'))
             ->query()
             ->paginate($perPage);
