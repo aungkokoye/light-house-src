@@ -38,6 +38,14 @@ class UpdateInvoiceRequest extends FormRequest
         ];
     }
 
+    public function messages(): array
+    {
+        return [
+            'jobs.*.delivery_date.after_or_equal'    => 'Delivery date should be today or later.',
+            'payments.*.payment_date.after_or_equal' => 'Payment date should be today or later.',
+        ];
+    }
+
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $v) {
@@ -54,7 +62,7 @@ class UpdateInvoiceRequest extends FormRequest
             // New jobs: delivery_date must be today or later
             foreach ($jobs as $idx => $job) {
                 if (empty($job['id']) && !empty($job['delivery_date']) && $job['delivery_date'] < $today) {
-                    $v->errors()->add("jobs.{$idx}.delivery_date", 'Delivery date cannot be in the past for new jobs.');
+                    $v->errors()->add("jobs.{$idx}.delivery_date", 'Delivery date should be today or later.');
                 }
             }
 
@@ -65,7 +73,7 @@ class UpdateInvoiceRequest extends FormRequest
             // New payments: payment_date must be today or later
             foreach ($pmtInputs as $idx => $p) {
                 if (empty($p['id']) && !empty($p['payment_date']) && $p['payment_date'] < $today) {
-                    $v->errors()->add("payments.{$idx}.payment_date", 'Payment date cannot be in the past for new payments.');
+                    $v->errors()->add("payments.{$idx}.payment_date", 'Payment date should be today or later.');
                 }
             }
 
