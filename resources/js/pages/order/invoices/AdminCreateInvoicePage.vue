@@ -335,6 +335,7 @@ import axios from 'axios'
 import AppHeader from '../../../components/AppHeader.vue'
 import LoadingSpinner from '../../../components/LoadingSpinner.vue'
 import DeleteModal from '../../../components/DeleteModal.vue'
+import SearchableSelect from '../../../components/SearchableSelect.vue'
 import { useGoBack } from '../../../composables/useGoBack'
 const router = useRouter()
 const { goBack } = useGoBack()
