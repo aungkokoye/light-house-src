@@ -18,8 +18,7 @@ class UpdatePaymentRequest extends FormRequest
     {
         return [
             'invoice_id'   => ['required', 'integer', 'exists:invoices,id'],
-            'type_id'      => ['required', 'integer', 'in:' . implode(',', [Payment::TYPE_CASH, Payment::TYPE_BANK, Payment::TYPE_OTHER])],
-            'bank_id'      => ['nullable', 'integer', 'exists:banks,id', 'required_if:type_id,' . Payment::TYPE_BANK],
+            'bank_id'      => ['required', 'integer', 'exists:banks,id'],
             'stage'        => ['required', 'integer', 'in:' . implode(',', [Payment::STAGE_ADVANCE, Payment::STAGE_FINAL])],
             'amount'       => ['required', 'integer', 'min:0'],
             'note'         => ['nullable', 'string', 'max:5000'],

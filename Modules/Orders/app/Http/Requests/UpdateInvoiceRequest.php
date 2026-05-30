@@ -30,8 +30,7 @@ class UpdateInvoiceRequest extends FormRequest
 
             'payments'                 => ['nullable', 'array'],
             'payments.*.id'            => ['nullable', 'integer', 'exists:payments,id'],
-            'payments.*.type_id'       => ['required', 'integer', 'in:' . implode(',', [Payment::TYPE_CASH, Payment::TYPE_BANK, Payment::TYPE_OTHER])],
-            'payments.*.bank_id'       => ['nullable', 'integer', 'exists:banks,id', 'required_if:payments.*.type_id,' . Payment::TYPE_BANK],
+            'payments.*.bank_id'       => ['required', 'integer', 'exists:banks,id'],
             'payments.*.stage'         => ['required', 'integer', 'in:' . implode(',', [Payment::STAGE_ADVANCE, Payment::STAGE_FINAL])],
             'payments.*.amount'        => ['required', 'integer', 'min:0'],
             'payments.*.payment_date'  => ['required', 'date'],

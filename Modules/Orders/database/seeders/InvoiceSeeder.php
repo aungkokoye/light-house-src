@@ -95,13 +95,9 @@ class InvoiceSeeder extends Seeder
                     $amount = max(1, (int) ($maxAmount * fake()->randomFloat(2, 0.2, 0.7)));
                 }
 
-                $typeId = fake()->randomElement([Payment::TYPE_CASH, Payment::TYPE_BANK, Payment::TYPE_OTHER]);
-                $bankId = $typeId === Payment::TYPE_BANK ? $bankIds->random() : null;
-
                 Payment::create([
                     'invoice_id'   => $invoice->id,
-                    'type_id'      => $typeId,
-                    'bank_id'      => $bankId,
+                    'bank_id'      => $bankIds->random(),
                     'stage'        => $stage,
                     'amount'       => $amount,
                     'note'         => fake()->optional(0.4)->sentence(),

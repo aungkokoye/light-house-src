@@ -98,7 +98,6 @@ class InvoiceController extends Controller
         $attrs = $this->filterAuditValues($invoice->getAttributes());
         unset($attrs['customer_id'], $attrs['created_by']);
 
-        $typeMap  = [Payment::TYPE_CASH => 'Cash', Payment::TYPE_BANK => 'Bank', Payment::TYPE_OTHER => 'Other'];
         $stageMap = [Payment::STAGE_ADVANCE => 'Advance', Payment::STAGE_FINAL => 'Final'];
 
         return array_merge($attrs, [
@@ -114,7 +113,6 @@ class InvoiceController extends Controller
                 'note'          => $j->note,
             ])->toArray(),
             'payments'   => $invoice->payments->map(fn($p) => [
-                'type'         => $typeMap[$p->type_id]  ?? 'Unknown',
                 'bank'         => $p->bank?->name,
                 'stage'        => $stageMap[$p->stage]   ?? 'Unknown',
                 'amount'       => $p->amount,

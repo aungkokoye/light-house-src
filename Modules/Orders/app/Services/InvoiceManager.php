@@ -78,8 +78,7 @@ class InvoiceManager
             $p = $data['payment'];
             Payment::create([
                 'invoice_id'   => $invoice->id,
-                'type_id'      => $p['type_id'],
-                'bank_id'      => $p['bank_id'] ?? null,
+                'bank_id'      => $p['bank_id'],
                 'stage'        => $p['stage'],
                 'amount'       => (int) $p['amount'],
                 'payment_date' => $p['payment_date'],
@@ -126,8 +125,7 @@ class InvoiceManager
             foreach ($data['payments'] ?? [] as $p) {
                 if (!empty($p['id'])) {
                     $existingPayments[(int) $p['id']]?->update([
-                        'type_id'      => $p['type_id'],
-                        'bank_id'      => $p['type_id'] == Payment::TYPE_BANK ? ($p['bank_id'] ?? null) : null,
+                        'bank_id'      => $p['bank_id'],
                         'stage'        => $p['stage'],
                         'amount'       => (int) $p['amount'],
                         'payment_date' => $p['payment_date'],
@@ -136,8 +134,7 @@ class InvoiceManager
                 } else {
                     Payment::create([
                         'invoice_id'   => $invoice->id,
-                        'type_id'      => $p['type_id'],
-                        'bank_id'      => $p['type_id'] == Payment::TYPE_BANK ? ($p['bank_id'] ?? null) : null,
+                        'bank_id'      => $p['bank_id'],
                         'stage'        => $p['stage'],
                         'amount'       => (int) $p['amount'],
                         'payment_date' => $p['payment_date'],

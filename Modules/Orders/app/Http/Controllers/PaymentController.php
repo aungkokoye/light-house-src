@@ -19,9 +19,7 @@ class PaymentController extends Controller
     public function meta(): JsonResponse
     {
         return response()->json([
-            'types'       => Payment::typeOptions(),
             'stages'      => Payment::stageOptions(),
-            'type_bank'   => Payment::TYPE_BANK,
             'stage_final' => Payment::STAGE_FINAL,
         ]);
     }

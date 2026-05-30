@@ -22,8 +22,7 @@ class PaymentManager
     public function update(Payment $payment, array $data): Payment
     {
         $payment->update([
-            'type_id'      => $data['type_id'],
-            'bank_id'      => $data['type_id'] == Payment::TYPE_BANK ? ($data['bank_id'] ?? null) : null,
+            'bank_id'      => $data['bank_id'],
             'stage'        => $data['stage'],
             'amount'       => (int) $data['amount'],
             'payment_date' => $data['payment_date'],

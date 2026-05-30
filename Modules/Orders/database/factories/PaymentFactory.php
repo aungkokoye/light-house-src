@@ -13,7 +13,6 @@ class PaymentFactory extends Factory
     {
         return [
             'invoice_id'   => null,
-            'type_id'      => fake()->randomElement([Payment::TYPE_CASH, Payment::TYPE_BANK, Payment::TYPE_OTHER]),
             'bank_id'      => null,
             'stage'        => Payment::STAGE_ADVANCE,
             'amount'       => 0,

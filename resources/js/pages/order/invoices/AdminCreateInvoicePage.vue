@@ -160,14 +160,14 @@
                         <div class="p-6 space-y-4">
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-xs font-medium text-gray-600 mb-1.5">Type <span class="text-red-400">*</span></label>
-                                    <select v-model.number="form.payment.type_id"
+                                    <label class="block text-xs font-medium text-gray-600 mb-1.5">Bank <span class="text-red-400">*</span></label>
+                                    <select v-model.number="form.payment.bank_id"
                                         class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
-                                        :class="errors['payment.type_id'] ? 'border-red-300' : 'border-gray-300'">
-                                        <option value="">Select type…</option>
-                                        <option v-for="t in paymentMeta?.types" :key="t.id" :value="t.id">{{ t.name }}</option>
+                                        :class="errors['payment.bank_id'] ? 'border-red-300' : 'border-gray-300'">
+                                        <option value="">Select bank…</option>
+                                        <option v-for="b in banks" :key="b.id" :value="b.id">{{ b.name }}</option>
                                     </select>
-                                    <p v-if="errors['payment.type_id']" class="mt-1 text-xs text-red-500">{{ errors['payment.type_id'][0] }}</p>
+                                    <p v-if="errors['payment.bank_id']" class="mt-1 text-xs text-red-500">{{ errors['payment.bank_id'][0] }}</p>
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-gray-600 mb-1.5">Stage <span class="text-red-400">*</span></label>
@@ -179,17 +179,6 @@
                                     </select>
                                     <p v-if="errors['payment.stage']" class="mt-1 text-xs text-red-500">{{ errors['payment.stage'][0] }}</p>
                                 </div>
-                            </div>
-
-                            <div v-if="form.payment.type_id === paymentMeta?.type_bank">
-                                <label class="block text-xs font-medium text-gray-600 mb-1.5">Bank <span class="text-red-400">*</span></label>
-                                <select v-model.number="form.payment.bank_id"
-                                    class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
-                                    :class="errors['payment.bank_id'] ? 'border-red-300' : 'border-gray-300'">
-                                    <option value="">Select bank…</option>
-                                    <option v-for="b in banks" :key="b.id" :value="b.id">{{ b.name }}</option>
-                                </select>
-                                <p v-if="errors['payment.bank_id']" class="mt-1 text-xs text-red-500">{{ errors['payment.bank_id'][0] }}</p>
                             </div>
 
                             <div class="grid grid-cols-2 gap-4">
@@ -403,7 +392,7 @@ const form = ref({
     discount: 0,
     note: '',
     jobs: [newJob()],
-    payment: { type_id: '', bank_id: '', stage: '', amount: 0, payment_date: '', note: '' },
+    payment: { bank_id: '', stage: '', amount: 0, payment_date: '', note: '' },
 })
 
 function newJob() {

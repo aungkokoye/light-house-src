@@ -175,17 +175,17 @@
                                     </button>
                                 </div>
 
-                                <!-- Row 1: Type + Stage -->
+                                <!-- Bank + Stage -->
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label class="block text-xs font-medium text-gray-600 mb-1.5">Type <span class="text-red-400">*</span></label>
-                                        <select v-model.number="pmt.type_id"
+                                        <label class="block text-xs font-medium text-gray-600 mb-1.5">Bank <span class="text-red-400">*</span></label>
+                                        <select v-model.number="pmt.bank_id"
                                             class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
-                                            :class="pmtError(i,'type_id') ? 'border-red-300' : 'border-gray-300'">
-                                            <option value="">Select type</option>
-                                            <option v-for="t in paymentMeta?.types" :key="t.id" :value="t.id">{{ t.name }}</option>
+                                            :class="pmtError(i,'bank_id') ? 'border-red-300' : 'border-gray-300'">
+                                            <option value="">Select bank</option>
+                                            <option v-for="b in banks" :key="b.id" :value="b.id">{{ b.name }}</option>
                                         </select>
-                                        <p v-if="pmtError(i,'type_id')" class="mt-1 text-xs text-red-500">{{ pmtError(i,'type_id') }}</p>
+                                        <p v-if="pmtError(i,'bank_id')" class="mt-1 text-xs text-red-500">{{ pmtError(i,'bank_id') }}</p>
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1.5">Stage <span class="text-red-400">*</span></label>
@@ -197,18 +197,6 @@
                                         </select>
                                         <p v-if="pmtError(i,'stage')" class="mt-1 text-xs text-red-500">{{ pmtError(i,'stage') }}</p>
                                     </div>
-                                </div>
-
-                                <!-- Bank (only when type = Bank) -->
-                                <div v-if="pmt.type_id === paymentMeta?.type_bank">
-                                    <label class="block text-xs font-medium text-gray-600 mb-1.5">Bank <span class="text-red-400">*</span></label>
-                                    <select v-model.number="pmt.bank_id"
-                                        class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
-                                        :class="pmtError(i,'bank_id') ? 'border-red-300' : 'border-gray-300'">
-                                        <option value="">Select bank</option>
-                                        <option v-for="b in banks" :key="b.id" :value="b.id">{{ b.name }}</option>
-                                    </select>
-                                    <p v-if="pmtError(i,'bank_id')" class="mt-1 text-xs text-red-500">{{ pmtError(i,'bank_id') }}</p>
                                 </div>
 
                                 <!-- Amount + Date -->
@@ -350,7 +338,7 @@ function removeJob(i) { form.value.jobs.splice(i, 1) }
 function jobError(i, field) { return errors.value[`jobs.${i}.${field}`] }
 
 function newPayment() {
-    return { _key: ++_pmtKey, id: null, type_id: '', bank_id: '', stage: '', amount: 0, payment_date: '', note: '' }
+    return { _key: ++_pmtKey, id: null, bank_id: '', stage: '', amount: 0, payment_date: '', note: '' }
 }
 function addPayment() { payments.value.push(newPayment()) }
 function removePayment(i) {
@@ -394,8 +382,7 @@ async function submit() {
             ...form.value,
             payments: payments.value.map(p => ({
                 id:           p.id || undefined,
-                type_id:      p.type_id,
-                bank_id:      p.type_id === paymentMeta.value?.type_bank ? (p.bank_id || null) : null,
+                bank_id:      p.bank_id || null,
                 stage:        p.stage,
                 amount:       p.amount,
                 payment_date: p.payment_date,
@@ -447,7 +434,6 @@ onMounted(async () => {
         payments.value = (invoice.value.payments ?? []).map(p => ({
             _key:         ++_pmtKey,
             id:           p.id,
-            type_id:      p.type_id,
             bank_id:      p.bank_id ?? '',
             stage:        p.stage,
             amount:       p.amount,

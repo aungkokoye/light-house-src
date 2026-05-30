@@ -8,16 +8,11 @@ use App\Models\User;
 
 class Payment extends Model
 {
-    const TYPE_CASH  = 1;
-    const TYPE_BANK  = 2;
-    const TYPE_OTHER = 3;
-
     const STAGE_ADVANCE = 1;
     const STAGE_FINAL   = 2;
 
     protected $fillable = [
         'invoice_id',
-        'type_id',
         'bank_id',
         'stage',
         'amount',
@@ -30,15 +25,6 @@ class Payment extends Model
         return [
             'payment_date' => 'date',
             'amount'       => 'integer',
-        ];
-    }
-
-    public static function typeOptions(): array
-    {
-        return [
-            ['id' => self::TYPE_CASH,  'name' => 'Cash'],
-            ['id' => self::TYPE_BANK,  'name' => 'Bank'],
-            ['id' => self::TYPE_OTHER, 'name' => 'Other'],
         ];
     }
 
