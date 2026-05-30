@@ -91,22 +91,22 @@
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1.5">Product <span class="text-red-400">*</span></label>
-                                        <SearchableSelect
-                                            v-model="job.product_id"
-                                            :options="[]"
-                                            :on-search="searchProducts"
-                                            placeholder="Search product…"
-                                            :has-error="!!jobError(i,'product_id')" />
+                                        <select v-model="job.product_id"
+                                            class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
+                                            :class="jobError(i,'product_id') ? 'border-red-300' : 'border-gray-300'">
+                                            <option value="">— Select product —</option>
+                                            <option v-for="p in products" :key="p.id" :value="p.id">{{ p.name }}</option>
+                                        </select>
                                         <p v-if="jobError(i,'product_id')" class="mt-1 text-xs text-red-500">Required</p>
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1.5">Service <span class="text-red-400">*</span></label>
-                                        <SearchableSelect
-                                            v-model="job.service_id"
-                                            :options="[]"
-                                            :on-search="searchServices"
-                                            placeholder="Search service…"
-                                            :has-error="!!jobError(i,'service_id')" />
+                                        <select v-model="job.service_id"
+                                            class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
+                                            :class="jobError(i,'service_id') ? 'border-red-300' : 'border-gray-300'">
+                                            <option value="">— Select service —</option>
+                                            <option v-for="s in services" :key="s.id" :value="s.id">{{ s.name }}</option>
+                                        </select>
                                         <p v-if="jobError(i,'service_id')" class="mt-1 text-xs text-red-500">Required</p>
                                     </div>
                                 </div>
@@ -330,7 +330,6 @@ import { useRouter } from 'vue-router'
 import axios from 'axios'
 import AppHeader from '../../../components/AppHeader.vue'
 import LoadingSpinner from '../../../components/LoadingSpinner.vue'
-import SearchableSelect from '../../../components/SearchableSelect.vue'
 import { useGoBack } from '../../../composables/useGoBack'
 const router = useRouter()
 const { goBack } = useGoBack()
@@ -339,6 +338,8 @@ const submitting = ref(false)
 const errors = ref({})
 const generalError = ref('')
 const banks = ref([])
+const products = ref([])
+const services = ref([])
 const paymentMeta = ref(null)
 const customerOptions    = ref([])
 const showNewCustomer    = ref(false)
@@ -389,21 +390,6 @@ async function searchCustomers(q) {
     }))
 }
 
-async function searchServices(q) {
-    if (!q || q.length < 3) return []
-    const { data } = await axios.get('/api/order/services', { params: { search: q, per_page: 15, sort_by: 'name', sort_dir: 'asc' } })
-    return data.data.map(s => ({ value: s.id, label: s.name }))
-}
-
-async function searchProducts(q) {
-    if (!q || q.length < 3) return []
-    const { data } = await axios.get('/api/order/products', { params: { search: q, per_page: 15, sort_by: 'name', sort_dir: 'asc' } })
-    return data.data.map(p => ({
-        value:   p.id,
-        label:   p.name,
-        display: p.current_price != null ? `${p.name} (${Number(p.current_price).toLocaleString()})` : p.name,
-    }))
-}
 
 const form = ref({
     customer_id: '',
@@ -447,11 +433,15 @@ async function submit() {
 onMounted(async () => {
     if (!localStorage.getItem('token')) { router.push('/login'); return }
     try {
-        const [bankRes, metaRes] = await Promise.all([
+        const [bankRes, metaRes, productRes, serviceRes] = await Promise.all([
             axios.get('/api/order/banks'),
             axios.get('/api/order/payments/meta'),
+            axios.get('/api/order/products', { params: { per_page: 100, sort_by: 'name', sort_dir: 'asc' } }),
+            axios.get('/api/order/services', { params: { per_page: 100, sort_by: 'name', sort_dir: 'asc' } }),
         ])
         banks.value       = bankRes.data.data ?? []
+        products.value    = productRes.data.data ?? []
+        services.value    = serviceRes.data.data ?? []
         paymentMeta.value = metaRes.data
         loading.value     = false
     } catch {

@@ -83,22 +83,22 @@
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1.5">Product <span class="text-red-400">*</span></label>
-                                        <SearchableSelect
-                                            v-model="job.product_id"
-                                            :options="jobProductSeeds[i] ?? []"
-                                            :on-search="searchProducts"
-                                            placeholder="Search product…"
-                                            :has-error="!!jobError(i,'product_id')" />
+                                        <select v-model="job.product_id"
+                                            class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
+                                            :class="jobError(i,'product_id') ? 'border-red-300' : 'border-gray-300'">
+                                            <option value="">— Select product —</option>
+                                            <option v-for="p in products" :key="p.id" :value="p.id">{{ p.name }}</option>
+                                        </select>
                                         <p v-if="jobError(i,'product_id')" class="mt-1 text-xs text-red-500">Required</p>
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1.5">Service <span class="text-red-400">*</span></label>
-                                        <SearchableSelect
-                                            v-model="job.service_id"
-                                            :options="jobServiceSeeds[i] ?? []"
-                                            :on-search="searchServices"
-                                            placeholder="Search service…"
-                                            :has-error="!!jobError(i,'service_id')" />
+                                        <select v-model="job.service_id"
+                                            class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
+                                            :class="jobError(i,'service_id') ? 'border-red-300' : 'border-gray-300'">
+                                            <option value="">— Select service —</option>
+                                            <option v-for="s in services" :key="s.id" :value="s.id">{{ s.name }}</option>
+                                        </select>
                                         <p v-if="jobError(i,'service_id')" class="mt-1 text-xs text-red-500">Required</p>
                                     </div>
                                 </div>
@@ -290,7 +290,6 @@ import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
 import AppHeader from '../../../components/AppHeader.vue'
 import LoadingSpinner from '../../../components/LoadingSpinner.vue'
-import SearchableSelect from '../../../components/SearchableSelect.vue'
 import DeleteModal from '../../../components/DeleteModal.vue'
 import { useGoBack } from '../../../composables/useGoBack'
 
@@ -304,11 +303,9 @@ const generalError = ref('')
 const invoice = ref(null)
 const can = ref({})
 const banks = ref([])
+const products = ref([])
+const services = ref([])
 const paymentMeta = ref(null)
-
-// Per-job seed options so existing selections show their labels on load
-const jobServiceSeeds = ref([])
-const jobProductSeeds = ref([])
 
 const selectedCustomerOption = computed(() => {
     const c = invoice.value?.customer
@@ -330,21 +327,6 @@ async function searchCustomers(q) {
     }))
 }
 
-async function searchServices(q) {
-    if (!q || q.length < 3) return []
-    const { data } = await axios.get('/api/order/services', { params: { search: q, per_page: 15, sort_by: 'name', sort_dir: 'asc' } })
-    return data.data.map(s => ({ value: s.id, label: s.name }))
-}
-
-async function searchProducts(q) {
-    if (!q || q.length < 3) return []
-    const { data } = await axios.get('/api/order/products', { params: { search: q, per_page: 15, sort_by: 'name', sort_dir: 'asc' } })
-    return data.data.map(p => ({
-        value:   p.id,
-        label:   p.name,
-        display: p.current_price != null ? `${p.name} (${Number(p.current_price).toLocaleString()})` : p.name,
-    }))
-}
 
 const form = ref({ customer_id: '', discount: 0, note: '', jobs: [] })
 
@@ -356,16 +338,8 @@ const deletePaymentModal = ref({ show: false, index: null })
 function newJob() {
     return { service_id: '', product_id: '', quantity: 1, unit_price: 0, delivery_date: '' }
 }
-function addJob() {
-    form.value.jobs.push(newJob())
-    jobServiceSeeds.value.push([])
-    jobProductSeeds.value.push([])
-}
-function removeJob(i) {
-    form.value.jobs.splice(i, 1)
-    jobServiceSeeds.value.splice(i, 1)
-    jobProductSeeds.value.splice(i, 1)
-}
+function addJob() { form.value.jobs.push(newJob()) }
+function removeJob(i) { form.value.jobs.splice(i, 1) }
 function jobError(i, field) { return errors.value[`jobs.${i}.${field}`] }
 
 function newPayment() {
@@ -433,14 +407,18 @@ async function submit() {
 onMounted(async () => {
     if (!localStorage.getItem('token')) { router.push('/login'); return }
     try {
-        const [invoiceRes, bankRes, metaRes] = await Promise.all([
+        const [invoiceRes, bankRes, metaRes, productRes, serviceRes] = await Promise.all([
             axios.get(`/api/order/invoices/${route.params.id}`),
             axios.get('/api/order/banks'),
             axios.get('/api/order/payments/meta'),
+            axios.get('/api/order/products', { params: { per_page: 100, sort_by: 'name', sort_dir: 'asc' } }),
+            axios.get('/api/order/services', { params: { per_page: 100, sort_by: 'name', sort_dir: 'asc' } }),
         ])
-        invoice.value = invoiceRes.data
-        can.value     = invoiceRes.data.can ?? {}
-        banks.value   = bankRes.data.data ?? []
+        invoice.value     = invoiceRes.data
+        can.value         = invoiceRes.data.can ?? {}
+        banks.value       = bankRes.data.data ?? []
+        products.value    = productRes.data.data ?? []
+        services.value    = serviceRes.data.data ?? []
         paymentMeta.value = metaRes.data
 
         form.value.customer_id = invoice.value.customer_id
@@ -457,15 +435,6 @@ onMounted(async () => {
             form.value.jobs.push(newJob())
         }
 
-        jobServiceSeeds.value = invoice.value.jobs.map(j =>
-            j.service ? [{ value: j.service.id, label: j.service.name }] : []
-        )
-        if (!jobServiceSeeds.value.length) jobServiceSeeds.value.push([])
-
-        jobProductSeeds.value = invoice.value.jobs.map(j =>
-            j.product ? [{ value: j.product.id, label: j.product.name, display: j.product.name }] : []
-        )
-        if (!jobProductSeeds.value.length) jobProductSeeds.value.push([])
 
         payments.value = (invoice.value.payments ?? []).map(p => ({
             _key:         ++_pmtKey,
