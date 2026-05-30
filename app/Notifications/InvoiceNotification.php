@@ -17,6 +17,14 @@ class InvoiceNotification extends Notification
 
     public function toMail($notifiable): MailMessage
     {
+        $this->invoice->loadMissing([
+            'customer.companyProfile:user_id,name',
+            'jobs.service:id,name',
+            'jobs.product:id,name',
+            'payments.bank:id,name',
+            'createdBy:id,name',
+        ]);
+
         return (new MailMessage)
             ->subject('Invoice ' . $this->invoice->invoice_no . ' from ' . env('VITE_COMPANY_NAME'))
             ->view('emails.invoice', [

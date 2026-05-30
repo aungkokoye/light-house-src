@@ -11,7 +11,7 @@ class SiteRepository
 {
     public function query(): Builder
     {
-        return Site::query();
+        return Site::query()->with('createdBy:id,name,email');
     }
 
     public function paginate(Builder $query, int $perPage): LengthAwarePaginator
