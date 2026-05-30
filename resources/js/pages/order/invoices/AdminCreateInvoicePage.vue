@@ -318,6 +318,14 @@
             </div>
         </div>
     </Teleport>
+
+    <DeleteModal
+        :show="deleteJobModal.show"
+        title="Remove Job"
+        message="Are you sure you want to remove this job?"
+        @confirm="confirmDeleteJob"
+        @cancel="deleteJobModal.show = false"
+    />
 </template>
 
 <script setup>
@@ -326,6 +334,7 @@ import { useRouter } from 'vue-router'
 import axios from 'axios'
 import AppHeader from '../../../components/AppHeader.vue'
 import LoadingSpinner from '../../../components/LoadingSpinner.vue'
+import DeleteModal from '../../../components/DeleteModal.vue'
 import { useGoBack } from '../../../composables/useGoBack'
 const router = useRouter()
 const { goBack } = useGoBack()
@@ -400,7 +409,12 @@ function newJob() {
 }
 
 function addJob() { form.value.jobs.push(newJob()) }
-function removeJob(i) { form.value.jobs.splice(i, 1) }
+const deleteJobModal = ref({ show: false, index: null })
+function removeJob(i) { deleteJobModal.value = { show: true, index: i } }
+function confirmDeleteJob() {
+    form.value.jobs.splice(deleteJobModal.value.index, 1)
+    deleteJobModal.value = { show: false, index: null }
+}
 
 function jobError(i, field) {
     return errors.value[`jobs.${i}.${field}`]
