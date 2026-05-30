@@ -204,7 +204,10 @@
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1.5">Amount <span class="text-red-400">*</span></label>
-                                        <input v-model.number="pmt.amount" type="number" min="0" placeholder="0"
+                                        <input v-model.number="pmt.amount" type="number"
+                                            :min="pmt.stage === (paymentMeta?.stage_refund ?? 3) ? undefined : 1"
+                                            :max="pmt.stage === (paymentMeta?.stage_refund ?? 3) ? -1 : undefined"
+                                            :placeholder="pmt.stage === (paymentMeta?.stage_refund ?? 3) ? 'e.g. -1000' : '0'"
                                             class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
                                             :class="anyAmountError ? 'border-red-300' : 'border-gray-300'" />
                                         <p v-if="pmtError(i,'amount')" class="mt-1 text-xs text-red-500">{{ pmtError(i,'amount') }}</p>
@@ -395,8 +398,7 @@ const subtotal = computed(() =>
     form.value.jobs.reduce((sum, j) => sum + (j.quantity || 0) * (j.unit_price || 0), 0)
 )
 const grandTotal  = computed(() => Math.max(0, subtotal.value - (form.value.discount || 0)))
-const totalPaid   = computed(() => payments.value.reduce((sum, p) =>
-    sum + ((p.stage === (paymentMeta.value?.stage_refund ?? 3) ? -1 : 1) * (p.amount || 0)), 0))
+const totalPaid   = computed(() => payments.value.reduce((sum, p) => sum + (p.amount || 0), 0))
 const balance     = computed(() => grandTotal.value - totalPaid.value)
 
 async function submit() {

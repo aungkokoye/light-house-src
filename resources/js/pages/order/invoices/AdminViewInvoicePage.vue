@@ -188,8 +188,8 @@
                                             {{ stageMap[pmt.stage] }}
                                         </span>
                                     </td>
-                                    <td class="px-3 py-2.5 font-medium" :class="pmt.stage === paymentMeta?.stage_refund ? 'text-red-600' : 'text-gray-900'">
-                                        {{ pmt.stage === paymentMeta?.stage_refund ? '−' : '' }}{{ pmt.amount.toLocaleString() }}
+                                    <td class="px-3 py-2.5 font-medium" :class="pmt.amount < 0 ? 'text-red-600' : 'text-gray-900'">
+                                        {{ pmt.amount.toLocaleString() }}
                                     </td>
                                     <td class="px-3 py-2.5 text-xs text-gray-500">{{ formatDate(pmt.payment_date) }}</td>
                                     <td class="px-3 py-2.5">
@@ -284,7 +284,10 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1.5">Amount <span class="text-red-400">*</span></label>
-                        <input v-model.number="pmtForm.amount" type="number" min="0" placeholder="0"
+                        <input v-model.number="pmtForm.amount" type="number"
+                            :min="pmtForm.stage === paymentMeta?.stage_refund ? undefined : 1"
+                            :max="pmtForm.stage === paymentMeta?.stage_refund ? -1 : undefined"
+                            :placeholder="pmtForm.stage === paymentMeta?.stage_refund ? 'e.g. -1000' : '0'"
                             class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
                             :class="pmtErrors.amount ? 'border-red-300' : 'border-gray-300'" />
                         <p v-if="pmtErrors.amount" class="mt-1 text-xs text-red-500">{{ pmtErrors.amount[0] }}</p>
@@ -613,8 +616,7 @@ const subtotal = computed(() =>
 )
 
 const totalPaid = computed(() =>
-    (invoice.value?.payments ?? []).reduce((sum, p) =>
-        sum + (p.stage === paymentMeta.value?.stage_refund ? -p.amount : p.amount), 0)
+    (invoice.value?.payments ?? []).reduce((sum, p) => sum + p.amount, 0)
 )
 
 const hasFinalPayment = computed(() =>

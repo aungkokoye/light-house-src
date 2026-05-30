@@ -32,7 +32,7 @@ class UpdateInvoiceRequest extends FormRequest
             'payments.*.id'            => ['nullable', 'integer', 'exists:payments,id'],
             'payments.*.payment_type_id' => ['required', 'integer', 'exists:payment_types,id'],
             'payments.*.stage'         => ['required', 'integer', 'in:' . implode(',', [Payment::STAGE_ADVANCE, Payment::STAGE_FINAL, Payment::STAGE_REFUND])],
-            'payments.*.amount'        => ['required', 'integer', 'min:0'],
+            'payments.*.amount'        => ['required', 'integer'],
             'payments.*.payment_date'  => ['required', 'date'],
             'payments.*.note'          => ['nullable', 'string', 'max:5000'],
         ];
@@ -69,36 +69,71 @@ class UpdateInvoiceRequest extends FormRequest
                 }
             }
 
-            $totalAfter = 0;
-            $hasFinal   = false;
+            $netTotal = 0;
+            $hasFinal = false;
+            $hasRefund = false;
 
             // Existing payments with updates applied
             foreach ($invoice->payments as $ep) {
                 if (isset($submittedById[$ep->id])) {
-                    $u           = $submittedById[$ep->id];
-                    $totalAfter += (int) ($u['amount'] ?? $ep->amount);
-                    $stage       = (int) ($u['stage']  ?? $ep->stage);
+                    $u      = $submittedById[$ep->id];
+                    $amt    = (int) ($u['amount'] ?? $ep->amount);
+                    $stage  = (int) ($u['stage']  ?? $ep->stage);
                 } else {
-                    $totalAfter += $ep->amount;
-                    $stage       = $ep->stage;
+                    $amt   = $ep->amount;
+                    $stage = $ep->stage;
                 }
 
-                if ($stage === Payment::STAGE_FINAL) $hasFinal = true;
+                // Validate refund requires admin
+                if ($stage === Payment::STAGE_REFUND) {
+                    $hasRefund = true;
+                    if (! $this->user()->hasRole('admin')) {
+                        $v->errors()->add('payments', 'Only admins can set refund payments.');
+                        return;
+                    }
+                    // amount must be negative for refund
+                    if ($amt >= 0) {
+                        $v->errors()->add('payments', 'Refund payment amount must be negative.');
+                        return;
+                    }
+                } else {
+                    if ($stage === Payment::STAGE_FINAL) $hasFinal = true;
+                }
+
+                $netTotal += $amt;
             }
 
             // New payments (no id)
             foreach ($pmtInputs as $p) {
                 if (!empty($p['id'])) continue;
-                $totalAfter += (int) ($p['amount'] ?? 0);
-                if ((int) ($p['stage'] ?? 0) === Payment::STAGE_FINAL) $hasFinal = true;
+                $amt   = (int) ($p['amount'] ?? 0);
+                $stage = (int) ($p['stage']  ?? 0);
+
+                if ($stage === Payment::STAGE_REFUND) {
+                    $hasRefund = true;
+                    if (! $this->user()->hasRole('admin')) {
+                        $v->errors()->add('payments', 'Only admins can add refund payments.');
+                        return;
+                    }
+                    if ($amt >= 0) {
+                        $v->errors()->add('payments', 'Refund payment amount must be negative.');
+                        return;
+                    }
+                } else {
+                    if ($stage === Payment::STAGE_FINAL) $hasFinal = true;
+                }
+
+                $netTotal += $amt;
             }
 
-            if ($totalAfter > $invoiceTotal) {
-                $v->errors()->add('payments', "Total payments ({$totalAfter}) would exceed the invoice total ({$invoiceTotal}).");
-            } elseif ($hasFinal && $totalAfter !== $invoiceTotal) {
-                $v->errors()->add('payments', "Final payment must bring total payments to exactly {$invoiceTotal}.");
-            } elseif (! $hasFinal && $totalAfter >= $invoiceTotal) {
-                $v->errors()->add('payments', "Total payments must be less than the invoice total ({$invoiceTotal}) when there is no final payment.");
+            if ($hasRefund && $netTotal < 0) {
+                $v->errors()->add('payments', 'Total refunds cannot exceed total payments made.');
+            } elseif ($netTotal > $invoiceTotal) {
+                $v->errors()->add('payments', "Net paid ({$netTotal}) would exceed the invoice total ({$invoiceTotal}).");
+            } elseif ($hasFinal && $netTotal !== $invoiceTotal) {
+                $v->errors()->add('payments', "Final payment must bring net paid to exactly {$invoiceTotal}.");
+            } elseif (! $hasFinal && $netTotal >= $invoiceTotal) {
+                $v->errors()->add('payments', "Net paid must be less than the invoice total ({$invoiceTotal}) when there is no final payment.");
             }
         });
     }

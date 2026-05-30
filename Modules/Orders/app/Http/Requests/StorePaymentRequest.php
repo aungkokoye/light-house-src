@@ -16,11 +16,13 @@ class StorePaymentRequest extends FormRequest
 
     public function rules(): array
     {
+        $isRefund = (int) $this->input('stage', 0) === Payment::STAGE_REFUND;
+
         return [
             'invoice_id'      => ['required', 'integer', 'exists:invoices,id'],
             'payment_type_id' => ['required', 'integer', 'exists:payment_types,id'],
             'stage'           => ['required', 'integer', 'in:' . implode(',', [Payment::STAGE_ADVANCE, Payment::STAGE_FINAL, Payment::STAGE_REFUND])],
-            'amount'          => ['required', 'integer', 'min:1'],
+            'amount'          => $isRefund ? ['required', 'integer', 'max:-1'] : ['required', 'integer', 'min:1'],
             'note'            => ['nullable', 'string', 'max:5000'],
             'payment_date'    => ['required', 'date'],
         ];
@@ -37,19 +39,17 @@ class StorePaymentRequest extends FormRequest
 
             $invoice->loadMissing('payments');
 
+            // Net paid = sum of all amounts (refunds already stored negative)
+            $netPaid = $invoice->payments->sum('amount');
+
             if ($stage === Payment::STAGE_REFUND) {
                 if (! $this->user()->hasRole('admin')) {
                     $v->errors()->add('stage', 'Only admins can create refund payments.');
                     return;
                 }
 
-                $effectivePaid = $invoice->payments->reduce(
-                    fn($carry, $p) => $carry + ($p->stage === Payment::STAGE_REFUND ? -$p->amount : $p->amount),
-                    0
-                );
-
-                if ($amount > $effectivePaid) {
-                    $v->errors()->add('amount', "Refund amount ({$amount}) cannot exceed total paid ({$effectivePaid}).");
+                if (abs($amount) > $netPaid) {
+                    $v->errors()->add('amount', "Refund amount cannot exceed net paid ({$netPaid}).");
                 }
                 return;
             }
@@ -61,16 +61,13 @@ class StorePaymentRequest extends FormRequest
                 return;
             }
 
-            $alreadyPaid = $invoice->payments
-                ->where('stage', '!=', Payment::STAGE_REFUND)
-                ->sum('amount');
-            $totalAfter = $alreadyPaid + $amount;
+            $totalAfter = $netPaid + $amount;
             $hasFinal   = $stage === Payment::STAGE_FINAL;
 
             if ($amount > $invoiceTotal) {
                 $v->errors()->add('amount', "Payment amount must not exceed the invoice total ({$invoiceTotal}).");
             } elseif ($stage === Payment::STAGE_FINAL && $totalAfter !== $invoiceTotal) {
-                $v->errors()->add('amount', "Final payment must bring total payments to exactly {$invoiceTotal} (currently paid: {$alreadyPaid}).");
+                $v->errors()->add('amount', "Final payment must bring net paid to exactly {$invoiceTotal} (currently: {$netPaid}).");
             } elseif (! $hasFinal && $totalAfter >= $invoiceTotal) {
                 $v->errors()->add('amount', "Total payments must be less than the invoice total ({$invoiceTotal}) when there is no final payment.");
             }

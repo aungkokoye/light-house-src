@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('invoice_id')->constrained('invoices')->cascadeOnDelete();
             $table->foreignId('payment_type_id')->constrained('payment_types')->restrictOnDelete();
             $table->unsignedTinyInteger('stage');               // 1:advance/deposit 2:final
-            $table->unsignedBigInteger('amount');
+            $table->bigInteger('amount');
             $table->text('note')->nullable();
             $table->date('payment_date');
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();

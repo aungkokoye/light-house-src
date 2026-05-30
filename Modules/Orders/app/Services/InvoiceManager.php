@@ -22,7 +22,7 @@ class InvoiceManager
         $query = Invoice::with(['customer:id,name,email', 'createdBy:id,name'])
             ->addSelect([
                 'paid_amount' => DB::table('payments')
-                    ->selectRaw('COALESCE(SUM(CASE WHEN stage = ' . Payment::STAGE_REFUND . ' THEN -amount ELSE amount END), 0)')
+                    ->selectRaw('COALESCE(SUM(amount), 0)')
                     ->whereColumn('invoice_id', 'invoices.id'),
             ]);
 
