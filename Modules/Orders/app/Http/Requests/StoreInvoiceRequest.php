@@ -29,7 +29,7 @@ class StoreInvoiceRequest extends FormRequest
             'jobs.*.note'              => ['nullable', 'string', 'max:1000'],
             'payment'                  => ['required', 'array'],
             'payment.payment_type_id'  => ['required', 'integer', 'exists:payment_types,id'],
-            'payment.stage'            => ['required', 'integer', 'in:' . implode(',', [Payment::STAGE_ADVANCE, Payment::STAGE_FINAL, Payment::STAGE_REFUND])],
+            'payment.stage'            => ['required', 'integer', 'in:' . implode(',', [Payment::STAGE_ADVANCE, Payment::STAGE_FINAL])],
             'payment.amount'           => ['required', 'integer', 'min:0'],
             'payment.payment_date'     => ['required', 'date'],
             'payment.note'             => ['nullable', 'string', 'max:5000'],

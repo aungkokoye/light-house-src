@@ -175,7 +175,7 @@
                                         class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-gray-50"
                                         :class="errors['payment.stage'] ? 'border-red-300' : 'border-gray-300'">
                                         <option value="">Select stage…</option>
-                                        <option v-for="s in paymentMeta?.stages" :key="s.id" :value="s.id">{{ s.name }}</option>
+                                        <option v-for="s in paymentMeta?.stages?.filter(s => s.id !== paymentMeta?.stage_refund)" :key="s.id" :value="s.id">{{ s.name }}</option>
                                     </select>
                                     <p v-if="errors['payment.stage']" class="mt-1 text-xs text-red-500">{{ errors['payment.stage'][0] }}</p>
                                 </div>
