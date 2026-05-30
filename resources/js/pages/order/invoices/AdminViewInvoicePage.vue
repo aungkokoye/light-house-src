@@ -290,6 +290,7 @@
                             :placeholder="pmtForm.stage === paymentMeta?.stage_refund ? 'e.g. -1000' : '0'"
                             class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
                             :class="pmtErrors.amount ? 'border-red-300' : 'border-gray-300'" />
+                        <p v-if="pmtForm.stage === paymentMeta?.stage_refund && !pmtErrors.amount" class="mt-1 text-xs text-amber-600">For refund, enter a negative value (e.g. -1000).</p>
                         <p v-if="pmtErrors.amount" class="mt-1 text-xs text-red-500">{{ pmtErrors.amount[0] }}</p>
                     </div>
                     <div>
