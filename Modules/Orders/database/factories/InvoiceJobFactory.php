@@ -22,6 +22,7 @@ class InvoiceJobFactory extends Factory
             'unit_price'    => $unitPrice,
             'total'         => $quantity * $unitPrice,
             'delivery_date' => fake()->dateTimeBetween('now', '+3 months')->format('Y-m-d'),
+            'note'          => fake()->optional(0.3)->sentence(),
             'created_by'    => 1,
         ];
     }

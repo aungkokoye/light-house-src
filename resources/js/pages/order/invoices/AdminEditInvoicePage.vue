@@ -132,6 +132,13 @@
                                         </div>
                                     </div>
                                 </div>
+
+                                <!-- Note -->
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1.5">Note</label>
+                                    <input v-model="job.note" type="text" placeholder="Optional job note…"
+                                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white" />
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -336,7 +343,7 @@ const payments = ref([])
 const deletePaymentModal = ref({ show: false, index: null })
 
 function newJob() {
-    return { service_id: '', product_id: '', quantity: 1, unit_price: 0, delivery_date: '' }
+    return { service_id: '', product_id: '', quantity: 1, unit_price: 0, delivery_date: '', note: '' }
 }
 function addJob() { form.value.jobs.push(newJob()) }
 function removeJob(i) { form.value.jobs.splice(i, 1) }
@@ -430,6 +437,7 @@ onMounted(async () => {
             quantity:      j.quantity,
             unit_price:    j.unit_price,
             delivery_date: (j.delivery_date ?? '').slice(0, 10),
+            note:          j.note ?? '',
         }))
         if (!form.value.jobs.length) {
             form.value.jobs.push(newJob())

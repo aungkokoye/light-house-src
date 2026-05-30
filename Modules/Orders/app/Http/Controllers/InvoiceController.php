@@ -111,6 +111,7 @@ class InvoiceController extends Controller
                 'unit_price'    => $j->unit_price,
                 'total'         => $j->total,
                 'delivery_date' => $j->delivery_date?->toDateString(),
+                'note'          => $j->note,
             ])->toArray(),
             'payments'   => $invoice->payments->map(fn($p) => [
                 'type'         => $typeMap[$p->type_id]  ?? 'Unknown',

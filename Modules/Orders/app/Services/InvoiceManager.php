@@ -183,6 +183,7 @@ class InvoiceManager
             'unit_price'    => (int) $job['unit_price'],
             'total'         => (int) $job['quantity'] * (int) $job['unit_price'],
             'delivery_date' => Carbon::parse($job['delivery_date'])->format('Y-m-d'),
+            'note'          => $job['note'] ?? null,
             'created_by'    => Auth::id(),
             'created_at'    => $now,
             'updated_at'    => $now,

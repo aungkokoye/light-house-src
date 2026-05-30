@@ -17,7 +17,7 @@ class StoreInvoiceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'customer_id'              => ['required', 'integer', 'exists:users,id'],
+            'customer_id'              => ['required', 'integer', 'exists:customers,id'],
             'discount'                 => ['nullable', 'integer', 'min:0'],
             'note'                     => ['nullable', 'string', 'max:5000'],
             'jobs'                     => ['required', 'array', 'min:1'],
@@ -26,6 +26,7 @@ class StoreInvoiceRequest extends FormRequest
             'jobs.*.quantity'          => ['required', 'integer', 'min:1'],
             'jobs.*.unit_price'        => ['required', 'integer', 'min:0'],
             'jobs.*.delivery_date'     => ['required', 'date'],
+            'jobs.*.note'              => ['nullable', 'string', 'max:1000'],
             'payment'                  => ['required', 'array'],
             'payment.type_id'          => ['required', 'integer', 'in:' . implode(',', [Payment::TYPE_CASH, Payment::TYPE_BANK, Payment::TYPE_OTHER])],
             'payment.bank_id'          => ['nullable', 'integer', 'exists:banks,id', 'required_if:payment.type_id,' . Payment::TYPE_BANK],

@@ -48,6 +48,7 @@ class InvoiceSeeder extends Seeder
                     'unit_price'    => $unitPrice,
                     'total'         => $total,
                     'delivery_date' => fake()->dateTimeBetween('now', '+3 months')->format('Y-m-d'),
+                    'note'          => fake()->optional(0.3)->sentence(),
                     'created_by'    => 1,
                 ]);
             }
