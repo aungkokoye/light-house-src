@@ -20,6 +20,7 @@ return new class extends Migration
             $table->unsignedBigInteger('unit_price');
             $table->unsignedBigInteger('total');
             $table->date('delivery_date');
+            $table->text('note')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
