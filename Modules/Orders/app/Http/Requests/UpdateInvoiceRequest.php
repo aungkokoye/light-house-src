@@ -49,9 +49,25 @@ class UpdateInvoiceRequest extends FormRequest
             ));
             $invoiceTotal = max(0, $subtotal - $discount);
 
+            $today = now()->toDateString();
+
+            // New jobs: delivery_date must be today or later
+            foreach ($jobs as $idx => $job) {
+                if (empty($job['id']) && !empty($job['delivery_date']) && $job['delivery_date'] < $today) {
+                    $v->errors()->add("jobs.{$idx}.delivery_date", 'Delivery date cannot be in the past for new jobs.');
+                }
+            }
+
             $invoice    = $this->route('invoice');
             $invoice->loadMissing('payments');
             $pmtInputs  = $this->input('payments', []);
+
+            // New payments: payment_date must be today or later
+            foreach ($pmtInputs as $idx => $p) {
+                if (empty($p['id']) && !empty($p['payment_date']) && $p['payment_date'] < $today) {
+                    $v->errors()->add("payments.{$idx}.payment_date", 'Payment date cannot be in the past for new payments.');
+                }
+            }
 
             // Reject payment IDs that don't belong to this invoice
             foreach ($pmtInputs as $idx => $p) {

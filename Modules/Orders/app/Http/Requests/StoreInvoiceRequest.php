@@ -25,13 +25,13 @@ class StoreInvoiceRequest extends FormRequest
             'jobs.*.product_id'        => ['required', 'integer', 'exists:products,id'],
             'jobs.*.quantity'          => ['required', 'integer', 'min:1'],
             'jobs.*.unit_price'        => ['required', 'integer', 'min:0'],
-            'jobs.*.delivery_date'     => ['required', 'date'],
+            'jobs.*.delivery_date'     => ['required', 'date', 'after_or_equal:today'],
             'jobs.*.note'              => ['nullable', 'string', 'max:1000'],
             'payment'                  => ['required', 'array'],
             'payment.payment_type_id'  => ['required', 'integer', 'exists:payment_types,id'],
             'payment.stage'            => ['required', 'integer', 'in:' . implode(',', [Payment::STAGE_ADVANCE, Payment::STAGE_FINAL])],
             'payment.amount'           => ['required', 'integer', 'min:0'],
-            'payment.payment_date'     => ['required', 'date'],
+            'payment.payment_date'     => ['required', 'date', 'after_or_equal:today'],
             'payment.note'             => ['nullable', 'string', 'max:5000'],
         ];
     }
