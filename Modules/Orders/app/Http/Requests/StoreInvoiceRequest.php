@@ -36,6 +36,14 @@ class StoreInvoiceRequest extends FormRequest
         ];
     }
 
+    public function messages(): array
+    {
+        return [
+            'jobs.*.delivery_date.after_or_equal'  => 'Delivery date should be today or later.',
+            'payment.payment_date.after_or_equal'  => 'Payment date should be today or later.',
+        ];
+    }
+
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $v) {
