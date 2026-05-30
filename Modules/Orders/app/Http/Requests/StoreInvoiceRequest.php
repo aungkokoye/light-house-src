@@ -39,8 +39,15 @@ class StoreInvoiceRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'jobs.*.delivery_date.required'        => 'Delivery date is required.',
+            'jobs.*.delivery_date.date'            => 'Delivery date must be a valid date.',
             'jobs.*.delivery_date.after_or_equal'  => 'Delivery date should be today or later.',
+            'payment.payment_date.required'        => 'Payment date is required.',
+            'payment.payment_date.date'            => 'Payment date must be a valid date.',
             'payment.payment_date.after_or_equal'  => 'Payment date should be today or later.',
+            'payment.amount.required'              => 'Payment amount is required.',
+            'payment.stage.required'               => 'Payment stage is required.',
+            'payment.payment_type_id.required'     => 'Payment type is required.',
         ];
     }
 
