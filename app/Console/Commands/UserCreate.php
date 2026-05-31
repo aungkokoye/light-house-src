@@ -111,11 +111,11 @@ class UserCreate extends Command
         $this->info('── Company Profile ──────────────────────────────');
 
         return [
-            'name'        => $this->ask('Company name'),
-            'role'        => $this->ask('Your role / title at the company'),
+            'name'        => $this->askRequired('Company name'),
+            'role'        => $this->askRequired('Role / title at the company'),
+            'address'     => $this->askRequired('Address'),
+            'phone'       => $this->askRequired('Phone'),
             'description' => $this->ask('Description (optional)', null),
-            'address'     => $this->ask('Address'),
-            'phone'       => $this->ask('Phone'),
         ];
     }
 
@@ -124,12 +124,22 @@ class UserCreate extends Command
         $this->info('── Staff Profile ────────────────────────────────');
 
         $profileData = [
-            'full_name'  => $this->ask('Full name'),
-            'nrc_no'     => $this->ask('NRC no.'),
-            'dob'        => $this->ask('Date of birth (YYYY-MM-DD)'),
-            'address'    => $this->ask('Address'),
-            'phone'      => $this->ask('Phone'),
-            'start_date' => $this->ask('Employment start date (YYYY-MM-DD)'),
+            'full_name'               => $this->askRequired('Full name'),
+            'father_name'             => $this->askRequired('Father name'),
+            'gender'                  => $this->mapChoice('Gender', ['Male' => 1, 'Female' => 2]),
+            'marital_status'          => $this->mapChoice('Marital status', ['Single' => 1, 'Married' => 2]),
+            'religion'                => $this->askRequired('Religion'),
+            'ethnic_group'            => $this->askRequired('Ethnic group'),
+            'nrc_no'                  => $this->askRequired('NRC no.'),
+            'dob'                     => $this->askRequired('Date of birth (YYYY-MM-DD)'),
+            'start_date'              => $this->askRequired('Employment start date (YYYY-MM-DD)'),
+            'phone'                   => $this->askRequired('Phone'),
+            'address'                 => $this->askRequired('Current address'),
+            'uniform_size'            => $this->choice('Uniform size', ['S', 'M', 'L', 'XL', 'XXL']),
+            'education_qualification' => $this->askRequired('Education qualification'),
+            'work_experience'         => $this->askRequired('Work experience'),
+            'home_address'            => $this->ask('Home address (optional)', null),
+            'note'                    => $this->ask('Note (optional)', null),
         ];
 
         $this->info('── Staff Role ───────────────────────────────────');
@@ -137,10 +147,8 @@ class UserCreate extends Command
         $positions = StaffPosition::orderBy('name')->pluck('name', 'id')->toArray();
         if (empty($positions)) {
             $this->warn('No staff positions found.');
-            $newPositionName = $this->ask('Enter a new staff position name to create');
-            $position = StaffPosition::create(['name' => $newPositionName]);
+            $position   = StaffPosition::create(['name' => $this->askRequired('New staff position name')]);
             $positionId = $position->id;
-            $positionName = $position->name;
         } else {
             $positionName = $this->choice('Position', array_values($positions));
             $positionId   = array_search($positionName, $positions);
@@ -149,25 +157,39 @@ class UserCreate extends Command
         $sites = Site::orderBy('name')->pluck('name', 'id')->toArray();
         if (empty($sites)) {
             $this->warn('No sites found.');
-            $newSiteName = $this->ask('Enter a new site name to create');
-            $site = Site::create(['name' => $newSiteName]);
+            $site   = Site::create(['name' => $this->askRequired('New site name')]);
             $siteId = $site->id;
-            $siteName = $site->name;
         } else {
             $siteName = $this->choice('Site', array_values($sites));
             $siteId   = array_search($siteName, $sites);
         }
 
-        $salary    = $this->ask('Salary (integer)');
-        $startDate = $this->ask('Role start date (YYYY-MM-DD)');
-
         $roleData = [
-            'staff_position_id' => (int) $positionId,
-            'site_id'           => (int) $siteId,
-            'salary'            => (int) $salary,
-            'start_date'        => $startDate,
+            'staff_position_id'    => (int) $positionId,
+            'site_id'              => (int) $siteId,
+            'salary'               => (int) $this->askRequired('Salary'),
+            'overtime_hourly_rate' => (int) $this->askRequired('Overtime hourly rate'),
+            'start_date'           => $this->askRequired('Role start date (YYYY-MM-DD)'),
         ];
 
         return [$profileData, $roleData];
+    }
+
+    private function askRequired(string $label): string
+    {
+        do {
+            $value = $this->ask("{$label} *");
+            if (trim((string) $value) === '') {
+                $this->error("{$label} is required and cannot be empty.");
+            }
+        } while (trim((string) $value) === '');
+
+        return $value;
+    }
+
+    private function mapChoice(string $label, array $map): int
+    {
+        $choice = $this->choice($label, array_keys($map));
+        return $map[$choice];
     }
 }
