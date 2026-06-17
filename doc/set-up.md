@@ -180,6 +180,10 @@ resources/js/
 
 To add a new page: create a `.vue` file and register the route in `resources/js/router/index.js`.
 
+For a production build:
+
+docker exec light_house_node npm run build
+
 ---
 
 ## Xdebug

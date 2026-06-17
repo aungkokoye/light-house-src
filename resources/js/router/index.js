@@ -85,6 +85,12 @@ import AdminEditProductPage from '../pages/order/products/AdminEditProductPage.v
 import AdminViewProductPage from '../pages/order/products/AdminViewProductPage.vue';
 import AdminProductPricesPage from '../pages/order/products/AdminProductPricesPage.vue';
 
+// Order — Price List
+import AdminPriceListPage from '../pages/order/price-list/AdminPriceListPage.vue';
+import AdminCreatePriceListPage from '../pages/order/price-list/AdminCreatePriceListPage.vue';
+import AdminEditPriceListPage from '../pages/order/price-list/AdminEditPriceListPage.vue';
+import AdminViewPriceListPage from '../pages/order/price-list/AdminViewPriceListPage.vue';
+
 // Admin — Permissions
 import AdminPermissionsPage from '../pages/admin/permissions/AdminPermissionsPage.vue';
 import AdminCreatePermissionPage from '../pages/admin/permissions/AdminCreatePermissionPage.vue';
@@ -153,6 +159,10 @@ const routes = [
     { path: '/order/products/:id',              component: AdminViewProductPage },
     { path: '/order/products/:id/edit',         component: AdminEditProductPage },
     { path: '/order/products/:id/prices',       component: AdminProductPricesPage },
+    { path: '/order/price-list',               component: AdminPriceListPage },
+    { path: '/order/price-list/create',        component: AdminCreatePriceListPage },
+    { path: '/order/price-list/:id',           component: AdminViewPriceListPage },
+    { path: '/order/price-list/:id/edit',      component: AdminEditPriceListPage },
     { path: '/admin/audit-logs',       component: AdminAuditLogsPage },
     { path: '/admin/audit-logs/:id',  component: AdminViewAuditLogPage },
     { path: '/admin/chat-knowledge',             component: AdminChatKnowledgePage },

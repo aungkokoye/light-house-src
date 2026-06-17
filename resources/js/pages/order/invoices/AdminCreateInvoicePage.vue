@@ -20,7 +20,7 @@
 
                 <form @submit.prevent="submit" class="space-y-6">
                     <!-- Header fields -->
-                    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
+                    <div class="bg-white rounded-2xl border border-gray-300 shadow-sm p-6 space-y-5">
                         <div>
                             <div class="flex items-center justify-between mb-1.5">
                                 <label class="block text-xs font-medium text-gray-600">Customer <span class="text-red-400">*</span></label>
@@ -60,16 +60,9 @@
                     </div>
 
                     <!-- Invoice jobs -->
-                    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                        <div class="px-6 py-4 border-b border-gray-50 flex items-center justify-between">
+                    <div class="bg-white rounded-2xl border border-gray-300 shadow-sm overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-50">
                             <h2 class="font-semibold text-gray-900">Jobs</h2>
-                            <button type="button" @click="addJob"
-                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                                </svg>
-                                Add Job
-                            </button>
                         </div>
 
                         <p v-if="errors.jobs" class="px-6 pt-3 text-xs text-red-500">{{ errors.jobs[0] }}</p>
@@ -111,6 +104,13 @@
                                     </div>
                                 </div>
 
+                                <!-- Description -->
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1.5">Description</label>
+                                    <textarea v-model="job.note" rows="3" placeholder="Optional job description…"
+                                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white resize-none"></textarea>
+                                </div>
+
                                 <!-- Row 2: Qty, Unit Price, Total, Delivery Date -->
                                 <div class="grid grid-cols-4 gap-4">
                                     <div>
@@ -141,28 +141,23 @@
                                         </div>
                                     </div>
                                 </div>
-
-                                <!-- Note -->
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-600 mb-1.5">Note</label>
-                                    <textarea v-model="job.note" rows="3" placeholder="Optional job note…"
-                                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white resize-none"></textarea>
-                                </div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Payment -->
-                    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                        <div class="px-6 py-4 border-b border-gray-50 flex items-center justify-between">
-                            <h2 class="font-semibold text-gray-900">Payment</h2>
-                            <button v-if="!includePayment" type="button" @click="includePayment = true"
+                        <div class="px-4 pb-4">
+                            <button type="button" @click="addJob"
                                 class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                                 </svg>
-                                Add Payment
+                                Add Job
                             </button>
+                        </div>
+                    </div>
+
+                    <!-- Payment -->
+                    <div class="bg-white rounded-2xl border border-gray-300 shadow-sm overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-50">
+                            <h2 class="font-semibold text-gray-900">Payment</h2>
                         </div>
 
                         <div v-if="includePayment" class="p-4">
@@ -223,11 +218,19 @@
                             </div>
                         </div>
 
-                        <p v-if="!includePayment" class="px-6 py-4 text-sm text-gray-400">No payment added.</p>
+                        <div class="px-4 pb-4">
+                            <button v-if="!includePayment" type="button" @click="includePayment = true"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                </svg>
+                                Add Payment
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Summary + Submit -->
-                    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                    <div class="bg-white rounded-2xl border border-gray-300 shadow-sm p-6">
                         <div class="flex items-end justify-between">
                             <div class="space-y-1 text-sm text-gray-600">
                                 <div class="flex gap-4">

@@ -123,15 +123,22 @@
                             </thead>
                             <tbody>
                                 @foreach($invoice->jobs as $i => $job)
+                                @php $isLast = $loop->last; $divider = $isLast ? '1px solid #f3f4f6' : '1px solid #d1d5db'; @endphp
                                 <tr>
-                                    <td style="padding:8px 10px;color:#9ca3af;border-bottom:1px solid #f3f4f6;">{{ $i + 1 }}</td>
-                                    <td style="padding:8px 10px;color:#374151;border-bottom:1px solid #f3f4f6;">{{ $job->product?->name ?? '—' }}</td>
-                                    <td style="padding:8px 10px;color:#374151;border-bottom:1px solid #f3f4f6;">{{ $job->service?->name ?? '—' }}</td>
-                                    <td style="padding:8px 10px;color:#111827;text-align:right;border-bottom:1px solid #f3f4f6;">{{ $job->quantity }}</td>
-                                    <td style="padding:8px 10px;color:#111827;text-align:right;border-bottom:1px solid #f3f4f6;">{{ number_format($job->unit_price) }}</td>
-                                    <td style="padding:8px 10px;color:#6b7280;border-bottom:1px solid #f3f4f6;">{{ $job->delivery_date?->format('d M Y') }}</td>
-                                    <td style="padding:8px 10px;color:#111827;font-weight:500;text-align:right;border-bottom:1px solid #f3f4f6;">{{ number_format($job->total) }}</td>
+                                    <td style="padding:8px 10px;color:#9ca3af;border-bottom:{{ $job->note ? 'none' : $divider }};">{{ $i + 1 }}</td>
+                                    <td style="padding:8px 10px;color:#374151;border-bottom:{{ $job->note ? 'none' : $divider }};">{{ $job->product?->name ?? '—' }}</td>
+                                    <td style="padding:8px 10px;color:#374151;border-bottom:{{ $job->note ? 'none' : $divider }};">{{ $job->service?->name ?? '—' }}</td>
+                                    <td style="padding:8px 10px;color:#111827;text-align:right;border-bottom:{{ $job->note ? 'none' : $divider }};">{{ $job->quantity }}</td>
+                                    <td style="padding:8px 10px;color:#111827;text-align:right;border-bottom:{{ $job->note ? 'none' : $divider }};">{{ number_format($job->unit_price) }}</td>
+                                    <td style="padding:8px 10px;color:#6b7280;border-bottom:{{ $job->note ? 'none' : $divider }};">{{ $job->delivery_date?->format('d M Y') }}</td>
+                                    <td style="padding:8px 10px;color:#111827;font-weight:500;text-align:right;border-bottom:{{ $job->note ? 'none' : $divider }};">{{ number_format($job->total) }}</td>
                                 </tr>
+                                @if($job->note)
+                                <tr>
+                                    <td style="padding:0;border-bottom:{{ $divider }};"></td>
+                                    <td colspan="6" style="padding:2px 10px 8px;font-size:11px;color:#4338ca;font-style:italic;border-bottom:{{ $divider }};">{{ $job->note }}</td>
+                                </tr>
+                                @endif
                                 @endforeach
                             </tbody>
                         </table>
@@ -172,11 +179,11 @@
                             <tfoot>
                                 <tr style="background-color:#f9fafb;">
                                     <td colspan="4" style="padding:8px 10px;text-align:right;font-size:12px;color:#6b7280;border-top:1px solid #e5e7eb;">Total Paid</td>
-                                    <td style="padding:8px 10px;font-weight:600;color:#111827;border-top:1px solid #e5e7eb;">{{ number_format($invoice->payments->sum('amount')) }}</td>
+                                    <td style="padding:8px 10px;font-weight:600;color:#111827;text-align:right;border-top:1px solid #e5e7eb;">{{ number_format($invoice->payments->sum('amount')) }}</td>
                                 </tr>
                                 <tr style="background-color:#eef2ff;">
                                     <td colspan="4" style="padding:8px 10px;text-align:right;font-size:13px;font-weight:700;color:#374151;border-top:1px solid #e5e7eb;">Balance</td>
-                                    <td style="padding:8px 10px;font-size:13px;font-weight:700;color:#4f46e5;border-top:1px solid #e5e7eb;">{{ number_format($invoice->total - $invoice->payments->sum('amount')) }}</td>
+                                    <td style="padding:8px 10px;font-size:13px;font-weight:700;color:#4f46e5;text-align:right;border-top:1px solid #e5e7eb;">{{ number_format($invoice->total - $invoice->payments->sum('amount')) }}</td>
                                 </tr>
                             </tfoot>
                         </table>

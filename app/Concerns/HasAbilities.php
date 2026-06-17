@@ -26,6 +26,7 @@ trait HasAbilities
         $policy = Gate::getPolicyFor($model);
 
         return [
+            'create' => $policy ? $policy->create($user) : false,
             'edit'   => $policy ? $policy->update($user, $model) : false,
             'delete' => $policy ? $policy->delete($user, $model) : false,
         ];

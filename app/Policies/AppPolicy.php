@@ -7,10 +7,10 @@ use App\Models\User;
 class AppPolicy
 {
 
-    const array LIST_ALLOW_PERMISSIONS = ['list', 'view', 'create', 'update', 'delete', 'super'];
-    const array VIEW_ALLOW_PERMISSIONS = ['view', 'create', 'update', 'delete', 'super'];
-    const array CREATE_ALLOW_PERMISSIONS = ['create', 'update', 'delete', 'super'];
-    const array UPDATE_ALLOW_PERMISSIONS = ['update', 'delete', 'super'];
+    const array LIST_ALLOW_PERMISSIONS = ['list', 'view', 'create', 'edit', 'update', 'delete', 'super'];
+    const array VIEW_ALLOW_PERMISSIONS = ['view', 'create', 'edit', 'update', 'delete', 'super'];
+    const array CREATE_ALLOW_PERMISSIONS = ['create', 'edit', 'update', 'delete', 'super'];
+    const array UPDATE_ALLOW_PERMISSIONS = ['edit', 'update', 'delete', 'super'];
     const array DELETE_ALLOW_PERMISSIONS = ['delete', 'super'];
 
     protected function userPolicyCheck(User $user, array $policies): bool

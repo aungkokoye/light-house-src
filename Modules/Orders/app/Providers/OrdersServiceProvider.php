@@ -10,11 +10,13 @@ use Modules\Orders\Models\Payment;
 use Modules\Orders\Models\PaymentPrice;
 use Modules\Orders\Models\Product;
 use Modules\Orders\Models\PaymentType;
+use Modules\Orders\Models\PriceList;
 use Modules\Orders\Policies\CustomerPolicy;
 use Modules\Orders\Policies\PaymentTypePolicy;
 use Modules\Orders\Policies\InvoicePolicy;
 use Modules\Orders\Policies\JobServicePolicy;
 use Modules\Orders\Policies\PaymentPolicy;
+use Modules\Orders\Policies\PriceListPolicy;
 use Modules\Orders\Policies\ProductPolicy;
 use Modules\Orders\Policies\ProductPricePolicy;
 use Nwidart\Modules\Support\ModuleServiceProvider;
@@ -60,6 +62,7 @@ class OrdersServiceProvider extends ModuleServiceProvider
         Gate::policy(Payment::class,      PaymentPolicy::class);
         Gate::policy(Product::class,      ProductPolicy::class);
         Gate::policy(PaymentPrice::class, ProductPricePolicy::class);
+        Gate::policy(PriceList::class,    PriceListPolicy::class);
     }
 
     /**
