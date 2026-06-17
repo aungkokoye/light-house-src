@@ -15,6 +15,7 @@ class OrdersDatabaseSeeder extends Seeder
             PaymentTypeSeeder::class,
             JobServiceSeeder::class,
             ProductSeeder::class,
+            PriceListSeeder::class,
             CustomerSeeder::class,
             InvoiceSeeder::class,
         ]);

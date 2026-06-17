@@ -50,6 +50,13 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0 1 10.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0 .229 2.523a1.125 1.125 0 0 1-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0 0 21 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 0 0-1.913-.247M6.34 18H5.25A2.25 2.25 0 0 1 3 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 0 1 1.913-.247m10.5 0a48.536 48.536 0 0 0-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5Zm-3 0h.008v.008H15V10.5Z" /></svg>
                         Print
                     </a>
+                    <RouterLink v-if="can.create" to="/order/invoices/create"
+                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                        New Invoice
+                    </RouterLink>
                     <RouterLink v-if="can.edit" :to="`/order/invoices/${invoice.id}/edit`"
                         class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931z" /></svg>
@@ -379,19 +386,25 @@
             <table class="print-table">
                 <thead>
                     <tr>
-                        <th>#</th><th>Product</th><th>Service</th><th>Qty</th><th>Unit Price</th><th>Delivery Date</th><th>Total</th>
+                        <th>#</th><th>Product</th><th>Service</th><th class="print-num">Qty</th><th class="print-num">Unit Price</th><th>Delivery Date</th><th class="print-num">Total</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="(job, i) in invoice?.jobs" :key="job.id">
-                        <td>{{ i + 1 }}</td>
-                        <td>{{ job.product?.name ?? '—' }}</td>
-                        <td>{{ job.service?.name ?? '—' }}</td>
-                        <td>{{ job.quantity }}</td>
-                        <td>{{ job.unit_price.toLocaleString() }}</td>
-                        <td>{{ formatDate(job.delivery_date) }}</td>
-                        <td>{{ job.total.toLocaleString() }}</td>
-                    </tr>
+                    <template v-for="(job, i) in invoice?.jobs" :key="job.id">
+                        <tr :class="{ 'print-job-divider': !job.note && i < invoice.jobs.length - 1 }">
+                            <td>{{ i + 1 }}</td>
+                            <td>{{ job.product?.name ?? '—' }}</td>
+                            <td>{{ job.service?.name ?? '—' }}</td>
+                            <td class="print-num">{{ job.quantity }}</td>
+                            <td class="print-num">{{ job.unit_price.toLocaleString() }}</td>
+                            <td>{{ formatDate(job.delivery_date) }}</td>
+                            <td class="print-num">{{ job.total.toLocaleString() }}</td>
+                        </tr>
+                        <tr v-if="job.note" class="print-job-desc-row" :class="{ 'print-job-divider': i < invoice.jobs.length - 1 }">
+                            <td></td>
+                            <td colspan="6" class="print-job-desc">{{ job.note }}</td>
+                        </tr>
+                    </template>
                 </tbody>
             </table>
 
@@ -463,13 +476,13 @@
             <div class="print-section-title" style="margin-top:24px;">Payment Details</div>
             <table class="print-table">
                 <thead>
-                    <tr><th>Payment Type</th><th>Stage</th><th>Amount</th><th>Date</th></tr>
+                    <tr><th>Payment Type</th><th>Stage</th><th class="print-num">Amount</th><th>Date</th></tr>
                 </thead>
                 <tbody>
                     <tr>
                         <td>{{ receiptPayment?.payment_type?.name ?? '—' }}</td>
                         <td>{{ stageMap[receiptPayment?.stage] }}</td>
-                        <td>{{ receiptPayment?.amount?.toLocaleString() }}</td>
+                        <td class="print-num">{{ receiptPayment?.amount?.toLocaleString() }}</td>
                         <td>{{ formatDate(receiptPayment?.payment_date) }}</td>
                     </tr>
                 </tbody>
@@ -680,6 +693,10 @@ onMounted(async () => {
     .print-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 11px; }
     .print-table th { background: #f9fafb; padding: 7px 10px; text-align: left; font-weight: 600; color: #6b7280; border-bottom: 1px solid #e5e7eb; font-size: 10px; text-transform: uppercase; letter-spacing: .05em; }
     .print-table td { padding: 7px 10px; border-bottom: 1px solid #f3f4f6; color: #374151; }
+    .print-num { text-align: right !important; }
+    .print-job-divider td { border-bottom: 1px solid #d1d5db !important; }
+    .print-job-desc-row td { border-bottom: 1px solid #f3f4f6; padding-top: 0; }
+    .print-job-desc { padding: 2px 10px 8px; font-size: 10px; color: #4338ca !important; font-style: italic; }
     .print-table tfoot td { border-top: 1px solid #e5e7eb; font-weight: 600; background: #f9fafb; }
     .print-balance-row td { font-weight: 700; font-size: 13px; color: #4f46e5; }
     .print-note { margin-top: 12px; font-size: 11px; color: #6b7280; background: #f9fafb; padding: 8px 12px; border-radius: 6px; }

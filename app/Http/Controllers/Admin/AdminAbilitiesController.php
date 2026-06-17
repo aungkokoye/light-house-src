@@ -17,6 +17,7 @@ use Modules\Orders\Policies\CustomerPolicy;
 use Modules\Orders\Policies\PaymentTypePolicy;
 use Modules\Orders\Policies\InvoicePolicy;
 use Modules\Orders\Policies\JobServicePolicy;
+use Modules\Orders\Policies\PriceListPolicy;
 use Modules\Orders\Policies\ProductPolicy;
 
 class AdminAbilitiesController extends Controller
@@ -41,6 +42,7 @@ class AdminAbilitiesController extends Controller
                 'invoices'                  => (new InvoicePolicy)->viewAny($user),
                 'payment_types'             => (new PaymentTypePolicy)->viewAny($user),
                 'products'                  => (new ProductPolicy)->viewAny($user),
+                'price_list'                => (new PriceListPolicy)->viewAny($user),
                 'services'                  => (new JobServicePolicy)->viewAny($user),
             ],
         ]);

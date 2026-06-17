@@ -6,6 +6,7 @@ use Modules\Orders\Http\Controllers\InvoiceController;
 use Modules\Orders\Http\Controllers\PaymentTypeController;
 use Modules\Orders\Http\Controllers\JobServiceController;
 use Modules\Orders\Http\Controllers\PaymentController;
+use Modules\Orders\Http\Controllers\PriceListController;
 use Modules\Orders\Http\Controllers\ProductController;
 use Modules\Orders\Models\Customer;
 use Modules\Orders\Models\Invoice;
@@ -13,6 +14,7 @@ use Modules\Orders\Models\PaymentType;
 use Modules\Orders\Models\JobService;
 use Modules\Orders\Models\Payment;
 use Modules\Orders\Models\PaymentPrice;
+use Modules\Orders\Models\PriceList;
 use Modules\Orders\Models\Product;
 
 Route::middleware(['auth:sanctum', 'role:admin|user'])->prefix('order')->group(function () {
@@ -35,6 +37,12 @@ Route::middleware(['auth:sanctum', 'role:admin|user'])->prefix('order')->group(f
     Route::delete('/products/{product}',                [ProductController::class, 'destroy'])     ->can('delete',  'product');
     Route::get('/products/{product}/prices',            [ProductController::class, 'prices'])       ->can('viewAny', PaymentPrice::class);
     Route::delete('/products/{product}/prices/{price}', [ProductController::class, 'destroyPrice']) ->can('delete',  'price');
+
+    Route::get('/price-list',               [PriceListController::class, 'index'])  ->can('viewAny', PriceList::class);
+    Route::post('/price-list',              [PriceListController::class, 'store'])  ->can('create',  PriceList::class);
+    Route::get('/price-list/{price_list}',  [PriceListController::class, 'show'])   ->can('view',    'price_list');
+    Route::put('/price-list/{price_list}',  [PriceListController::class, 'update']) ->can('update',  'price_list');
+    Route::delete('/price-list/{price_list}',[PriceListController::class, 'destroy'])->can('delete', 'price_list');
 
     Route::get('/customers/search',          [CustomerController::class, 'search'])  ->can('viewAny', Customer::class);
     Route::get('/customers',                 [CustomerController::class, 'index'])   ->can('viewAny', Customer::class);
