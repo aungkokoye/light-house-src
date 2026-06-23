@@ -37,26 +37,7 @@ class SocialAuthController extends Controller
                 return redirect('/login?error=account_deactivated');
             }
         } else {
-            $name = $googleUser->getName();
-
-            if (User::where('name', $name)->exists()) {
-                $name = $name . '_' . substr($googleUser->getId(), -4);
-            }
-
-            try {
-                $user = User::create([
-                    'name'              => $name,
-                    'email'             => $googleUser->getEmail(),
-                    'google_id'         => $googleUser->getId(),
-                    'email_verified_at' => now(),
-                    'password'          => null,
-                    'activated'         => false,
-                ]);
-                $user->assignRole('customer');
-                $isNew = true;
-            } catch (\Throwable $e) {
-                return redirect('/login?error=google_failed');
-            }
+            return redirect('/login?error=google_not_registered');
         }
 
         $token = $user->createToken('api-token')->plainTextToken;
@@ -72,9 +53,6 @@ class SocialAuthController extends Controller
         $url = '/auth/callback?token=' . urlencode($token);
         if ($needsProfile) {
             $url .= '&needs_profile=1';
-        }
-        if ($isNew) {
-            $url .= '&pending=1';
         }
 
         return redirect($url);
