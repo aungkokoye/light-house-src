@@ -39,6 +39,14 @@
                     Google sign-in failed. Please try again or use email and password.
                 </div>
 
+                <!-- Google not registered notice -->
+                <div v-if="googleNotRegistered" class="flex items-center gap-2 text-sm text-red-700 bg-red-50 rounded-xl px-4 py-2.5 mb-6">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0zm-9 3.75h.008v.008H12v-.008z" />
+                    </svg>
+                    No account found for this Google email. Please contact an administrator.
+                </div>
+
                 <!-- Expired token notice -->
                 <div v-if="verificationExpired" class="flex items-center gap-2 text-sm text-orange-700 bg-orange-50 rounded-xl px-4 py-2.5 mb-6">
                     <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -182,6 +190,7 @@ const verificationExpired = route.query.verification === 'expired'
 const verificationInvalid = route.query.verification === 'invalid'
 const verificationEmail = route.query.email ?? ''
 const googleFailed = route.query.error === 'google_failed'
+const googleNotRegistered = route.query.error === 'google_not_registered'
 const accountDeactivated = route.query.error === 'account_deactivated'
 const accountPending = route.query.pending === '1'
 
