@@ -98,15 +98,20 @@ class UpdateInvoiceRequest extends FormRequest
 
             // Index submitted payments by id for updates
             $submittedById = [];
-            foreach ($pmtInputs as $p) {
+            $idxById       = [];
+            foreach ($pmtInputs as $idx => $p) {
                 if (!empty($p['id'])) {
                     $submittedById[(int) $p['id']] = $p;
+                    $idxById[(int) $p['id']]       = $idx;
                 }
             }
 
-            $netTotal = 0;
-            $hasFinal = false;
-            $hasRefund = false;
+            $netTotal    = 0;
+            $paidTotal   = 0;
+            $refundTotal = 0;
+            $hasFinal    = false;
+            $hasRefund   = false;
+            $lastRefundField = 'payments';
 
             // Existing payments with updates applied
             foreach ($invoice->payments as $ep) {
@@ -118,51 +123,59 @@ class UpdateInvoiceRequest extends FormRequest
                     $amt   = $ep->amount;
                     $stage = $ep->stage;
                 }
+                $field = isset($idxById[$ep->id]) ? "payments.{$idxById[$ep->id]}.amount" : 'payments';
 
                 // Validate refund requires admin
                 if ($stage === Payment::STAGE_REFUND) {
                     $hasRefund = true;
+                    $lastRefundField = $field;
                     if (! $this->user()->hasRole('admin')) {
-                        $v->errors()->add('payments', 'Only admins can set refund payments.');
+                        $v->errors()->add($field, 'Only admins can set refund payments.');
                         return;
                     }
                     // amount must be negative for refund
                     if ($amt >= 0) {
-                        $v->errors()->add('payments', 'Refund payment amount must be negative.');
+                        $v->errors()->add($field, 'Refund payment amount must be negative.');
                         return;
                     }
+                    $refundTotal += abs($amt);
                 } else {
                     if ($stage === Payment::STAGE_FINAL) $hasFinal = true;
+                    $paidTotal += $amt;
                 }
 
                 $netTotal += $amt;
             }
 
             // New payments (no id)
-            foreach ($pmtInputs as $p) {
+            foreach ($pmtInputs as $idx => $p) {
                 if (!empty($p['id'])) continue;
                 $amt   = (int) ($p['amount'] ?? 0);
                 $stage = (int) ($p['stage']  ?? 0);
+                $field = "payments.{$idx}.amount";
 
                 if ($stage === Payment::STAGE_REFUND) {
                     $hasRefund = true;
+                    $lastRefundField = $field;
                     if (! $this->user()->hasRole('admin')) {
-                        $v->errors()->add('payments', 'Only admins can add refund payments.');
+                        $v->errors()->add($field, 'Only admins can add refund payments.');
                         return;
                     }
                     if ($amt >= 0) {
-                        $v->errors()->add('payments', 'Refund payment amount must be negative.');
+                        $v->errors()->add($field, 'Refund payment amount must be negative.');
                         return;
                     }
+                    $refundTotal += abs($amt);
                 } else {
                     if ($stage === Payment::STAGE_FINAL) $hasFinal = true;
+                    $paidTotal += $amt;
                 }
 
                 $netTotal += $amt;
             }
 
-            if ($hasRefund && $netTotal < 0) {
-                $v->errors()->add('payments', 'Total refunds cannot exceed total payments made.');
+            if ($hasRefund && $refundTotal > $paidTotal) {
+                $v->errors()->add($lastRefundField, "Total refunds ({$refundTotal}) cannot exceed the amount already paid ({$paidTotal}).");
             } elseif ($netTotal > $invoiceTotal) {
                 $v->errors()->add('payments', "Net paid ({$netTotal}) would exceed the invoice total ({$invoiceTotal}).");
             } elseif ($hasFinal && $netTotal !== $invoiceTotal) {
