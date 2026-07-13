@@ -12,6 +12,7 @@
 
             <nav class="hidden md:flex items-center gap-8 text-sm text-gray-500">
                 <a href="#services" class="hover:text-gray-900 transition-colors">Services</a>
+                <a href="#about" class="hover:text-gray-900 transition-colors">About Us</a>
                 <a href="#portfolio" class="hover:text-gray-900 transition-colors">Portfolio</a>
                 <a href="#why-us" class="hover:text-gray-900 transition-colors">Why Us</a>
                 <a href="#contact" class="hover:text-gray-900 transition-colors">Contact</a>
@@ -113,59 +114,63 @@
                 <p class="text-gray-500 max-w-xl mx-auto">From business cards to large-format signage and silk screen printing — everything under one roof.</p>
             </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 md:[grid-auto-rows:200px]">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 md:[grid-auto-rows:minmax(200px,auto)] md:grid-flow-dense">
 
-                <!-- Large Format — hero 2×2 -->
-                <div data-bento="0" class="bento-item col-span-2 md:row-span-2 relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-blue-600 to-indigo-800 p-6 md:p-8 flex flex-col justify-between group cursor-default min-h-[220px] md:min-h-0">
+                <!-- Large Format — full-width row -->
+                <div data-bento="0" class="bento-item col-span-2 md:col-span-4 relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-blue-600 to-indigo-800 p-3 md:p-4 flex flex-col md:flex-row gap-3 md:gap-4 group cursor-default min-h-[220px] md:min-h-0">
                     <div class="bento-shimmer"></div>
-                    <div class="absolute -right-8 -top-8 w-44 h-44 rounded-full bg-white/5 pointer-events-none"></div>
-                    <div class="absolute right-4 -bottom-10 w-28 h-28 rounded-full bg-white/5 pointer-events-none"></div>
-                    <div class="relative">
+                    <img :src="'/images/large_format_printing.jpg'" alt="Large Format Printing"
+                        class="w-full h-48 md:h-auto md:w-2/5 object-contain bg-black/20 rounded-xl md:rounded-2xl" />
+                    <div class="relative flex-1 p-6 md:p-8">
                         <div class="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-white/15 flex items-center justify-center mb-3 md:mb-4 group-hover:scale-110 transition-transform duration-300">
                             <component :is="IconLarge" class="w-6 h-6 md:w-7 md:h-7 text-white" />
                         </div>
-                        <h3 class="text-lg md:text-xl font-bold text-white mb-1 md:mb-2">Large Format Printing</h3>
-                        <p class="text-blue-100 text-xs md:text-sm leading-relaxed max-w-xs">Banners, light boxes, backlit prints, canvas, PP board, and large display materials.</p>
-                    </div>
-                    <div class="relative flex items-end justify-between mt-4 md:mt-0">
-                        <div>
-                            <div class="text-3xl md:text-4xl font-black text-white tabular-nums">{{ heroCount }}<span class="text-xl md:text-2xl">+</span></div>
-                            <div class="text-blue-200 text-xs mt-0.5">Large format jobs delivered</div>
-                        </div>
-                        <div class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
-                            <svg class="w-4 h-4 text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
-                            </svg>
-                        </div>
+                        <h3 class="text-lg md:text-xl font-bold text-white mb-2">Large Format Printing</h3>
+                        <p class="text-blue-100 text-xs md:text-sm leading-relaxed mb-3">Large Format Printing uses specialized, heavy-duty machinery to print large-scale items like banners, billboards, and trade show displays on materials like Vinyl, Canvas, Photo Paper, Backlit and different type of stickers for your business and advertising needs both indoor and outdoor.</p>
+                        <p class="text-blue-100 text-xs md:text-sm leading-relaxed">Also available a range of advertising products and decorating/installation which are suitable for advertising purpose with reasonable price such as stand banners, booths, backdrops and stickers.</p>
                     </div>
                 </div>
 
-                <!-- Color Print — 1×1 -->
-                <div data-bento="1" class="bento-item relative overflow-hidden rounded-2xl bg-purple-50 border border-purple-100 p-5 flex flex-col group cursor-default hover:shadow-lg hover:shadow-purple-100 transition-all duration-300 min-h-[160px] md:min-h-0">
-                    <div class="w-10 h-10 rounded-xl bg-purple-600 flex items-center justify-center mb-3 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 shrink-0">
-                        <component :is="IconColor" class="w-5 h-5 text-white" />
+                <!-- Color Print — full-width row -->
+                <div data-bento="1" class="bento-item col-span-2 md:col-span-4 relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-purple-600 to-fuchsia-800 p-3 md:p-4 flex flex-col md:flex-row gap-3 md:gap-4 group cursor-default min-h-[220px] md:min-h-0">
+                    <div class="relative flex-1 p-6 md:p-8 order-2 md:order-1">
+                        <div class="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-white/15 flex items-center justify-center mb-3 md:mb-4 group-hover:scale-110 transition-transform duration-300">
+                            <component :is="IconColor" class="w-6 h-6 md:w-7 md:h-7 text-white" />
+                        </div>
+                        <h3 class="text-lg md:text-xl font-bold text-white mb-2">Color Print</h3>
+                        <p class="text-purple-100 text-xs md:text-sm leading-relaxed mb-3">Our short run digital color prints and finishing service (such as binding, cutting, folding, laminating and so on) offer vibrant color printing on a top quality premium products delivered to you and your business.</p>
+                        <p class="text-purple-100 text-xs md:text-sm leading-relaxed mb-3">We provide high quality short run printing on all type of papers and cards, such as short run business cards, books, business forms, envelopes, stationery, labels, invitation cards, photos, reports, menu, etc.. and also for any purpose of business, office, school, restaurant, wedding, event programs, as marketing tools & more.</p>
+                        <p class="text-purple-100 text-xs md:text-sm leading-relaxed">Our pricing may be the cheapest, but our superior quality color printing and Quick Response Manufacturing (QRM) is simply the best.</p>
                     </div>
-                    <h3 class="font-semibold text-gray-900 text-sm mb-1">Color Print</h3>
-                    <p class="text-xs text-gray-500 leading-relaxed">Vivid full-colour digital prints for brochures, flyers, and posters.</p>
+                    <img :src="'/images/color_print.jpg'" alt="Color Print"
+                        class="w-full h-48 md:h-auto md:w-2/5 object-contain bg-black/20 rounded-xl md:rounded-2xl order-1 md:order-2" />
                 </div>
 
-                <!-- Branding — 1×2 tall -->
-                <div data-bento="2" class="bento-item md:row-span-2 relative overflow-hidden rounded-2xl bg-gradient-to-br from-red-500 to-rose-700 p-5 md:p-6 flex flex-col justify-between group cursor-default min-h-[160px] md:min-h-0">
-                    <div class="absolute -left-4 -bottom-6 w-28 h-28 rounded-full bg-white/5 pointer-events-none"></div>
-                    <div>
+                <!-- Branding — 1/2 width -->
+                <div data-bento="2" class="bento-item col-span-2 md:col-span-2 relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-red-500 to-rose-700 p-3 md:p-4 flex flex-col sm:flex-row gap-3 md:gap-4 group cursor-default min-h-[160px] md:min-h-0">
+                    <img :src="'/images/branding.jpg'" alt="Branding"
+                        class="w-full sm:w-1/2 h-40 sm:h-auto object-contain bg-black/20 rounded-xl md:rounded-2xl" />
+                    <div class="relative flex-1 px-2 pb-2 sm:p-0">
                         <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
                             <component :is="IconBrand" class="w-5 h-5 text-white" />
                         </div>
                         <h3 class="font-bold text-white mb-2">Branding</h3>
-                        <p class="text-red-100 text-xs leading-relaxed">Full branding packages — logos, stationery, and branded print collateral for your business.</p>
+                        <p class="text-red-100 text-xs leading-relaxed mb-3">Creating attractive graphic design is an essential part of your business and brand as it's for your marketing. Whether you need a properly crafted logo, (or) any kinds of graphic designs (or) social media marketing and advertising designs, our well experienced and professional designers will create eye-catching designs for your needs and it will help tell the story of your business and brand.</p>
+                        <p class="text-red-100 text-xs leading-relaxed">We offer a budget effective solution for individual, businesses and companies seeking the very efficient and attractive website, eCommerce solutions and customer service.</p>
                     </div>
-                    <div class="hidden md:block">
-                        <div class="flex gap-1.5 mt-4">
-                            <div class="w-3 h-3 rounded-full bg-white/50"></div>
-                            <div class="w-3 h-3 rounded-full bg-white/25"></div>
-                            <div class="w-3 h-3 rounded-full bg-white/10"></div>
+                </div>
+
+                <!-- Promotional Products — 1/2 width -->
+                <div data-bento="7" class="bento-item col-span-2 md:col-span-2 relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-orange-500 to-amber-600 p-3 md:p-4 flex flex-col sm:flex-row gap-3 md:gap-4 group cursor-default min-h-[160px] md:min-h-0">
+                    <img :src="'/images/promotional_products.jpg'" alt="Promotional Products"
+                        class="w-full sm:w-1/2 h-40 sm:h-auto object-contain bg-black/20 rounded-xl md:rounded-2xl" />
+                    <div class="relative flex-1 px-2 pb-2 sm:p-0">
+                        <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
+                            <component :is="IconPromo" class="w-5 h-5 text-white" />
                         </div>
-                        <p class="text-red-200 text-xs mt-2">Identity that stands out</p>
+                        <h3 class="font-bold text-white mb-2">Promotional Products</h3>
+                        <p class="text-orange-100 text-xs leading-relaxed mb-3">We offer not only a high quality printing service but also a range of promotional products which are suitable for our printings and your business with reasonable price.</p>
+                        <p class="text-orange-100 text-xs leading-relaxed">One of our printing services (UV flatbed, UV DTF, DTF, Sublimation and Screen Printing) are able to print your logo on almost limitless range of any products, materials and objects such as uniform, cloth, ball pen, mug, bottles, bags, plastic, glass, wood, metal and more..</p>
                     </div>
                 </div>
 
@@ -178,14 +183,18 @@
                     <p class="text-xs text-gray-500 leading-relaxed">Durable screen printing on fabric, apparel, and promotional items.</p>
                 </div>
 
-                <!-- Offset Printing — 1×1 -->
-                <div data-bento="4" class="bento-item relative overflow-hidden rounded-2xl bg-slate-800 p-5 flex flex-col group cursor-default hover:shadow-lg hover:shadow-slate-300 transition-all duration-300 min-h-[160px] md:min-h-0">
-                    <div class="absolute -right-3 -bottom-3 w-16 h-16 rounded-full bg-white/5 pointer-events-none"></div>
-                    <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center mb-3 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 shrink-0">
-                        <component :is="IconOffset" class="w-5 h-5 text-white" />
+                <!-- Offset Printing — 3/4 width -->
+                <div data-bento="4" class="bento-item col-span-2 md:col-span-3 relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-slate-800 to-slate-900 p-3 md:p-4 flex flex-col md:flex-row gap-3 md:gap-4 group cursor-default hover:shadow-lg hover:shadow-slate-300 transition-all duration-300 min-h-[160px] md:min-h-0">
+                    <img :src="'/images/offset.jpg'" alt="Offset Printing"
+                        class="w-full h-40 md:h-auto md:w-2/5 object-contain bg-black/20 rounded-xl md:rounded-2xl" />
+                    <div class="relative flex-1 p-3 md:p-4">
+                        <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center mb-3 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 shrink-0">
+                            <component :is="IconOffset" class="w-5 h-5 text-white" />
+                        </div>
+                        <h3 class="font-bold text-white mb-2">Offset Printing</h3>
+                        <p class="text-slate-300 text-xs leading-relaxed mb-3">Offset printing can be the only option for large items where digital has not caught up with the format size or where volumes dictate this is the more cost efficient way.</p>
+                        <p class="text-slate-300 text-xs leading-relaxed">We produce high-quality, low cost offset printing for any kind of paper format for your business and also press for marketing tools. Also we handle the printing, finishing, binding and assembly of entire project needs.</p>
                     </div>
-                    <h3 class="font-semibold text-white text-sm mb-1">Offset Printing</h3>
-                    <p class="text-xs text-slate-400 leading-relaxed">High-volume, consistent colour accuracy for books and catalogues.</p>
                 </div>
 
                 <!-- Business Cards — 2×1 wide -->
@@ -214,34 +223,92 @@
                     <p class="text-xs text-gray-500 leading-relaxed">Floor stickers, frosted stickers, product labels in any shape.</p>
                 </div>
 
-                <!-- Promotional Products — 2×1 wide -->
-                <div data-bento="7" class="bento-item col-span-2 relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-500 to-amber-600 p-5 md:p-6 flex items-center gap-4 md:gap-5 group cursor-default hover:shadow-lg hover:shadow-orange-200 transition-all duration-300 min-h-[160px] md:min-h-0">
-                    <div class="absolute -right-4 -bottom-4 w-24 h-24 rounded-full bg-white/10 pointer-events-none"></div>
-                    <div class="w-11 h-11 md:w-12 md:h-12 rounded-2xl bg-white/20 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-                        <component :is="IconPromo" class="w-5 h-5 md:w-6 md:h-6 text-white" />
+                <!-- Packaging — 1×1 -->
+                <div data-bento="8" class="bento-item relative overflow-hidden rounded-2xl bg-amber-50 border border-amber-200 p-5 flex flex-col group cursor-default hover:shadow-lg hover:shadow-amber-100 transition-all duration-300 min-h-[160px] md:min-h-0">
+                    <div class="w-10 h-10 rounded-xl bg-amber-600 flex items-center justify-center mb-3 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 shrink-0">
+                        <component :is="IconPackage" class="w-5 h-5 text-white" />
                     </div>
-                    <div class="relative">
-                        <h3 class="font-bold text-white mb-1 text-sm md:text-base">Promotional Products</h3>
-                        <p class="text-xs text-orange-100 leading-relaxed">Counter stands, display materials, and branded items for events and marketing.</p>
+                    <h3 class="font-semibold text-gray-900 text-sm mb-1">Packaging</h3>
+                    <p class="text-xs text-gray-500 leading-relaxed">Branded boxes, bags, and custom packaging for retail and gifting purposes.</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Vision & Mission -->
+    <section id="vision-mission" class="py-24 bg-blue-900">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="grid md:grid-cols-2 gap-8">
+
+                <!-- Vision -->
+                <div class="bg-white/10 backdrop-blur border border-white/20 rounded-2xl p-8">
+                    <span class="text-xs font-semibold tracking-widest text-red-400 uppercase">Vision</span>
+                    <h2 class="text-2xl font-bold text-white mt-2 mb-4">Our Vision</h2>
+                    <p class="text-blue-100 leading-relaxed">
+                        Expand our current position as a leading unique design and printing company into a full-service branding solution.
+                    </p>
+                </div>
+
+                <!-- Mission -->
+                <div class="bg-white/10 backdrop-blur border border-white/20 rounded-2xl p-8">
+                    <span class="text-xs font-semibold tracking-widest text-red-400 uppercase">Mission</span>
+                    <h2 class="text-2xl font-bold text-white mt-2 mb-4">Our Mission</h2>
+                    <ul class="space-y-3 text-blue-100 leading-relaxed">
+                        <li class="flex gap-3">
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-400 mt-2 shrink-0"></span>
+                            <span>Ensure the best relationship with our customers, both during and after their goals have been met.</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-400 mt-2 shrink-0"></span>
+                            <span>Bring you the attractive design and quality products using modern technologies and equipment.</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-400 mt-2 shrink-0"></span>
+                            <span>Hand over its experience and good aims to the new successors.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Us -->
+    <section id="about" class="py-24 bg-white overflow-hidden">
+        <div class="max-w-6xl mx-auto px-6">
+
+            <!-- Header -->
+            <div class="text-center mb-16">
+                <span class="text-xs font-semibold tracking-widest text-red-600 uppercase">Who We Are</span>
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mt-2">About Us</h2>
+            </div>
+
+            <!-- Image + Text -->
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+
+                <!-- Image -->
+                <div class="relative">
+                    <div class="absolute -inset-3 bg-gradient-to-br from-blue-100 to-red-50 rounded-3xl -z-10"></div>
+                    <img :src="'/images/aboutus.jpg'" alt="About LIGHTHOUSE Printing Solutions"
+                        class="w-full h-80 md:h-[460px] object-cover rounded-2xl shadow-xl" />
+                    <!-- Yangon tag -->
+                    <div class="absolute -top-4 -left-4 bg-red-600 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-md tracking-wide uppercase">
+                        Yangon, Myanmar
                     </div>
                 </div>
 
-                <!-- Packaging — 2×1 wide -->
-                <div data-bento="8" class="bento-item col-span-2 relative overflow-hidden rounded-2xl bg-amber-50 border border-amber-200 p-5 md:p-6 flex items-center gap-4 md:gap-5 group cursor-default hover:shadow-lg hover:shadow-amber-100 transition-all duration-300 min-h-[160px] md:min-h-0">
-                    <div class="w-11 h-11 md:w-12 md:h-12 rounded-2xl bg-amber-600 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-                        <component :is="IconPackage" class="w-5 h-5 md:w-6 md:h-6 text-white" />
-                    </div>
-                    <div class="relative min-w-0">
-                        <h3 class="font-bold text-gray-900 mb-1 text-sm md:text-base">Packaging</h3>
-                        <p class="text-xs text-gray-500 leading-relaxed">Branded boxes, bags, and custom packaging for retail and gifting purposes.</p>
-                    </div>
-                    <div class="ml-auto hidden md:flex gap-2 shrink-0">
-                        <div class="w-8 h-8 rounded-lg bg-amber-200 flex items-center justify-center"><div class="w-3 h-3 rounded-sm bg-amber-600"></div></div>
-                        <div class="w-8 h-8 rounded-lg bg-amber-200 flex items-center justify-center"><div class="w-4 h-2 rounded-sm bg-amber-500"></div></div>
-                        <div class="w-8 h-8 rounded-lg bg-amber-200 flex items-center justify-center"><div class="w-2 h-4 rounded-sm bg-amber-400"></div></div>
-                    </div>
+                <!-- Text -->
+                <div class="space-y-4 text-gray-600 leading-relaxed">
+                    <p>
+                        LIGHTHOUSE Printing Solutions are based in Yangon, Myanmar and specialized in modern printing and branding service.
+                    </p>
+                    <p>
+                        We offer the widest range of quality printing services with budget effective pricing for individuals, companies and businesses seeking the very efficient in professional design, printing solutions and customer service. We offer not only a high quality printing service but also selling a range of advertising products and decorating/installation which are suitable for advertising purpose with reasonable price such as stand banners, booths, backdrops and so on.
+                    </p>
+                    <p>
+                        Our team has a multi-business experience in designing and production that work on different materials. Our approach is different than most, we take the time and free consult to understand customer requirements before we make a single technical and material choice to fulfill their objectives.
+                    </p>
                 </div>
-
             </div>
         </div>
     </section>
@@ -394,6 +461,7 @@
                             <div>
                                 <p class="text-xs text-blue-400">{{ contact.label }}</p>
                                 <p class="font-medium text-white text-sm">{{ contact.value }}</p>
+                                <p v-if="contact.value2" class="font-medium text-white text-sm">{{ contact.value2 }}</p>
                             </div>
                         </a>
                     </div>
@@ -494,6 +562,12 @@
                         <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                     </svg>
                 </a>
+                <a :href="COMPANY_TIKTOK" target="_blank" rel="noopener"
+                    class="text-gray-400 hover:text-white transition-colors">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M16.6 5.82c-1.05-.98-1.68-2.36-1.68-3.82h-3.13v14.6c0 1.6-1.3 2.9-2.9 2.9s-2.9-1.3-2.9-2.9 1.3-2.9 2.9-2.9c.29 0 .57.04.83.13V10.7a6.1 6.1 0 00-.83-.06c-3.37 0-6.1 2.73-6.1 6.1s2.73 6.1 6.1 6.1 6.1-2.73 6.1-6.1V9.3a9.16 9.16 0 005.32 1.7V7.87a5.72 5.72 0 01-3.71-2.05z"/>
+                    </svg>
+                </a>
                 <p class="text-gray-400 text-xs">© {{ new Date().getFullYear() }} {{ COMPANY_NAME }}.</p>
             </div>
         </div>
@@ -514,16 +588,15 @@ const COMPANY_ADDRESS     = import.meta.env.VITE_COMPANY_ADDRESS     ?? ''
 const COMPANY_PHONE       = import.meta.env.VITE_COMPANY_PHONE       ?? ''
 const COMPANY_PHONE_HREF  = import.meta.env.VITE_COMPANY_PHONE_HREF  ?? ''
 const COMPANY_PHONE2      = import.meta.env.VITE_COMPANY_PHONE2      ?? ''
-const COMPANY_PHONE2_HREF = import.meta.env.VITE_COMPANY_PHONE2_HREF ?? ''
 const COMPANY_EMAIL       = import.meta.env.VITE_COMPANY_EMAIL       ?? ''
 const COMPANY_FACEBOOK    = import.meta.env.VITE_COMPANY_FACEBOOK    ?? ''
+const COMPANY_TIKTOK      = import.meta.env.VITE_COMPANY_TIKTOK      ?? ''
 const COMPANY_ADDRESS_MAP = import.meta.env.VITE_COMPANY_ADDRESS_MAP ?? `https://maps.google.com/?q=${encodeURIComponent(COMPANY_ADDRESS)}`
 
 const { logout } = useLogout()
 const { getToken, reset: resetCaptcha } = useRecaptcha('recaptcha-contact')
 const isLoggedIn = ref(!!localStorage.getItem('token'))
 const userName = ref('')
-const heroCount = ref(0)
 const messageSent = ref(false)
 const contactForm = ref({ name: '', contact: '', service: '', message: '' })
 const formErrors = ref({})
@@ -552,22 +625,13 @@ onMounted(async () => {
         ho.observe(headerEl)
     }
 
-    // Bento card entrance + counter
+    // Bento card entrance
     const bentoObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (!entry.isIntersecting) return
             const i = parseInt(entry.target.dataset.bento ?? '0')
             setTimeout(() => {
                 entry.target.classList.add('visible')
-                if (i === 0) {
-                    const target = 500, dur = 1800, t0 = performance.now()
-                    const tick = (t) => {
-                        const p = Math.min((t - t0) / dur, 1)
-                        heroCount.value = Math.round((1 - Math.pow(1 - p, 3)) * target)
-                        if (p < 1) requestAnimationFrame(tick)
-                    }
-                    requestAnimationFrame(tick)
-                }
             }, i * 80)
             bentoObserver.unobserve(entry.target)
         })
@@ -656,12 +720,15 @@ const IconCard    = icon('M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.
 const IconPackage = icon('M7.875 14.25l1.214 1.942a2.25 2.25 0 001.908 1.058h2.006c.776 0 1.497-.4 1.908-1.058l1.214-1.942M2.41 9h4.636a2.25 2.25 0 011.872 1.002l.164.246a2.25 2.25 0 001.872 1.002h2.092a2.25 2.25 0 001.872-1.002l.164-.246A2.25 2.25 0 0116.954 9h4.636M2.41 9A2.25 2.25 0 002.25 9.75v.259a2.25 2.25 0 00.8 1.737L12 19.5l8.95-7.754a2.25 2.25 0 00.8-1.737V9.75A2.25 2.25 0 0019.59 9M2.41 9H21.59')
 
 const IconPhone = icon('M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z')
-const IconPhone2 = icon('M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z')
 const IconMail   = icon('M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75')
 const IconMap    = icon('M15 10.5a3 3 0 11-6 0 3 3 0 016 0zM19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z')
 const IconFB = {
     render: () => h('svg', { fill: 'currentColor', viewBox: '0 0 24 24', class: 'w-5 h-5' },
         [h('path', { d: 'M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z' })])
+}
+const IconTikTok = {
+    render: () => h('svg', { fill: 'currentColor', viewBox: '0 0 24 24', class: 'w-5 h-5' },
+        [h('path', { d: 'M16.6 5.82c-1.05-.98-1.68-2.36-1.68-3.82h-3.13v14.6c0 1.6-1.3 2.9-2.9 2.9s-2.9-1.3-2.9-2.9 1.3-2.9 2.9-2.9c.29 0 .57.04.83.13V10.7a6.1 6.1 0 00-.83-.06c-3.37 0-6.1 2.73-6.1 6.1s2.73 6.1 6.1 6.1 6.1-2.73 6.1-6.1V9.3a9.16 9.16 0 005.32 1.7V7.87a5.72 5.72 0 01-3.71-2.05z' })])
 }
 
 const services = [
@@ -694,11 +761,11 @@ const whyUs = [
 ]
 
 const contacts = [
-    ...(COMPANY_PHONE    ? [{ icon: IconPhone,  label: 'Phone',    value: COMPANY_PHONE,    href: COMPANY_PHONE_HREF }]    : []),
-    ...(COMPANY_PHONE2   ? [{ icon: IconPhone2, label: 'Phone 2',  value: COMPANY_PHONE2,   href: COMPANY_PHONE2_HREF }]   : []),
+    ...(COMPANY_PHONE    ? [{ icon: IconPhone,  label: 'Phone / Viber', value: COMPANY_PHONE, value2: COMPANY_PHONE2 || null, href: COMPANY_PHONE_HREF }] : []),
     ...(COMPANY_EMAIL    ? [{ icon: IconMail,   label: 'Email',    value: COMPANY_EMAIL,    href: `mailto:${COMPANY_EMAIL}` }] : []),
     ...(COMPANY_ADDRESS  ? [{ icon: IconMap,    label: 'Address',  value: COMPANY_ADDRESS,  href: COMPANY_ADDRESS_MAP }]   : []),
     ...(COMPANY_FACEBOOK ? [{ icon: IconFB,     label: 'Facebook', value: COMPANY_FACEBOOK, href: COMPANY_FACEBOOK }]      : []),
+    ...(COMPANY_TIKTOK   ? [{ icon: IconTikTok, label: 'TikTok',   value: COMPANY_TIKTOK,   href: COMPANY_TIKTOK }]        : []),
 ]
 </script>
 
