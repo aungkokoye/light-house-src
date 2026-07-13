@@ -28,7 +28,7 @@ onMounted(() => {
         } else if (pending) {
             window.location.replace('/login?pending=1')
         } else {
-            window.location.replace('/')
+            window.location.replace('/dashboard')
         }
     } else {
         window.location.replace('/login?error=google_failed')

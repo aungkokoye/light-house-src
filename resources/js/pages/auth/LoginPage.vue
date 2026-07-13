@@ -208,7 +208,7 @@ async function handleSubmit() {
     try {
         const { data } = await axios.post('/api/login', { ...form, recaptcha_token: getToken() })
         localStorage.setItem('token', data.token)
-        window.location.href = '/'
+        window.location.href = '/dashboard'
     } catch (e) {
         if (e.response?.status === 429) {
             error.value = 'Too many login attempts. Please wait a minute and try again.'
