@@ -555,6 +555,14 @@
                 {{ COMPANY_ADDRESS }} · {{ COMPANY_PHONE }}
             </p>
 
+            <a :href="COMPANY_ADDRESS_MAP" target="_blank" rel="noopener"
+                class="flex items-center gap-1.5 text-gray-400 hover:text-white text-xs transition-colors">
+                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0zM19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                </svg>
+                View on Google Maps
+            </a>
+
             <div class="flex items-center gap-5">
                 <a :href="COMPANY_FACEBOOK" target="_blank" rel="noopener"
                     class="text-gray-400 hover:text-white transition-colors">
